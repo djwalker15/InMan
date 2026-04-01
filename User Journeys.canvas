@@ -1,0 +1,15 @@
+{
+	"nodes":[
+		{"id":"dadc128a65237c2c","x":-280,"y":-239,"width":140,"height":60,"type":"text","text":"User Sign Up"},
+		{"id":"24058834cfa7b6fa","x":-40,"y":-239,"width":160,"height":60,"type":"text","text":"Crew Decision"},
+		{"id":"dbf21b20124f500a","x":277,"y":-299,"width":160,"height":60,"type":"text","text":"Create a Crew as Admin"},
+		{"id":"1648bd3a991ddc11","x":277,"y":-179,"width":160,"height":79,"type":"text","text":"Join a Crew via invite/request"},
+		{"id":"eb5845172754f7d2","x":520,"y":-359,"width":250,"height":60,"type":"text","text":"Space Setup"}
+	],
+	"edges":[
+		{"id":"ea11ec9a66b66942","fromNode":"dadc128a65237c2c","fromSide":"right","toNode":"24058834cfa7b6fa","toSide":"left"},
+		{"id":"26b3db987163306e","fromNode":"24058834cfa7b6fa","fromSide":"right","toNode":"dbf21b20124f500a","toSide":"left","label":"Create"},
+		{"id":"0864f018e513b63b","fromNode":"24058834cfa7b6fa","fromSide":"right","toNode":"1648bd3a991ddc11","toSide":"left","label":"Join"},
+		{"id":"13a2d11d58f18ff3","fromNode":"dbf21b20124f500a","fromSide":"right","toNode":"eb5845172754f7d2","toSide":"left"}
+	]
+}

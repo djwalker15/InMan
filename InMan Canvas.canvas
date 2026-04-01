@@ -1,0 +1,26 @@
+{
+	"nodes":[
+		{"id":"5176f88eb81d7467","x":-819,"y":803,"width":400,"height":400,"type":"file","file":"Projects/InMan/Vault/features/Feature 11 - Kiosk Mode.md"},
+		{"id":"268141de83143781","type":"file","file":"Projects/InMan/Vault/InMan Data Model.md","x":-2840,"y":-560,"width":1260,"height":2260,"color":"6"},
+		{"id":"d8a378a29ca901fa","type":"file","file":"Projects/InMan/Vault/features/Feature 1 - Multi-Organization Tenancy.md","x":-2360,"y":2000,"width":400,"height":400},
+		{"id":"70aa38e8fffe7a5e","type":"text","text":"User CRUD","x":-3240,"y":2757,"width":250,"height":60},
+		{"id":"03a6986785da11e7","type":"file","file":"Projects/InMan/Vault/entities/User.md","x":-2760,"y":2617,"width":400,"height":400},
+		{"id":"d1260a334e0d4bbf","type":"file","file":"Projects/InMan/Vault/entities/Crew.md","x":-1880,"y":2640,"width":400,"height":400},
+		{"id":"a43fd8a3571ff835","type":"text","text":"Crew CRUD","x":-1281,"y":2732,"width":250,"height":60},
+		{"id":"ed713174cc6a3b4d","type":"file","file":"Projects/InMan/Vault/entities/CrewMember.md","x":-2360,"y":3320,"width":400,"height":400},
+		{"id":"e39f85f7a91380b0","type":"text","text":"CrewMember CRUD","x":-1773,"y":3491,"width":250,"height":60}
+	],
+	"edges":[
+		{"id":"0f99e6db4779a138","fromNode":"268141de83143781","fromSide":"bottom","toNode":"d8a378a29ca901fa","toSide":"top"},
+		{"id":"d880efecf4704a1a","fromNode":"d8a378a29ca901fa","fromSide":"bottom","toNode":"03a6986785da11e7","toSide":"top"},
+		{"id":"982b02fa8f6d99ad","fromNode":"03a6986785da11e7","fromSide":"left","toNode":"70aa38e8fffe7a5e","toSide":"right"},
+		{"id":"2244398085262776","fromNode":"d8a378a29ca901fa","fromSide":"bottom","toNode":"d1260a334e0d4bbf","toSide":"top"},
+		{"id":"ac32e81f5d4a47d6","fromNode":"03a6986785da11e7","fromSide":"right","toNode":"d1260a334e0d4bbf","toSide":"left","label":"Creates crew"},
+		{"id":"ba9aa8785ab18a05","fromNode":"d1260a334e0d4bbf","fromSide":"right","toNode":"a43fd8a3571ff835","toSide":"left"},
+		{"id":"d5641433da54bf2d","fromNode":"d8a378a29ca901fa","fromSide":"bottom","toNode":"ed713174cc6a3b4d","toSide":"top"},
+		{"id":"ed05ff8a4cf6eb6b","fromNode":"03a6986785da11e7","fromSide":"bottom","toNode":"ed713174cc6a3b4d","toSide":"top","label":"Part of crew(s) as"},
+		{"id":"44b85f335e811965","fromNode":"d1260a334e0d4bbf","fromSide":"bottom","toNode":"ed713174cc6a3b4d","toSide":"top","label":"Has one or more"},
+		{"id":"189e449827a0c270","fromNode":"ed713174cc6a3b4d","fromSide":"right","toNode":"e39f85f7a91380b0","toSide":"left"},
+		{"id":"74cde466c8314ad5","fromNode":"268141de83143781","fromSide":"right","toNode":"5176f88eb81d7467","toSide":"left"}
+	]
+}
