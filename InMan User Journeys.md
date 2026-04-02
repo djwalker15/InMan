@@ -2,7 +2,7 @@
 
 > **Generated:** March 31, 2026
 > **Purpose:** Map every user journey across the system — serves as the index for the `journeys/` folder
-> **Status:** 7 of 26 journeys documented (+ 1 absorbed)
+> **Status:** 8 of 26 journeys documented (+ 1 absorbed)
 
 ---
 
@@ -43,7 +43,7 @@
 | # | Journey | Status | Description |
 |---|---------|--------|-------------|
 | 8 | [[Journey - Expiry Management]] | ⬜ Not yet | Review approaching/expired [[InventoryItem]]s, decide to use or waste, update dates. Connects to [[Journey - Logging Waste]]. |
-| 13 | [[Journey - Logging Waste]] | ⬜ Not yet | Select [[InventoryItem]], choose waste reason, fill reason-specific detail table, capture photo + notes, submit. Creates waste [[Flow]] + [[WasteEvent]] + detail record atomically via edge function. |
+| 13 | [[Journey - Logging Waste]] | ✅ Documented | Five entry points (Checking Stock, alerts, dedicated action, kiosk, batch failure). Flexible ordering (item-first or reason-first). Six reason-specific detail forms. Smart quantity defaults. Photo optional. Confirmation step before deducting. Stay-in-flow. Atomic edge function. |
 | 14 | [[Journey - Reviewing Waste History]] | ⬜ Not yet | Filter by time/reason/[[Space]]/[[Category]], view trends, identify problem areas. All data derived from [[WasteEvent]] → [[Flow]] joins. |
 | 15 | [[Journey - Handling Expired Items]] | ⬜ Not yet | System alerts expiry on [[InventoryItem]] → user decides: use it (consumption [[Flow]]), waste it ([[Journey - Logging Waste]]), or extend the date. |
 

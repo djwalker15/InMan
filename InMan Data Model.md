@@ -87,6 +87,7 @@
 - [[Journey - Checking Stock]] — Search, browse by Space/Category, filter by stock status, inline expansion with detail + actions, alerts summary.
 - [[Journey - Intake Session]] — Session-based batch receiving. Two modes: batch table (list-seeded) and sequential (from-scratch). Discrepancy tracking, deferred shelving. Also covers Post-Shopping Intake.
 - [[Journey - Moving Items]] — Five scenarios: single move, put-back routine, set home locations, bulk reassign with preview, reorganize (space-centric or item-centric).
+- [[Journey - Logging Waste]] — Five entry points, flexible item/reason ordering, six reason-specific detail forms, smart quantity defaults, confirmation step, atomic edge function.
 
 ---
 
