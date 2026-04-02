@@ -2,7 +2,7 @@
 
 > **Generated:** March 31, 2026
 > **Purpose:** Map every user journey across the system — serves as the index for the `journeys/` folder
-> **Status:** 3 of 26 journeys documented
+> **Status:** 5 of 26 journeys documented (+ 1 absorbed)
 
 ---
 
@@ -22,8 +22,8 @@
 |---|---------|--------|-------------|
 | 4 | [[Journey - Adding Inventory]] | ✅ Documented | Search/create [[Product]], set quantity + location, barcode scan, bulk import. Four methods: manual search/create, bulk import, barcode scan, quick add. Two-step flow (product resolution → inventory details). Stay-in-flow for multiple items. |
 | 5 | [[Journey - Moving Items]] | ⬜ Not yet | Relocate an item (update `current_space_id`), put items back in their home, bulk reassign. Transfer [[Flow]]s generated. |
-| 6 | [[Journey - Checking Stock]] | ⬜ Not yet | Browse by [[Space]], browse by [[Category]], search, view item detail, check displacement status (unsorted / in place / displaced). |
-| 7 | [[Journey - Restocking]] | ⬜ Not yet | Purchase flow from receiving groceries/deliveries to updating quantities and costs. Overlaps with [[Journey - Shopping Trip]] post-checkout. |
+| 6 | [[Journey - Checking Stock]] | ✅ Documented | Browse by [[Space]], browse by [[Category]], search, view item detail with inline expansion, inline actions (restock, move, waste, add to list), alerts summary (low stock, expired, displaced). |
+| 7 | [[Journey - Intake Session]] | ✅ Documented | Session-based workflow for receiving multiple items (replaces "Restocking"). Two modes: batch table (list-seeded with discrepancy tracking) and sequential (from-scratch). Covers personal post-shopping intake and commercial delivery receiving. Also covers journey #19 (Post-Shopping Intake). |
 | 8 | [[Journey - Expiry Management]] | ⬜ Not yet | Review approaching/expired [[InventoryItem]]s, decide to use or waste, update dates. Connects to [[Journey - Logging Waste]]. |
 
 ---
@@ -56,7 +56,7 @@
 | 16 | [[Journey - Building a Shopping List]] | ⬜ Not yet | Create named [[ShoppingList]], manually add [[ShoppingListItem]]s, set quantities. `source_type` = manual. |
 | 17 | [[Journey - Auto-Generated Shopping List]] | ⬜ Not yet | Low stock alerts populate `source_inventory_item_id`, [[Recipe]] needs populate `source_recipe_id`, planned [[BatchEvent]]s populate `source_batch_id`. Source tracking enables prioritization. |
 | 18 | [[Journey - Shopping Trip]] | ⬜ Not yet | At the store with the list. Check off items, prompted to choose which [[InventoryItem]] to restock or create new, capture `unit_cost`. Each checkout creates a purchase [[Flow]] atomically via edge function. Collaborative — multiple [[CrewMember]]s can check off simultaneously. |
-| 19 | [[Journey - Post-Shopping Intake]] | ⬜ Not yet | Back home. Put items away, verify `current_space_id` matches reality, handle new items not on the list, set `home_space_id` for unsorted items. |
+| 19 | [[Journey - Post-Shopping Intake]] | ✅ Covered by #7 | Absorbed into [[Journey - Intake Session]] — a shopping-list-seeded intake session IS the post-shopping intake flow. |
 
 ---
 
@@ -92,7 +92,7 @@ Onboarding (1) → Space Setup (2) → Adding Inventory (4)
 
 Adding Inventory (4) → Checking Stock (6) → Expiry Management (8) → Logging Waste (13)
                      → Moving Items (5)
-                     → Restocking (7)
+                     → Intake Session (7)
 
 Creating a Recipe (9) → Editing a Recipe (10)
                       → Cooking a Meal (11)
@@ -102,8 +102,8 @@ Checking Stock (6) → Auto-Generated Shopping List (17)
 Cooking a Meal (11) → Auto-Generated Shopping List (17)
 Prepping for Storage (12) → Auto-Generated Shopping List (17)
 
-Building a Shopping List (16) → Shopping Trip (18) → Post-Shopping Intake (19)
-Auto-Generated Shopping List (17) → Shopping Trip (18) → Post-Shopping Intake (19)
+Building a Shopping List (16) → Shopping Trip (18) → Intake Session (7)
+Auto-Generated Shopping List (17) → Shopping Trip (18) → Intake Session (7)
 
 Kiosk Enrollment (20) → Kiosk Daily Use (21)
                       → Kiosk Administration (22)
@@ -119,13 +119,14 @@ All journeys with data → Cost Reporting (23)
 
 | Entity | Journeys That Touch It |
 |--------|----------------------|
-| [[Flow]] | 4, 5, 7, 8, 11, 12, 13, 15, 18, 19, 21, 23, 24 |
-| [[InventoryItem]] | 4, 5, 6, 7, 8, 11, 12, 13, 15, 17, 18, 19, 21, 24 |
-| [[Space]] | 2, 4, 5, 6, 13, 19, 21, 25 |
-| [[Product]] | 4, 6, 9, 16, 17, 18 |
+| [[Flow]] | 4, 5, 7, 8, 11, 12, 13, 15, 18, 21, 23, 24 |
+| [[InventoryItem]] | 4, 5, 6, 7, 8, 11, 12, 13, 15, 17, 18, 21, 24 |
+| [[Space]] | 2, 4, 5, 6, 7, 13, 21, 25 |
+| [[Product]] | 4, 6, 7, 9, 16, 17, 18 |
 | [[Recipe]] | 9, 10, 11, 12, 17 |
-| [[ShoppingList]] / [[ShoppingListItem]] | 16, 17, 18, 19 |
+| [[ShoppingList]] / [[ShoppingListItem]] | 7, 16, 17, 18 |
 | [[WasteEvent]] | 13, 14, 15, 21, 23 |
 | [[BatchEvent]] | 11, 12, 17, 21, 23 |
+| [[IntakeSession]] / [[IntakeSessionItem]] | 7 |
 | [[CrewMember]] | 1, 3, 20, 21, 22 |
 | [[KioskSession]] | 20, 21, 22 |

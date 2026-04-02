@@ -20,15 +20,18 @@
 - [[SpaceTemplate]] — Pre-built hierarchy blueprints
 
 ### Catalog
-- [[Product]] — Universal product definition
+- [[Product]] — Universal product definition (has `source` field tracking origin: seeded, barcode_api, crew_created, manual, promoted)
 - [[Category]] — Product/item categorization
 - [[InventoryItem]] — Crew-specific product instance at a location (quantity is a **cache** derived from [[Flow]] ledger)
+- [[ProductSubmission]] — Review queue for promoting crew-private Products to master catalog
 
 ### Reference Data
 - [[UnitDefinition]] — Unit conversion reference (weight, volume, count)
 
 ### Transactions
 - [[Flow]] — Core transaction ledger (canonical source of truth for quantity and movement)
+- [[IntakeSession]] — Session-based batch receiving (post-shopping intake or delivery)
+- [[IntakeSessionItem]] — Line items within an intake session (expected vs. received, discrepancy tracking)
 
 ### Waste
 - [[WasteEvent]] — Slim waste record (reason, total_cost, photo, notes — all other fields derived from [[Flow]])
@@ -80,6 +83,8 @@
 - [[Journey - Onboarding]] — Landing page → sign up → crew creation → space setup → first items → invite members → kiosk enrollment
 - [[Journey - Space Setup]] — Detailed first-time space hierarchy setup (Explainer → Premises → Guided First Branch → Tree Editor → Templates)
 - [[Journey - Adding Inventory]] — Four methods: manual search/create (two-step), bulk import, barcode scan, quick add. Stay-in-flow for multiple items.
+- [[Journey - Checking Stock]] — Search, browse by Space/Category, filter by stock status, inline expansion with detail + actions, alerts summary.
+- [[Journey - Intake Session]] — Session-based batch receiving. Two modes: batch table (list-seeded) and sequential (from-scratch). Discrepancy tracking, deferred shelving. Also covers Post-Shopping Intake.
 
 ---
 
