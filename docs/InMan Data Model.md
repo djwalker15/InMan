@@ -89,6 +89,7 @@
 - [[Journey - Moving Items]] — Five scenarios: single move, put-back routine, set home locations, bulk reassign with preview, reorganize (space-centric or item-centric).
 - [[Journey - Logging Waste]] — Five entry points, flexible item/reason ordering, six reason-specific detail forms, smart quantity defaults, confirmation step, atomic edge function.
 - [[Journey - Expiry Management]] — Dedicated page: triage (use/waste/extend/dismiss), FIFO planning (use-this-first ordering), missing dates (batch-set). Tiered thresholds per Crew.
+- [[Journey - Reviewing Waste History]] — Waste analytics dashboard: summary cards, charts (time/reason/category/space), detailed log with inline expansion, six filter dimensions, CSV export.
 
 ---
 
