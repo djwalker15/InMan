@@ -103,6 +103,7 @@
 - [[Journey - Reviewing Waste History]] — Waste analytics dashboard: summary cards, charts (time/reason/category/space), detailed log with inline expansion, six filter dimensions, CSV export.
 - [[Journey - Creating a Recipe]] — Hybrid layout, four ingredient types (ProductGroup, Product, sub-Recipe, free-text), live cost estimate, versioning on first save.
 - [[Journey - Editing a Recipe]] — Same form as creation. Metadata updates in place. Substance changes create new version with change summary. Version comparison and revert.
+- [[Journey - Cooking a Meal]] — Consume-intent batch. Interactive: scale, resolve ProductGroup ingredients, deduct as you go, mid-batch failure handling.
 
 ---
 
