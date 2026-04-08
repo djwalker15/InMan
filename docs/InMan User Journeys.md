@@ -2,7 +2,7 @@
 
 > **Generated:** March 31, 2026
 > **Purpose:** Map every user journey across the system — serves as the index for the `journeys/` folder
-> **Status:** 11 of 26 journeys documented (+ 2 absorbed)
+> **Status:** 12 of 26 journeys documented (+ 2 absorbed)
 
 ---
 
@@ -32,7 +32,7 @@
 | # | Journey | Status | Description |
 |---|---------|--------|-------------|
 | 9 | [[Journey - Creating a Recipe]] | ✅ Documented | Hybrid layout (all sections visible). Four ingredient reference types: [[ProductGroup]] (generic), [[Product]] (specific), sub-[[Recipe]], free-text (unlinked, blocks batching). Live cost estimate with missing data indicators. First save creates [[RecipeVersion]] v1. |
-| 10 | [[Journey - Editing a Recipe]] | ⬜ Not yet | Modify an existing [[Recipe]], new [[RecipeVersion]] created automatically, view version history, compare versions. |
+| 10 | [[Journey - Editing a Recipe]] | ✅ Documented | Same hybrid layout as creation. Metadata edits update in place (no version). Ingredient/step/yield changes create new [[RecipeVersion]] with auto-generated change summary + optional user note. Version history with side-by-side comparison. Revert creates a forward copy. |
 | 11 | [[Journey - Cooking a Meal]] | ⬜ Not yet | Consume-intent [[BatchEvent]]. Pick [[Recipe]], scale it, check ingredient availability (with [[UnitDefinition]] conversion), execute, deduct ingredients via prep_usage [[Flow]]s, log cost. Nothing enters inventory. |
 | 12 | [[Journey - Prepping for Storage]] | ⬜ Not yet | Store/split-intent [[BatchEvent]]. Pick [[Recipe]], scale, execute, create output [[InventoryItem]]s with derived cost from `output_product_id`, assign to [[Space]]. |
 

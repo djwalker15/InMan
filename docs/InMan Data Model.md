@@ -30,7 +30,10 @@
 - [[UnitDefinition]] — Unit conversion reference (weight, volume, count)
 
 ### Transactions
-- [[Flow]] — Core transaction ledger (canonical source of truth for quantity and movement)
+- [[Flow]] — Core transaction ledger (enum + child table pattern: `flow_type` discriminates)
+- [[FlowPurchaseDetail]] — Purchase-specific: unit_cost, source
+- [[FlowTransferDetail]] — Transfer-specific: from_space_id, to_space_id
+- [[FlowPrepUsageDetail]] — Prep-usage-specific: batch_id
 - [[IntakeSession]] — Session-based batch receiving (post-shopping intake or delivery)
 - [[IntakeSessionItem]] — Line items within an intake session (expected vs. received, discrepancy tracking)
 
@@ -46,7 +49,11 @@
 ### Recipes & Batching
 - [[Recipe]] — Formula for producing something (has `output_product_id` for store intent)
 - [[RecipeVersion]] — Versioned snapshot of a recipe
-- [[RecipeIngredient]] — Ingredient line (four reference types: [[Product]], [[ProductGroup]], sub-[[Recipe]], free-text. DB trigger prevents circular references)
+- [[RecipeIngredient]] — Ingredient line (enum + child table pattern: `ingredient_type` discriminates)
+- [[RecipeIngredientProductRef]] — Specific product reference
+- [[RecipeIngredientGroupRef]] — Generic product group reference
+- [[RecipeIngredientRecipeRef]] — Sub-recipe reference (circular reference guard)
+- [[RecipeIngredientFreeText]] — Unlinked free-text ingredient (blocks batching)
 - [[RecipeStep]] — Instruction step in a recipe version
 - [[BatchEvent]] — Execution of a recipe (completion is an atomic edge function)
 - [[BatchInput]] — Ingredient consumed during a batch
@@ -54,7 +61,10 @@
 
 ### Shopping
 - [[ShoppingList]] — Named, collaborative shopping list
-- [[ShoppingListItem]] — Line item with separate source FKs (not polymorphic)
+- [[ShoppingListItem]] — Line item (enum + child table pattern: `source_type` discriminates)
+- [[ShoppingListItemLowStockSource]] — Low stock alert source
+- [[ShoppingListItemRecipeSource]] — Recipe need source
+- [[ShoppingListItemBatchSource]] — Planned batch source
 
 ### Kiosk
 - [[KioskSession]] — Device-level session with token-based auth (Path B). Two-step identification: name select → PIN confirm.
@@ -92,6 +102,7 @@
 - [[Journey - Expiry Management]] — Dedicated page: triage (use/waste/extend/dismiss), FIFO planning (use-this-first ordering), missing dates (batch-set). Tiered thresholds per Crew.
 - [[Journey - Reviewing Waste History]] — Waste analytics dashboard: summary cards, charts (time/reason/category/space), detailed log with inline expansion, six filter dimensions, CSV export.
 - [[Journey - Creating a Recipe]] — Hybrid layout, four ingredient types (ProductGroup, Product, sub-Recipe, free-text), live cost estimate, versioning on first save.
+- [[Journey - Editing a Recipe]] — Same form as creation. Metadata updates in place. Substance changes create new version with change summary. Version comparison and revert.
 
 ---
 
@@ -110,7 +121,7 @@
 - **Atomic edge functions.** Batch completion, waste logging, shopping checkout, bulk reassignment wrapped in transactions.
 - **No `direction` on Flow.** Derived from `flow_type`. See [[Flow]].
 - **Slim WasteEvent.** Waste-specific fields only; quantity/item/crew/user derived from [[Flow]].
-- **Separate source FKs on ShoppingListItem.** Not polymorphic. See [[ShoppingListItem]].
+- **Enum + child tables for all polymorphic references (Approach 4).** Consistent pattern across the model: parent has an enum discriminator, each type has its own child table with type-specific fields and real FK constraints. Applied to: [[RecipeIngredient]] (4 child tables), [[ShoppingListItem]] (3 child tables), [[Flow]] (3 child tables + existing [[WasteEvent]]), [[WasteEvent]] (6 detail tables). No nullable FK columns on parent entities. Extensible — adding type-specific fields means adding columns to the right child table.
 - **Recipe output_product_id.** Links recipe to its output [[Product]] for store intent. See [[Recipe]].
 - **Circular reference guard.** App-level + DB trigger on [[RecipeIngredient]].
 - **Within-category unit conversion.** See [[UnitDefinition]].

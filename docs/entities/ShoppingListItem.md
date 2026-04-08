@@ -2,7 +2,7 @@
 
 > Part of [[Feature 10 - Shopping List]]
 
-A line item on a [[ShoppingList]]. Tracks its source (why it was added) and handles purchase flow on checkout.
+A line item on a [[ShoppingList]]. Uses the **enum + child table pattern**: the `source_type` enum declares how this item was added, and a child table row (if applicable) holds the source reference.
 
 ## Fields
 
@@ -13,43 +13,36 @@ A line item on a [[ShoppingList]]. Tracks its source (why it was added) and hand
 | `product_id` | FK → [[Product]] | |
 | `quantity_needed` | numeric | |
 | `unit` | text | |
-| `source_type` | enum | manual \| low_stock \| recipe \| meal_plan |
-| `source_inventory_item_id` | FK → [[InventoryItem]] | Nullable — set when source_type = low_stock |
-| `source_recipe_id` | FK → [[Recipe]] | Nullable — set when source_type = recipe |
-| `source_batch_id` | FK → [[BatchEvent]] | Nullable — set when source_type = meal_plan |
+| `source_type` | enum | `manual` \| `low_stock` \| `recipe` \| `meal_plan` |
 | `is_checked` | bool | |
 | `checked_by` | text FK → [[User]] | Nullable — Clerk user ID |
 | `checked_at` | timestamp | Nullable |
 | `unit_cost` | numeric | Nullable — captured at purchase |
 | `notes` | text | |
 
-> **Check constraint:** At most one of `source_inventory_item_id`, `source_recipe_id`, `source_batch_id` can be non-null. All three are null for manual adds.
+## Child Tables
 
-## Source Types
+Zero or one child row per ShoppingListItem, determined by `source_type`:
 
-| source_type | Source FK set | Trigger |
-|-------------|--------------|---------|
-| manual | — (all null) | User added it directly |
-| low_stock | `source_inventory_item_id` → [[InventoryItem]] | Quantity dropped below `min_stock` |
-| recipe | `source_recipe_id` → [[Recipe]] | "I want to make X, what do I need?" |
-| meal_plan | `source_batch_id` → [[BatchEvent]] | Planned batch needs ingredients |
+| source_type | Child Table | Reference | Has Child Row? |
+|-------------|-------------|-----------|---------------|
+| `manual` | — | — | No — user added directly, no source ref |
+| `low_stock` | [[ShoppingListItemLowStockSource]] | `inventory_item_id` FK → [[InventoryItem]] | Yes |
+| `recipe` | [[ShoppingListItemRecipeSource]] | `recipe_id` FK → [[Recipe]] | Yes |
+| `meal_plan` | [[ShoppingListItemBatchSource]] | `batch_id` FK → [[BatchEvent]] | Yes |
 
 ## Checkout Flow
 
 When a user checks off an item:
 1. System shows existing [[InventoryItem]]s for that [[Product]] within the [[Crew]] (with locations), plus "Create new"
-2. If `source_type` = low_stock, pre-select the `source_inventory_item_id` item as the default
-3. User confirms target → purchase [[Flow]] created, cached quantity updated
+2. If `source_type` = `low_stock`, pre-select the source InventoryItem (from [[ShoppingListItemLowStockSource]]) as the default
+3. User confirms target → purchase [[Flow]] + [[FlowPurchaseDetail]] created, cached quantity updated
 4. If creating new, user also picks `current_space_id`
 5. `unit_cost` captured at time of purchase
 
-## Key Decisions
-
-- **Separate nullable FKs** replace the earlier polymorphic `source_ref_id` — gives real FK enforcement, clean joins, proper indexing
-- Source tracking enables prioritization: low_stock items are essential, recipe items are plan-dependent
-- **Always prompt** the user to choose which [[InventoryItem]] to restock or create new
-- Checking off creates a purchase [[Flow]] in the ledger
-
 ## See Also
 
+- [[Journey - Shopping Trip]] — at-the-store checkout flow
+- [[Journey - Building a Shopping List]] — manual item addition
+- [[Journey - Auto-Generated Shopping List]] — low_stock, recipe, and meal_plan sources
 - [[Cost Data Flow]] — `unit_cost` captured at checkout
