@@ -104,6 +104,7 @@
 - [[Journey - Creating a Recipe]] — Hybrid layout, four ingredient types (ProductGroup, Product, sub-Recipe, free-text), live cost estimate, versioning on first save.
 - [[Journey - Editing a Recipe]] — Same form as creation. Metadata updates in place. Substance changes create new version with change summary. Version comparison and revert.
 - [[Journey - Cooking a Meal]] — Consume-intent batch. Interactive: scale, resolve ProductGroup ingredients, deduct as you go, mid-batch failure handling.
+- [[Journey - Prepping for Storage]] — Store-intent batch. Shares Steps 1-3 with Cooking a Meal. Output: single or split portions with required locations and derived cost.
 
 ---
 
