@@ -105,6 +105,9 @@
 - [[Journey - Editing a Recipe]] — Same form as creation. Metadata updates in place. Substance changes create new version with change summary. Version comparison and revert.
 - [[Journey - Cooking a Meal]] — Consume-intent batch. Interactive: scale, resolve ProductGroup ingredients, deduct as you go, mid-batch failure handling.
 - [[Journey - Prepping for Storage]] — Store-intent batch. Shares Steps 1-3 with Cooking a Meal. Output: single or split portions with required locations and derived cost.
+- [[Journey - Building a Shopping List]] — Multiple named lists, collaborative with attribution, manual item adding at Product/InventoryItem/ProductGroup level.
+- [[Journey - Auto-Generated Shopping List]] — Three triggers (low stock, recipe needs, planned batch), configurable per Crew, dedicated staging list.
+- [[Journey - Shopping Trip]] — In-store check-off + batched checkout with cost capture and restock target resolution.
 
 ---
 

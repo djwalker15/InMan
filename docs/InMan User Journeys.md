@@ -2,7 +2,7 @@
 
 > **Generated:** March 31, 2026
 > **Purpose:** Map every user journey across the system — serves as the index for the `journeys/` folder
-> **Status:** 14 of 26 journeys documented (+ 2 absorbed)
+> **Status:** 17 of 26 journeys documented (+ 2 absorbed)
 
 ---
 
@@ -53,9 +53,9 @@
 
 | # | Journey | Status | Description |
 |---|---------|--------|-------------|
-| 16 | [[Journey - Building a Shopping List]] | ⬜ Not yet | Create named [[ShoppingList]], manually add [[ShoppingListItem]]s, set quantities. `source_type` = manual. |
-| 17 | [[Journey - Auto-Generated Shopping List]] | ⬜ Not yet | Low stock alerts populate `source_inventory_item_id`, [[Recipe]] needs populate `source_recipe_id`, planned [[BatchEvent]]s populate `source_batch_id`. Source tracking enables prioritization. |
-| 18 | [[Journey - Shopping Trip]] | ⬜ Not yet | At the store with the list. Check off items, prompted to choose which [[InventoryItem]] to restock or create new, capture `unit_cost`. Each checkout creates a purchase [[Flow]] atomically via edge function. Collaborative — multiple [[CrewMember]]s can check off simultaneously. |
+| 16 | [[Journey - Building a Shopping List]] | ✅ Documented | Multiple named lists per Crew. Collaborative with attribution. Manual item adding at Product, InventoryItem, or ProductGroup level. Duplicate detection with merge/separate prompt. List lifecycle: active → completed → archived. |
+| 17 | [[Journey - Auto-Generated Shopping List]] | ✅ Documented | Three triggers: low stock (auto-add), recipe needs (deficit calculation with confirm), planned batch (deficit with confirm). Configurable per Crew. Dedicated "Suggested Items" staging list. Items reviewed and moved to real shopping lists. |
+| 18 | [[Journey - Shopping Trip]] | ✅ Documented | Two phases: in-store (lightweight check-off, collaborative, unlisted item adding) and checkout (cost capture, restock target resolution, batched purchase Flows). Transitions to [[Journey - Intake Session]] for shelving. |
 | 19 | [[Journey - Post-Shopping Intake]] | ✅ Covered by #7 | Absorbed into [[Journey - Intake Session]] — a shopping-list-seeded intake session IS the post-shopping intake flow. |
 
 ---
