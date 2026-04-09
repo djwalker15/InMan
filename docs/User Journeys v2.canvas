@@ -3311,6 +3311,399 @@
 			"width": 380,
 			"height": 180,
 			"color": "2"
+		},
+		{
+			"id": "s000000000000001",
+			"type": "group",
+			"x": -20,
+			"y": 38500,
+			"width": 4440,
+			"height": 1900,
+			"color": "4",
+			"label": "Journey: Cost Reporting"
+		},
+		{
+			"id": "s000000000000010",
+			"type": "file",
+			"file": "journeys/Cost Reporting.md",
+			"x": 40,
+			"y": 39100,
+			"width": 380,
+			"height": 180,
+			"color": "4"
+		},
+		{
+			"id": "s000000000000011",
+			"type": "text",
+			"text": "### Entry: Nav / Reports\n\"Reports\" → \"Cost Report.\" Default: current month.",
+			"x": 520,
+			"y": 38700,
+			"width": 340,
+			"height": 100,
+			"color": "5"
+		},
+		{
+			"id": "s000000000000012",
+			"type": "text",
+			"text": "### Entry: Dashboard / Recipe / Waste\nSpend summary widget, recipe cost breakdown link, or waste history cross-link.",
+			"x": 520,
+			"y": 38880,
+			"width": 340,
+			"height": 120,
+			"color": "5"
+		},
+		{
+			"id": "s000000000000020",
+			"type": "text",
+			"text": "### Filters\n\n8 dimensions: time period, category, space, product, crew member, recipe, source/vendor, flow type. All stack. Apply to all layers.\n\n**Data:** read-only",
+			"x": 980,
+			"y": 38700,
+			"width": 360,
+			"height": 200
+		},
+		{
+			"id": "s000000000000021",
+			"type": "text",
+			"text": "### Layer 1 — Summary Cards\n\nTotal Spending, Waste Cost, Waste % of Spend, Batches count, Avg Batch Cost, Current Inventory Value. Each tappable as filter.\n\n**Data:** Flow (read), WasteEvent (read), BatchEvent (read), InventoryItem (read)",
+			"x": 1460,
+			"y": 38700,
+			"width": 400,
+			"height": 220
+		},
+		{
+			"id": "s000000000000022",
+			"type": "text",
+			"text": "### Layer 2 — Charts\n\n• Spending Over Time (total / vs. waste / net)\n• Spending by Category\n• Waste % by Category\n• Recipe Cost Comparison\n• Cost by Source/Vendor\n• Inventory Valuation by Space\n\nAll interactive — click to filter.",
+			"x": 1960,
+			"y": 38700,
+			"width": 400,
+			"height": 300
+		},
+		{
+			"id": "s000000000000023",
+			"type": "text",
+			"text": "### Layer 3 — Transaction Log\n\nAll cost-relevant Flows: date, type, item, qty, unit cost, total, source, performed by. Inline expansion with full context (batch, waste event, audit).\n\n**Data:** Flow + child tables (read)",
+			"x": 1460,
+			"y": 38980,
+			"width": 400,
+			"height": 200
+		},
+		{
+			"id": "s000000000000024",
+			"type": "text",
+			"text": "### Recipe Cost View\n\nWhen filtered to a recipe: ingredient cost breakdown, cost per yield unit, cost over time chart, batch history table.\n\n**Data:** Recipe, RecipeIngredient, BatchEvent (read)",
+			"x": 1960,
+			"y": 39060,
+			"width": 380,
+			"height": 180
+		},
+		{
+			"id": "s000000000000025",
+			"type": "text",
+			"text": "### Inventory Valuation\n\nTable: product, qty, unit cost, total value, location, category. Always current (not time-filtered). Shows costed vs. uncosted items.\n\n**Data:** InventoryItem (read)",
+			"x": 1960,
+			"y": 39300,
+			"width": 380,
+			"height": 180
+		},
+		{
+			"id": "s000000000000050",
+			"type": "file",
+			"file": "entities/Flow.md",
+			"x": 2460,
+			"y": 38980,
+			"width": 200,
+			"height": 60,
+			"color": "1"
+		},
+		{
+			"id": "s000000000000051",
+			"type": "file",
+			"file": "entities/WasteEvent.md",
+			"x": 2460,
+			"y": 39080,
+			"width": 200,
+			"height": 60,
+			"color": "1"
+		},
+		{
+			"id": "s000000000000060",
+			"type": "text",
+			"text": "**[MOCK: Cost Dashboard]**\n\nSummary cards row, spending over time chart, category breakdown bars, recipe comparison. Filter bar at top.",
+			"x": 1460,
+			"y": 38480,
+			"width": 400,
+			"height": 180,
+			"color": "2"
+		},
+		{
+			"id": "s000000000000061",
+			"type": "text",
+			"text": "**[MOCK: Recipe Cost View]**\n\nIngredient cost table, cost per yield unit, cost trend chart, batch history. Per-ingredient % breakdown.",
+			"x": 1960,
+			"y": 38480,
+			"width": 380,
+			"height": 180,
+			"color": "2"
+		},
+		{
+			"id": "s000000000000062",
+			"type": "text",
+			"text": "**[MOCK: Inventory Valuation]**\n\nTable sorted by value: product, qty, cost, total. Grouped by Space or Category. Uncosted items flagged.",
+			"x": 2460,
+			"y": 38480,
+			"width": 380,
+			"height": 180,
+			"color": "2"
+		},
+		{
+			"id": "t000000000000001",
+			"type": "group",
+			"x": -20,
+			"y": 40700,
+			"width": 3460,
+			"height": 1700,
+			"color": "4",
+			"label": "Journey: Data Export"
+		},
+		{
+			"id": "t000000000000010",
+			"type": "file",
+			"file": "journeys/Data Export.md",
+			"x": 40,
+			"y": 41200,
+			"width": 380,
+			"height": 180,
+			"color": "4"
+		},
+		{
+			"id": "t000000000000011",
+			"type": "text",
+			"text": "### Entry: Admin Area\n\"/admin/export\" — centralized export page. Owner/Admin only.",
+			"x": 520,
+			"y": 41000,
+			"width": 340,
+			"height": 100,
+			"color": "5"
+		},
+		{
+			"id": "t000000000000020",
+			"type": "text",
+			"text": "### Step 1 — Select Data Set\n\n8 exportable sets: Inventory, Transaction History, Waste Events, Recipes, Shopping Lists, Batch History, Cost Report, Spaces.\n\nPresented as tappable cards.",
+			"x": 980,
+			"y": 40900,
+			"width": 380,
+			"height": 220
+		},
+		{
+			"id": "t000000000000021",
+			"type": "text",
+			"text": "### Step 2 — Configure Filters\n\nCommon: date range, category, space, product, crew member. Data-set-specific: flow type, waste reason, batch intent, list status, etc.\n\n**Data:** read-only (filter configuration)",
+			"x": 1480,
+			"y": 40900,
+			"width": 380,
+			"height": 220
+		},
+		{
+			"id": "t000000000000022",
+			"type": "text",
+			"text": "### Step 3 — Select Format\n\n| Format | Best For |\n|--------|--------|\n| CSV | Data analysis, imports |\n| Excel | Spreadsheets, sharing |\n| PDF | Reports, printing, archival |",
+			"x": 1480,
+			"y": 41160,
+			"width": 380,
+			"height": 200
+		},
+		{
+			"id": "t000000000000023",
+			"type": "text",
+			"text": "### Step 4 — Preview & Export\n\nPreview: first 10 rows in selected format. Export: generated server-side (edge function for large sets). Progress indicator for large exports.\n\n**Data:** all entities (read-only)",
+			"x": 1980,
+			"y": 41000,
+			"width": 400,
+			"height": 220
+		},
+		{
+			"id": "t000000000000060",
+			"type": "text",
+			"text": "**[MOCK: Export Page]**\n\n8 data set cards, filter panel, format selector (CSV/Excel/PDF), preview table, export button with progress.",
+			"x": 980,
+			"y": 40680,
+			"width": 380,
+			"height": 180,
+			"color": "2"
+		},
+		{
+			"id": "t000000000000061",
+			"type": "text",
+			"text": "**[MOCK: PDF Report]**\n\nFormatted report: header (crew name, title, date range), summary metrics, embedded charts, styled data tables, page numbers.",
+			"x": 1980,
+			"y": 41260,
+			"width": 400,
+			"height": 180,
+			"color": "2"
+		},
+		{
+			"id": "u000000000000001",
+			"type": "group",
+			"x": -20,
+			"y": 42700,
+			"width": 4440,
+			"height": 2000,
+			"color": "4",
+			"label": "Journey: Space Reorganization"
+		},
+		{
+			"id": "u000000000000002",
+			"type": "group",
+			"x": 1380,
+			"y": 42880,
+			"width": 1060,
+			"height": 460,
+			"color": "6",
+			"label": "Reorg: Inline (Simple)"
+		},
+		{
+			"id": "u000000000000003",
+			"type": "group",
+			"x": 1380,
+			"y": 43440,
+			"width": 2560,
+			"height": 960,
+			"color": "6",
+			"label": "Reorg: Dedicated Mode (Complex)"
+		},
+		{
+			"id": "u000000000000010",
+			"type": "file",
+			"file": "journeys/Space Reorganization.md",
+			"x": 40,
+			"y": 43300,
+			"width": 380,
+			"height": 180,
+			"color": "4"
+		},
+		{
+			"id": "u000000000000011",
+			"type": "text",
+			"text": "### Entry: Spaces Page\nTree editor (same as Space Setup Phase 4). Inline actions on any node.",
+			"x": 520,
+			"y": 43000,
+			"width": 340,
+			"height": 100,
+			"color": "5"
+		},
+		{
+			"id": "u000000000000012",
+			"type": "text",
+			"text": "### Entry: Reorganize Mode\n\"Reorganize\" button on Spaces page. Enables complex operations with preview.",
+			"x": 520,
+			"y": 43180,
+			"width": 340,
+			"height": 100,
+			"color": "5"
+		},
+		{
+			"id": "u000000000000020",
+			"type": "text",
+			"text": "### Op 1 — Rename\n\nChange Space name inline. No Flows, no item changes.\n\n**Data:** Space (update name)",
+			"x": 1440,
+			"y": 42940,
+			"width": 360,
+			"height": 140
+		},
+		{
+			"id": "u000000000000021",
+			"type": "text",
+			"text": "### Op 2 — Reclassify\n\nChange unit_type via dropdown. Only valid types shown (based on parent/children).\n\n**Data:** Space (update unit_type)",
+			"x": 1440,
+			"y": 43120,
+			"width": 360,
+			"height": 160
+		},
+		{
+			"id": "u000000000000030",
+			"type": "text",
+			"text": "### Op 3 — Move Space\n\nMove node + children to new parent. Items stay at same Space (no Flows). Location paths auto-update. Optional home location update.\n\n**Data:** Space (update parent_id)",
+			"x": 1440,
+			"y": 43500,
+			"width": 380,
+			"height": 200
+		},
+		{
+			"id": "u000000000000031",
+			"type": "text",
+			"text": "### Op 4 — Merge Spaces\n\nCombine source into target. Items move (transfer Flows). Children reparented. Source soft-deleted. Home locations updated.\n\n**Data:** Space (update/delete), InventoryItem (update), Flow (insert — transfer)",
+			"x": 1440,
+			"y": 43740,
+			"width": 380,
+			"height": 220
+		},
+		{
+			"id": "u000000000000032",
+			"type": "text",
+			"text": "### Op 5 — Delete Space\n\nHandle children (reparent or recursive delete). Handle items: move to parent, move to specific Space, or bulk reassign. Handle home locations. Soft delete.\n\n**Data:** Space (delete), InventoryItem (update), Flow (insert — transfer)",
+			"x": 1960,
+			"y": 43500,
+			"width": 380,
+			"height": 240
+		},
+		{
+			"id": "u000000000000033",
+			"type": "text",
+			"text": "### Op 6 — Split Space\n\nCreate sibling Space. Assign items (stay or move) and children via radio per row. Transfer Flows for moved items. Optional rename of original.\n\n**Data:** Space (insert), InventoryItem (update), Flow (insert — transfer)",
+			"x": 1960,
+			"y": 43780,
+			"width": 380,
+			"height": 220
+		},
+		{
+			"id": "u000000000000034",
+			"type": "text",
+			"text": "### Preview Panel\n\nAll complex ops share preview: tree before/after visual diff, item count impact, Flow count, home location changes, warnings. No changes until Confirm.\n\n**Data:** preview only",
+			"x": 2460,
+			"y": 43500,
+			"width": 380,
+			"height": 200
+		},
+		{
+			"id": "u000000000000050",
+			"type": "file",
+			"file": "entities/Space.md",
+			"x": 2460,
+			"y": 43740,
+			"width": 200,
+			"height": 60,
+			"color": "1"
+		},
+		{
+			"id": "u000000000000051",
+			"type": "file",
+			"file": "entities/InventoryItem.md",
+			"x": 2460,
+			"y": 43840,
+			"width": 200,
+			"height": 60,
+			"color": "1"
+		},
+		{
+			"id": "u000000000000060",
+			"type": "text",
+			"text": "**[MOCK: Reorganize Mode]**\n\nTree editor with reorganize toolbar. Drag to move nodes. Context menu: merge, delete, split, reclassify.",
+			"x": 1380,
+			"y": 42680,
+			"width": 380,
+			"height": 180,
+			"color": "2"
+		},
+		{
+			"id": "u000000000000061",
+			"type": "text",
+			"text": "**[MOCK: Preview Panel]**\n\nSide panel: tree before/after, item count delta, Flows to create, home location changes, warnings. Confirm/Cancel.",
+			"x": 2460,
+			"y": 43240,
+			"width": 380,
+			"height": 180,
+			"color": "2"
 		}
 	],
 	"edges": [
@@ -5837,6 +6230,278 @@
 			"fromSide": "top",
 			"toNode": "r000000000000033",
 			"toSide": "bottom"
+		},
+		{
+			"id": "s000000000000100",
+			"fromNode": "s000000000000010",
+			"fromSide": "right",
+			"toNode": "s000000000000011",
+			"toSide": "left"
+		},
+		{
+			"id": "s000000000000101",
+			"fromNode": "s000000000000010",
+			"fromSide": "right",
+			"toNode": "s000000000000012",
+			"toSide": "left"
+		},
+		{
+			"id": "s000000000000110",
+			"fromNode": "s000000000000011",
+			"fromSide": "right",
+			"toNode": "s000000000000020",
+			"toSide": "left"
+		},
+		{
+			"id": "s000000000000111",
+			"fromNode": "s000000000000012",
+			"fromSide": "right",
+			"toNode": "s000000000000020",
+			"toSide": "left"
+		},
+		{
+			"id": "s000000000000112",
+			"fromNode": "s000000000000020",
+			"fromSide": "right",
+			"toNode": "s000000000000021",
+			"toSide": "left"
+		},
+		{
+			"id": "s000000000000113",
+			"fromNode": "s000000000000021",
+			"fromSide": "right",
+			"toNode": "s000000000000022",
+			"toSide": "left"
+		},
+		{
+			"id": "s000000000000114",
+			"fromNode": "s000000000000021",
+			"fromSide": "bottom",
+			"toNode": "s000000000000023",
+			"toSide": "top"
+		},
+		{
+			"id": "s000000000000115",
+			"fromNode": "s000000000000022",
+			"fromSide": "bottom",
+			"toNode": "s000000000000024",
+			"toSide": "top"
+		},
+		{
+			"id": "s000000000000116",
+			"fromNode": "s000000000000024",
+			"fromSide": "bottom",
+			"toNode": "s000000000000025",
+			"toSide": "top"
+		},
+		{
+			"id": "s000000000000120",
+			"fromNode": "s000000000000023",
+			"fromSide": "right",
+			"toNode": "s000000000000050",
+			"toSide": "left"
+		},
+		{
+			"id": "s000000000000121",
+			"fromNode": "s000000000000023",
+			"fromSide": "right",
+			"toNode": "s000000000000051",
+			"toSide": "left"
+		},
+		{
+			"id": "s000000000000130",
+			"fromNode": "s000000000000060",
+			"fromSide": "bottom",
+			"toNode": "s000000000000021",
+			"toSide": "top"
+		},
+		{
+			"id": "s000000000000131",
+			"fromNode": "s000000000000061",
+			"fromSide": "bottom",
+			"toNode": "s000000000000024",
+			"toSide": "top"
+		},
+		{
+			"id": "s000000000000132",
+			"fromNode": "s000000000000062",
+			"fromSide": "bottom",
+			"toNode": "s000000000000025",
+			"toSide": "top"
+		},
+		{
+			"id": "t000000000000100",
+			"fromNode": "t000000000000010",
+			"fromSide": "right",
+			"toNode": "t000000000000011",
+			"toSide": "left"
+		},
+		{
+			"id": "t000000000000110",
+			"fromNode": "t000000000000011",
+			"fromSide": "right",
+			"toNode": "t000000000000020",
+			"toSide": "left"
+		},
+		{
+			"id": "t000000000000111",
+			"fromNode": "t000000000000020",
+			"fromSide": "right",
+			"toNode": "t000000000000021",
+			"toSide": "left"
+		},
+		{
+			"id": "t000000000000112",
+			"fromNode": "t000000000000021",
+			"fromSide": "bottom",
+			"toNode": "t000000000000022",
+			"toSide": "top"
+		},
+		{
+			"id": "t000000000000113",
+			"fromNode": "t000000000000021",
+			"fromSide": "right",
+			"toNode": "t000000000000023",
+			"toSide": "left"
+		},
+		{
+			"id": "t000000000000114",
+			"fromNode": "t000000000000022",
+			"fromSide": "right",
+			"toNode": "t000000000000023",
+			"toSide": "left"
+		},
+		{
+			"id": "t000000000000130",
+			"fromNode": "t000000000000060",
+			"fromSide": "bottom",
+			"toNode": "t000000000000020",
+			"toSide": "top"
+		},
+		{
+			"id": "t000000000000131",
+			"fromNode": "t000000000000061",
+			"fromSide": "top",
+			"toNode": "t000000000000023",
+			"toSide": "bottom"
+		},
+		{
+			"id": "u000000000000100",
+			"fromNode": "u000000000000010",
+			"fromSide": "right",
+			"toNode": "u000000000000011",
+			"toSide": "left"
+		},
+		{
+			"id": "u000000000000101",
+			"fromNode": "u000000000000010",
+			"fromSide": "right",
+			"toNode": "u000000000000012",
+			"toSide": "left"
+		},
+		{
+			"id": "u000000000000110",
+			"fromNode": "u000000000000011",
+			"fromSide": "right",
+			"toNode": "u000000000000020",
+			"toSide": "left",
+			"label": "Inline"
+		},
+		{
+			"id": "u000000000000111",
+			"fromNode": "u000000000000011",
+			"fromSide": "right",
+			"toNode": "u000000000000021",
+			"toSide": "left",
+			"label": "Inline"
+		},
+		{
+			"id": "u000000000000112",
+			"fromNode": "u000000000000012",
+			"fromSide": "right",
+			"toNode": "u000000000000030",
+			"toSide": "left",
+			"label": "Move"
+		},
+		{
+			"id": "u000000000000113",
+			"fromNode": "u000000000000012",
+			"fromSide": "right",
+			"toNode": "u000000000000031",
+			"toSide": "left",
+			"label": "Merge"
+		},
+		{
+			"id": "u000000000000114",
+			"fromNode": "u000000000000012",
+			"fromSide": "right",
+			"toNode": "u000000000000032",
+			"toSide": "left",
+			"label": "Delete"
+		},
+		{
+			"id": "u000000000000115",
+			"fromNode": "u000000000000012",
+			"fromSide": "right",
+			"toNode": "u000000000000033",
+			"toSide": "left",
+			"label": "Split"
+		},
+		{
+			"id": "u000000000000116",
+			"fromNode": "u000000000000030",
+			"fromSide": "right",
+			"toNode": "u000000000000034",
+			"toSide": "left"
+		},
+		{
+			"id": "u000000000000117",
+			"fromNode": "u000000000000031",
+			"fromSide": "right",
+			"toNode": "u000000000000034",
+			"toSide": "left"
+		},
+		{
+			"id": "u000000000000118",
+			"fromNode": "u000000000000032",
+			"fromSide": "right",
+			"toNode": "u000000000000034",
+			"toSide": "left"
+		},
+		{
+			"id": "u000000000000119",
+			"fromNode": "u000000000000033",
+			"fromSide": "right",
+			"toNode": "u000000000000034",
+			"toSide": "left"
+		},
+		{
+			"id": "u000000000000120",
+			"fromNode": "u000000000000031",
+			"fromSide": "bottom",
+			"toNode": "u000000000000050",
+			"toSide": "top"
+		},
+		{
+			"id": "u000000000000121",
+			"fromNode": "u000000000000031",
+			"fromSide": "bottom",
+			"toNode": "u000000000000051",
+			"toSide": "top"
+		},
+		{
+			"id": "u000000000000130",
+			"fromNode": "u000000000000060",
+			"fromSide": "bottom",
+			"toNode": "u000000000000020",
+			"toSide": "top"
+		},
+		{
+			"id": "u000000000000131",
+			"fromNode": "u000000000000061",
+			"fromSide": "bottom",
+			"toNode": "u000000000000034",
+			"toSide": "top"
 		}
 	]
 }

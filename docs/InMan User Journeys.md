@@ -2,7 +2,7 @@
 
 > **Generated:** March 31, 2026
 > **Purpose:** Map every user journey across the system — serves as the index for the `journeys/` folder
-> **Status:** 18 of 26 journeys documented (+ 2 absorbed)
+> **Status:** 21 of 26 journeys documented (+ 2 absorbed)
 
 ---
 
@@ -74,10 +74,10 @@
 
 | # | Journey | Status | Description |
 |---|---------|--------|-------------|
-| 23 | [[Journey - Cost Reporting]] | ⬜ Not yet | View spending by [[Category]]/time/[[Space]], meal costs from consume [[BatchEvent]]s, waste costs from [[WasteEvent]]s, [[Recipe]] costs from recursive ingredient costing. Full pipeline documented in [[Cost Data Flow]]. |
+| 23 | [[Journey - Cost Reporting]] | ✅ Documented | Dedicated dashboard: summary cards (spending, waste cost, waste %, batch avg, inventory valuation), charts (spending over time, by category, waste % by category, recipe comparison, by vendor, valuation by Space), transaction log. Recipe cost sub-view with ingredient breakdown and cost-over-time. Eight filter dimensions. |
 | 24 | [[Journey - Inventory Audit]] | ✅ Documented | Two modes: system reconciliation (cached qty vs. Flow sum, scheduled + manual) and physical count (scoped by Space/Category/full, blind counting, discrepancy review). Both produce adjustment [[Flow]]s with [[FlowAdjustmentDetail]]. Audit history preserved. |
-| 25 | [[Journey - Space Reorganization]] | ⬜ Not yet | Restructure [[Space]] hierarchy after renovation. Move items in bulk (transfer [[Flow]]s for each), update `home_space_id` assignments, soft delete removed spaces. |
-| 26 | [[Journey - Data Export]] | ⬜ Not yet | Export inventory, [[Flow]]s, [[WasteEvent]]s, [[Recipe]]s for external analysis or backup. Format options, filtering, date ranges. |
+| 25 | [[Journey - Space Reorganization]] | ✅ Documented | Six operations: rename, move (with subtree), merge (combine items + soft-delete source), delete (orphan handling: move to parent/specific/bulk), split (divide into two), reclassify (change unit_type). Simple ops inline, complex ops in dedicated mode with preview. |
+| 26 | [[Journey - Data Export]] | ✅ Documented | Centralized export page. Eight data sets (inventory, transactions, waste, recipes, shopping lists, batches, cost report, spaces). Three formats: CSV, Excel, PDF (with charts). Configurable filters per data set. Preview before export. |
 
 ---
 

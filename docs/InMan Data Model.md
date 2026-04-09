@@ -110,6 +110,9 @@
 - [[Journey - Auto-Generated Shopping List]] — Three triggers (low stock, recipe needs, planned batch), configurable per Crew, dedicated staging list.
 - [[Journey - Shopping Trip]] — In-store check-off + batched checkout with cost capture and restock target resolution.
 - [[Journey - Inventory Audit]] — System reconciliation (cached vs. Flow sum) and physical count audits. Adjustment Flows preserve audit trail.
+- [[Journey - Space Reorganization]] — Six hierarchy operations: rename, move, merge, delete, split, reclassify. Preview panel for complex ops.
+- [[Journey - Cost Reporting]] — Unified cost dashboard: spending, waste, recipe costing, inventory valuation. Eight filter dimensions.
+- [[Journey - Data Export]] — Centralized export: eight data sets, three formats (CSV, Excel, PDF), configurable filters.
 
 ---
 

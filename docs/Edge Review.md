@@ -2059,6 +2059,258 @@ Use this document to verify each edge makes conceptual sense, and to annotate wi
 
 ---
 
+## Cost Reporting
+
+### Flow Edges
+
+| # | From | To | Label |
+|---|------|----|-------|
+| 1 | journeys/Cost Reporting.md | Entry: Nav / Reports |  |
+| 2 | journeys/Cost Reporting.md | Entry: Dashboard / Recipe / Waste |  |
+| 3 | Entry: Nav / Reports | Filters |  |
+| 4 | Entry: Dashboard / Recipe / Waste | Filters |  |
+| 5 | Filters | Layer 1 — Summary Cards |  |
+| 6 | Layer 1 — Summary Cards | Layer 2 — Charts |  |
+| 7 | Layer 1 — Summary Cards | Layer 3 — Transaction Log |  |
+| 8 | Layer 2 — Charts | Recipe Cost View |  |
+| 9 | Recipe Cost View | Inventory Valuation |  |
+
+#### 1. journeys/Cost Reporting.md → Entry: Nav / Reports
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 2. journeys/Cost Reporting.md → Entry: Dashboard / Recipe / Waste
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 3. Entry: Nav / Reports → Filters
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 4. Entry: Dashboard / Recipe / Waste → Filters
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 5. Filters → Layer 1 — Summary Cards
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 6. Layer 1 — Summary Cards → Layer 2 — Charts
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 7. Layer 1 — Summary Cards → Layer 3 — Transaction Log
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 8. Layer 2 — Charts → Recipe Cost View
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 9. Recipe Cost View → Inventory Valuation
+
+**Data Flow:**
+
+**UI Detail:**
+
+### Entity References
+
+| # | From | To (Entity) | Label |
+|---|------|-------------|-------|
+| 1 | Layer 3 — Transaction Log | entities/Flow.md |  |
+| 2 | Layer 3 — Transaction Log | entities/WasteEvent.md |  |
+
+### Mock References
+
+| # | Mock | Illustrates |
+|---|------|-------------|
+| 1 | [MOCK: Cost Dashboard] | Layer 1 — Summary Cards |
+| 2 | [MOCK: Recipe Cost View] | Recipe Cost View |
+| 3 | [MOCK: Inventory Valuation] | Inventory Valuation |
+
+---
+
+## Data Export
+
+### Flow Edges
+
+| # | From | To | Label |
+|---|------|----|-------|
+| 1 | journeys/Data Export.md | Entry: Admin Area |  |
+| 2 | Entry: Admin Area | Step 1 — Select Data Set |  |
+| 3 | Step 1 — Select Data Set | Step 2 — Configure Filters |  |
+| 4 | Step 2 — Configure Filters | Step 3 — Select Format |  |
+| 5 | Step 2 — Configure Filters | Step 4 — Preview & Export |  |
+| 6 | Step 3 — Select Format | Step 4 — Preview & Export |  |
+
+#### 1. journeys/Data Export.md → Entry: Admin Area
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 2. Entry: Admin Area → Step 1 — Select Data Set
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 3. Step 1 — Select Data Set → Step 2 — Configure Filters
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 4. Step 2 — Configure Filters → Step 3 — Select Format
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 5. Step 2 — Configure Filters → Step 4 — Preview & Export
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 6. Step 3 — Select Format → Step 4 — Preview & Export
+
+**Data Flow:**
+
+**UI Detail:**
+
+### Mock References
+
+| # | Mock | Illustrates |
+|---|------|-------------|
+| 1 | [MOCK: Export Page] | Step 1 — Select Data Set |
+| 2 | [MOCK: PDF Report] | Step 4 — Preview & Export |
+
+---
+
+## Space Reorganization
+
+### Flow Edges
+
+| # | From | To | Label |
+|---|------|----|-------|
+| 1 | journeys/Space Reorganization.md | Entry: Spaces Page |  |
+| 2 | journeys/Space Reorganization.md | Entry: Reorganize Mode |  |
+| 3 | Entry: Spaces Page | Op 1 — Rename | Inline |
+| 4 | Entry: Spaces Page | Op 2 — Reclassify | Inline |
+| 5 | Entry: Reorganize Mode | Op 3 — Move Space | Move |
+| 6 | Entry: Reorganize Mode | Op 4 — Merge Spaces | Merge |
+| 7 | Entry: Reorganize Mode | Op 5 — Delete Space | Delete |
+| 8 | Entry: Reorganize Mode | Op 6 — Split Space | Split |
+| 9 | Op 3 — Move Space | Preview Panel |  |
+| 10 | Op 4 — Merge Spaces | Preview Panel |  |
+| 11 | Op 5 — Delete Space | Preview Panel |  |
+| 12 | Op 6 — Split Space | Preview Panel |  |
+
+#### 1. journeys/Space Reorganization.md → Entry: Spaces Page
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 2. journeys/Space Reorganization.md → Entry: Reorganize Mode
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 3. Entry: Spaces Page → Op 1 — Rename (Inline)
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 4. Entry: Spaces Page → Op 2 — Reclassify (Inline)
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 5. Entry: Reorganize Mode → Op 3 — Move Space (Move)
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 6. Entry: Reorganize Mode → Op 4 — Merge Spaces (Merge)
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 7. Entry: Reorganize Mode → Op 5 — Delete Space (Delete)
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 8. Entry: Reorganize Mode → Op 6 — Split Space (Split)
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 9. Op 3 — Move Space → Preview Panel
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 10. Op 4 — Merge Spaces → Preview Panel
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 11. Op 5 — Delete Space → Preview Panel
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 12. Op 6 — Split Space → Preview Panel
+
+**Data Flow:**
+
+**UI Detail:**
+
+### Entity References
+
+| # | From | To (Entity) | Label |
+|---|------|-------------|-------|
+| 1 | Op 4 — Merge Spaces | entities/Space.md |  |
+| 2 | Op 4 — Merge Spaces | entities/InventoryItem.md |  |
+
+### Mock References
+
+| # | Mock | Illustrates |
+|---|------|-------------|
+| 1 | [MOCK: Reorganize Mode] | Op 1 — Rename |
+| 2 | [MOCK: Preview Panel] | Preview Panel |
+
+---
+
 ## Cross-Journey Links
 
 | # | From (Journey) | From Node | To (Journey) | To Node | Label |
