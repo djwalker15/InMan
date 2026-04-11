@@ -1,0 +1,565 @@
+erDiagram
+    %% ═══════════════════════════════════════════
+    %% INMAN — Entity Relationship Diagram
+    %% Updated: March 31, 2026 (post-review v3 + onboarding journey)
+    %% Changes: Added Invite entity, token_hash on KioskSession
+    %% ═══════════════════════════════════════════
+
+    %% ─── TENANCY & AUTH ───────────────────────
+
+    Crew {
+        int crew_id PK
+        string name
+        text owner_id FK "Clerk user ID, the Owner"
+        text created_by FK "Clerk user ID"
+        json settings
+        timestamp deletion_requested_at "nullable"
+        text deletion_requested_by FK "nullable, Clerk user ID"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    User {
+        text user_id PK "Clerk string ID"
+        timestamp created_at
+    }
+
+    CrewMember {
+        int crew_member_id PK
+        int crew_id FK
+        text user_id FK "Clerk user ID"
+        enum role "Admin | Member | Viewer"
+        json permission_overrides
+        string kiosk_pin "hashed, nullable"
+        timestamp joined_at
+        timestamp updated_at
+        timestamp deleted_at "soft delete"
+    }
+
+    Invite {
+        int invite_id PK
+        int crew_id FK
+        text invited_by FK "Clerk user ID"
+        string email
+        enum role "Admin | Member | Viewer"
+        string code "unique invite code"
+        enum status "pending|accepted|expired|revoked"
+        text accepted_by FK "nullable, Clerk user ID"
+        timestamp created_at
+        timestamp accepted_at "nullable"
+        timestamp expires_at "nullable"
+    }
+
+    User ||--o{ CrewMember : "belongs to crews"
+    Crew ||--o{ CrewMember : "has members"
+    User ||--o{ Crew : "created_by"
+    User ||--o| Crew : "owner_id"
+    Crew ||--o{ Invite : "has invites"
+    User ||--o{ Invite : "invited_by"
+    User ||--o{ Invite : "accepted_by"
+
+    %% ─── SPACES ───────────────────────────────
+
+    Space {
+        int space_id PK
+        int crew_id FK
+        string name "short name only"
+        enum unit_type "premises|area|zone|section|sub_section|container|shelf"
+        int parent_id FK "nullable, self-ref"
+        string notes
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at "soft delete"
+    }
+
+    SpaceTemplate {
+        int template_id PK
+        string name
+        string description
+        json template_data
+        int crew_id FK "nullable"
+        text created_by FK "Clerk user ID"
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at "soft delete"
+    }
+
+    Crew ||--o{ Space : "owns"
+    Space ||--o{ Space : "parent_id"
+    Crew ||--o{ SpaceTemplate : "crew-created"
+    User ||--o{ SpaceTemplate : "created_by"
+
+    %% ─── CATALOG ──────────────────────────────
+
+    Product {
+        int product_id PK
+        string name
+        string brand
+        string barcode "UPC/EAN"
+        string image_url
+        int default_category_id FK
+        numeric size_value
+        string size_unit
+        int product_group_id FK "nullable"
+        enum source "seeded|barcode_api|crew_created|manual|promoted"
+        int crew_id FK "nullable"
+        text created_by FK "Clerk user ID"
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at "soft delete"
+    }
+
+    ProductGroup {
+        int product_group_id PK
+        string name "e.g. Sugar, Olive Oil"
+        int default_category_id FK
+        string image_url "nullable"
+        string description "nullable"
+        int crew_id FK "nullable"
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at "soft delete"
+    }
+
+    Category {
+        int category_id PK
+        string category_name
+        string description
+        int crew_id FK "nullable"
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at "soft delete"
+    }
+
+    InventoryItem {
+        int inventory_item_id PK
+        int crew_id FK
+        int product_id FK
+        int home_space_id FK "nullable"
+        int current_space_id FK "required"
+        int category_id FK "nullable, override"
+        numeric quantity "CACHED from Flow ledger"
+        string unit
+        numeric min_stock "nullable"
+        date expiry_date "nullable"
+        numeric last_unit_cost
+        string notes
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at "soft delete"
+    }
+
+    Category ||--o{ Product : "default_category"
+    Category ||--o{ ProductGroup : "default_category"
+    ProductGroup ||--o{ Product : "belongs to group"
+    Crew ||--o{ Category : "crew-custom"
+    Crew ||--o{ Product : "crew-private"
+    Crew ||--o{ ProductGroup : "crew-created"
+    User ||--o{ Product : "created_by"
+    Product ||--o{ InventoryItem : "instances"
+    Crew ||--o{ InventoryItem : "owns"
+    Space ||--o{ InventoryItem : "home_space"
+    Space ||--o{ InventoryItem : "current_space"
+    Category ||--o{ InventoryItem : "category override"
+
+    %% ─── CATALOG CURATION ─────────────────────
+
+    ProductSubmission {
+        int submission_id PK
+        int product_id FK
+        text submitted_by FK "nullable, Clerk user ID"
+        int crew_id FK
+        enum submission_type "user_suggested|auto_detected"
+        enum status "pending|approved|rejected"
+        text reviewed_by FK "nullable, InMan admin"
+        timestamp reviewed_at "nullable"
+        string reviewer_notes "nullable"
+        int duplicate_product_id FK "nullable, merge target"
+        timestamp created_at
+    }
+
+    Product ||--o{ ProductSubmission : "submitted for promotion"
+    Product ||--o{ ProductSubmission : "merge target"
+    Crew ||--o{ ProductSubmission : "origin crew"
+    User ||--o{ ProductSubmission : "submitted_by"
+    User ||--o{ ProductSubmission : "reviewed_by"
+
+    %% ─── REFERENCE DATA ───────────────────────
+
+    UnitDefinition {
+        string unit PK "e.g. oz, ml, g"
+        enum unit_category "weight | volume | count"
+        string base_unit "g, ml, or count"
+        numeric to_base_factor
+    }
+
+    %% ─── FLOWS ────────────────────────────────
+
+    Flow {
+        int flow_id PK
+        int crew_id FK
+        int inventory_item_id FK
+        enum flow_type "purchase|waste|consumption|transfer|prep_usage|adjustment"
+        numeric quantity
+        string unit
+        text performed_by FK "Clerk user ID"
+        timestamp performed_at
+        string notes
+    }
+
+    FlowPurchaseDetail {
+        int flow_id FK "PK, one-to-one"
+        numeric unit_cost "nullable"
+        string source "nullable, vendor/store"
+    }
+
+    FlowTransferDetail {
+        int flow_id FK "PK, one-to-one"
+        int from_space_id FK
+        int to_space_id FK
+    }
+
+    FlowPrepUsageDetail {
+        int flow_id FK "PK, one-to-one"
+        int batch_id FK
+    }
+
+    Crew ||--o{ Flow : "owns"
+    InventoryItem ||--o{ Flow : "history"
+    User ||--o{ Flow : "performed_by"
+    Flow ||--o| FlowPurchaseDetail : "purchase detail"
+    Flow ||--o| FlowTransferDetail : "transfer detail"
+    Flow ||--o| FlowPrepUsageDetail : "prep usage detail"
+    Space ||--o{ FlowTransferDetail : "from_space"
+    Space ||--o{ FlowTransferDetail : "to_space"
+    BatchEvent ||--o{ FlowPrepUsageDetail : "batch"
+
+    FlowAdjustmentDetail {
+        int flow_id FK "PK, one-to-one"
+        enum adjustment_type "cache_correction|physical_count"
+        numeric expected_quantity
+        numeric actual_quantity
+        string audit_session_id "nullable"
+        string reason "nullable"
+    }
+
+    Flow ||--o| FlowAdjustmentDetail : "adjustment detail"
+
+    %% ─── WASTE ────────────────────────────────
+
+    WasteEvent {
+        int waste_event_id PK
+        int flow_id FK "join for qty, item, crew, user"
+        enum waste_reason "expired|spoiled|damaged|prep_failure|spilled|other"
+        numeric total_cost "includes derived recipe cost"
+        string notes
+        string photo_url
+    }
+
+    WasteExpiredDetail {
+        int waste_event_id FK
+        date expiry_date
+        int days_past_expiry
+        int space_id FK
+        boolean was_opened
+    }
+
+    WasteSpoilageDetail {
+        int waste_event_id FK
+        date expiry_date
+        int space_id FK
+        string container_type
+        int days_since_opened
+        string storage_conditions
+    }
+
+    WasteDamageDetail {
+        int waste_event_id FK
+        string how_damaged
+        int space_id FK
+        boolean packaging_issue
+    }
+
+    WastePrepFailureDetail {
+        int waste_event_id FK
+        int recipe_id FK
+        int batch_id FK "nullable"
+        string what_went_wrong
+        text prepped_by FK "Clerk user ID"
+    }
+
+    WasteSpillDetail {
+        int waste_event_id FK
+        int space_id FK
+        string how_spilled
+        string during_activity
+    }
+
+    WasteOtherDetail {
+        int waste_event_id FK
+        string description
+    }
+
+    Flow ||--o| WasteEvent : "waste flow"
+    WasteEvent ||--o| WasteExpiredDetail : "reason = expired"
+    WasteEvent ||--o| WasteSpoilageDetail : "reason = spoiled"
+    WasteEvent ||--o| WasteDamageDetail : "reason = damaged"
+    WasteEvent ||--o| WastePrepFailureDetail : "reason = prep_failure"
+    WasteEvent ||--o| WasteSpillDetail : "reason = spilled"
+    WasteEvent ||--o| WasteOtherDetail : "reason = other"
+    Space ||--o{ WasteExpiredDetail : "stored at"
+    Space ||--o{ WasteSpoilageDetail : "stored at"
+    Space ||--o{ WasteDamageDetail : "occurred at"
+    Space ||--o{ WasteSpillDetail : "spilled at"
+    User ||--o{ WastePrepFailureDetail : "prepped_by"
+
+    %% ─── RECIPES ──────────────────────────────
+
+    Recipe {
+        int recipe_id PK
+        string name
+        string description
+        numeric yield_quantity
+        string yield_unit
+        int prep_time_minutes
+        int cook_time_minutes
+        string photo_url
+        int output_product_id FK "nullable"
+        int crew_id FK "nullable"
+        text created_by FK "Clerk user ID"
+        int current_version FK
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at "soft delete"
+    }
+
+    RecipeVersion {
+        int recipe_version_id PK
+        int recipe_id FK
+        int version_number
+        numeric yield_quantity
+        string yield_unit
+        int prep_time_minutes
+        int cook_time_minutes
+        string change_summary "nullable, auto-generated"
+        string change_notes "nullable, user-provided"
+        text created_by FK "Clerk user ID"
+        timestamp created_at
+        timestamp deleted_at "soft delete"
+    }
+
+    RecipeIngredient {
+        int recipe_ingredient_id PK
+        int recipe_version_id FK
+        enum ingredient_type "product|product_group|sub_recipe|free_text"
+        numeric quantity
+        string unit
+        int sort_order
+        string notes
+    }
+
+    RecipeIngredientProductRef {
+        int recipe_ingredient_id FK "PK, one-to-one"
+        int product_id FK
+    }
+
+    RecipeIngredientGroupRef {
+        int recipe_ingredient_id FK "PK, one-to-one"
+        int product_group_id FK
+    }
+
+    RecipeIngredientRecipeRef {
+        int recipe_ingredient_id FK "PK, one-to-one"
+        int sub_recipe_id FK "circular ref guard"
+    }
+
+    RecipeIngredientFreeText {
+        int recipe_ingredient_id FK "PK, one-to-one"
+        string name "unlinked ingredient"
+    }
+
+    RecipeStep {
+        int recipe_step_id PK
+        int recipe_version_id FK
+        int step_number
+        string instruction
+        string photo_url "nullable"
+    }
+
+    Crew ||--o{ Recipe : "crew-private"
+    User ||--o{ Recipe : "created_by"
+    Product ||--o{ Recipe : "output_product"
+    Recipe ||--o{ RecipeVersion : "versions"
+    RecipeVersion ||--o{ RecipeIngredient : "ingredients"
+    RecipeVersion ||--o{ RecipeStep : "steps"
+    RecipeIngredient ||--o| RecipeIngredientProductRef : "product ref"
+    RecipeIngredient ||--o| RecipeIngredientGroupRef : "group ref"
+    RecipeIngredient ||--o| RecipeIngredientRecipeRef : "sub-recipe ref"
+    RecipeIngredient ||--o| RecipeIngredientFreeText : "free text"
+    Product ||--o{ RecipeIngredientProductRef : "ingredient"
+    ProductGroup ||--o{ RecipeIngredientGroupRef : "generic ingredient"
+    Recipe ||--o{ RecipeIngredientRecipeRef : "sub-recipe"
+    User ||--o{ RecipeVersion : "created_by"
+    Recipe ||--o{ WastePrepFailureDetail : "attempted"
+
+    %% ─── BATCHING ─────────────────────────────
+
+    BatchEvent {
+        int batch_id PK
+        int crew_id FK
+        int recipe_version_id FK
+        enum batch_intent "store|consume|split"
+        numeric scale_factor
+        numeric expected_yield
+        numeric actual_yield
+        string yield_unit
+        enum status "planned|in_progress|completed|cancelled"
+        int output_space_id FK "nullable"
+        date output_expiry_date "nullable"
+        numeric total_cost
+        text performed_by FK "Clerk user ID"
+        timestamp started_at
+        timestamp completed_at
+        string notes
+    }
+
+    BatchInput {
+        int batch_input_id PK
+        int batch_id FK
+        int inventory_item_id FK
+        numeric quantity_used
+        string unit
+    }
+
+    BatchOutput {
+        int batch_output_id PK
+        int batch_id FK
+        int inventory_item_id FK "nullable"
+        numeric quantity_produced
+        string unit
+        boolean was_consumed
+    }
+
+    Crew ||--o{ BatchEvent : "owns"
+    RecipeVersion ||--o{ BatchEvent : "executed as"
+    User ||--o{ BatchEvent : "performed_by"
+    Space ||--o{ BatchEvent : "output_space"
+    BatchEvent ||--o{ BatchInput : "consumed"
+    BatchEvent ||--o{ BatchOutput : "produced"
+    InventoryItem ||--o{ BatchInput : "used in batch"
+    InventoryItem ||--o{ BatchOutput : "created by batch"
+    BatchEvent ||--o{ WastePrepFailureDetail : "failed during"
+
+    %% ─── SHOPPING ─────────────────────────────
+
+    IntakeSession {
+        int intake_session_id PK
+        int crew_id FK
+        enum source_type "shopping_list|manual|purchase_order"
+        int source_shopping_list_id FK "nullable"
+        string source_reference "nullable"
+        enum status "in_progress|completed|cancelled"
+        text received_by FK "Clerk user ID"
+        int total_items_expected "nullable"
+        int total_items_received
+        numeric total_cost
+        string notes "nullable"
+        timestamp started_at
+        timestamp completed_at "nullable"
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    IntakeSessionItem {
+        int intake_item_id PK
+        int intake_session_id FK
+        int product_id FK
+        int inventory_item_id FK "nullable"
+        numeric expected_quantity "nullable"
+        numeric received_quantity
+        string unit
+        numeric unit_cost "nullable"
+        int space_id FK "nullable"
+        enum status "pending|received|short|extra|skipped"
+        string notes "nullable"
+    }
+
+    Crew ||--o{ IntakeSession : "owns"
+    User ||--o{ IntakeSession : "received_by"
+    ShoppingList ||--o{ IntakeSession : "seeds"
+    IntakeSession ||--o{ IntakeSessionItem : "line items"
+    Product ||--o{ IntakeSessionItem : "product received"
+    InventoryItem ||--o{ IntakeSessionItem : "restocking"
+    Space ||--o{ IntakeSessionItem : "shelving location"
+
+    ShoppingList {
+        int list_id PK
+        int crew_id FK
+        string name
+        enum status "active|completed|archived"
+        text created_by FK "Clerk user ID"
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at "soft delete"
+    }
+
+    ShoppingListItem {
+        int list_item_id PK
+        int list_id FK
+        int product_id FK
+        numeric quantity_needed
+        string unit
+        enum source_type "manual|low_stock|recipe|meal_plan"
+        boolean is_checked
+        text checked_by FK "nullable, Clerk user ID"
+        timestamp checked_at "nullable"
+        numeric unit_cost "nullable"
+        string notes
+    }
+
+    ShoppingListItemLowStockSource {
+        int list_item_id FK "PK, one-to-one"
+        int inventory_item_id FK
+    }
+
+    ShoppingListItemRecipeSource {
+        int list_item_id FK "PK, one-to-one"
+        int recipe_id FK
+    }
+
+    ShoppingListItemBatchSource {
+        int list_item_id FK "PK, one-to-one"
+        int batch_id FK
+    }
+
+    Crew ||--o{ ShoppingList : "owns"
+    User ||--o{ ShoppingList : "created_by"
+    ShoppingList ||--o{ ShoppingListItem : "line items"
+    Product ||--o{ ShoppingListItem : "product needed"
+    User ||--o{ ShoppingListItem : "checked_by"
+    ShoppingListItem ||--o| ShoppingListItemLowStockSource : "low stock source"
+    ShoppingListItem ||--o| ShoppingListItemRecipeSource : "recipe source"
+    ShoppingListItem ||--o| ShoppingListItemBatchSource : "batch source"
+    InventoryItem ||--o{ ShoppingListItemLowStockSource : "triggered by"
+    Recipe ||--o{ ShoppingListItemRecipeSource : "needed for"
+    BatchEvent ||--o{ ShoppingListItemBatchSource : "planned batch"
+
+    %% ─── KIOSK ────────────────────────────────
+
+    KioskSession {
+        int session_id PK
+        int crew_id FK
+        int premises_id FK
+        string device_name
+        json allowed_actions
+        string token_hash "hashed kiosk token"
+        boolean is_active
+        text created_by FK "Clerk user ID"
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at "soft delete"
+    }
+
+    Crew ||--o{ KioskSession : "owns"
+    Space ||--o{ KioskSession : "premises"
+    User ||--o{ KioskSession : "created_by"

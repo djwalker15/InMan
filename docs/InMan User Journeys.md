@@ -2,7 +2,7 @@
 
 > **Generated:** March 31, 2026
 > **Purpose:** Map every user journey across the system — serves as the index for the `journeys/` folder
-> **Status:** 21 of 26 journeys documented (+ 2 absorbed)
+> **Status:** ✅ All 26 journeys complete — 24 documented + 2 absorbed (#15 → #8, #19 → #7)
 
 ---
 
@@ -64,9 +64,9 @@
 
 | # | Journey | Status | Description |
 |---|---------|--------|-------------|
-| 20 | [[Journey - Kiosk Enrollment]] | 🟡 Partial | Covered in [[Journey - Onboarding]] Path C. Admin authenticates, configures [[KioskSession]], generates token. Full detail on token architecture in [[KioskSession]] entity doc. |
-| 21 | [[Journey - Kiosk Daily Use]] | ⬜ Not yet | Staff identifies via name + PIN (two-step). Performs allowed actions: log waste, check inventory, view shopping list, log batch. All actions go through edge functions with `performed_by` attribution. |
-| 22 | [[Journey - Kiosk Administration]] | ⬜ Not yet | Deactivate a kiosk (`is_active` = false), change allowed actions, re-enroll a device after storage wipe, view kiosk activity log. |
+| 20 | [[Journey - Kiosk Enrollment]] | ✅ Documented | Full enrollment lifecycle: admin auth, Crew/Premises selection, allowed actions config (categories + individual toggles + presets), token generation. Multi-device management, re-enrollment after device wipe, boot sequence, token security model. |
+| 21 | [[Journey - Kiosk Daily Use]] | ✅ Documented | Two-step identification (name + PIN) with inactivity timeout. Nine possible actions as simplified, touch-optimized, Premises-scoped versions of full-app journeys. All actions via edge functions with kiosk token validation and `performed_by` attribution. |
+| 22 | [[Journey - Kiosk Administration]] | ✅ Documented | Manage enrolled devices: edit config (name, premises, allowed actions), deactivate/reactivate, delete, re-enroll (new token). Activity log per device showing who did what. Cross-device activity view. |
 
 ---
 

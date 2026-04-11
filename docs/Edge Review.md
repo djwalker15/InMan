@@ -8,29 +8,29 @@ Use this document to verify each edge makes conceptual sense, and to annotate wi
 
 ### Flow Edges
 
-| # | From | To | Label |
-|---|------|----|-------|
-| 1 | journeys/Onboarding.md | Entry Point 1 |  |
-| 2 | journeys/Onboarding.md | Entry Point 2 |  |
-| 3 | journeys/Onboarding.md | Entry Point 3 |  |
-| 4 | Entry Point 1 | Step 1 — Landing Page |  |
-| 5 | Entry Point 2 | Step 1 — Validate Invite |  |
-| 6 | Entry Point 3 | Step 1 — Navigate |  |
-| 7 | Step 1 — Landing Page | Step 2 — Sign Up via Clerk |  |
-| 8 | Step 2 — Sign Up via Clerk | Step 3 — Crew Decision |  |
-| 9 | Step 3 — Crew Decision | Step 4 — Create Your Crew | Start fresh |
-| 10 | Step 4 — Create Your Crew | Step 5 — Set Up Spaces |  |
-| 11 | Step 5 — Set Up Spaces | Step 6 — Add First Items |  |
-| 12 | Step 6 — Add First Items | Step 7 — Invite Your Crew |  |
-| 13 | Step 7 — Invite Your Crew | Step 8 — Wizard Complete |  |
-| 14 | Step 3 — Crew Decision | Step 3 — Accept Invite + Set PIN | Has invite |
-| 15 | Step 1 — Validate Invite | Step 2 — Sign In or Sign Up |  |
-| 16 | Step 2 — Sign In or Sign Up | Step 3 — Accept Invite + Set PIN |  |
-| 17 | Step 3 — Accept Invite + Set PIN | Step 4 — Dashboard |  |
-| 18 | Step 1 — Navigate | Step 2 — Admin Authenticates |  |
-| 19 | Step 2 — Admin Authenticates | Step 3 — Kiosk Configuration |  |
-| 20 | Step 3 — Kiosk Configuration | Step 4 — Confirm and Enroll |  |
-| 21 | Step 4 — Confirm and Enroll | Step 5 — Kiosk Mode Activates |  |
+| #   | From                             | To                               | Label       |
+| --- | -------------------------------- | -------------------------------- | ----------- |
+| 1   | journeys/Onboarding.md           | Entry Point 1                    |             |
+| 2   | journeys/Onboarding.md           | Entry Point 2                    |             |
+| 3   | journeys/Onboarding.md           | Entry Point 3                    |             |
+| 4   | Entry Point 1                    | Step 1 — Landing Page            |             |
+| 5   | Entry Point 2                    | Step 1 — Validate Invite         |             |
+| 6   | Entry Point 3                    | Step 1 — Navigate                |             |
+| 7   | Step 1 — Landing Page            | Step 2 — Sign Up via Clerk       |             |
+| 8   | Step 2 — Sign Up via Clerk       | Step 3 — Crew Decision           |             |
+| 9   | Step 3 — Crew Decision           | Step 4 — Create Your Crew        | Start fresh |
+| 10  | Step 4 — Create Your Crew        | Step 5 — Set Up Spaces           |             |
+| 11  | Step 5 — Set Up Spaces           | Step 6 — Add First Items         |             |
+| 12  | Step 6 — Add First Items         | Step 7 — Invite Your Crew        |             |
+| 13  | Step 7 — Invite Your Crew        | Step 8 — Wizard Complete         |             |
+| 14  | Step 3 — Crew Decision           | Step 3 — Accept Invite + Set PIN | Has invite  |
+| 15  | Step 1 — Validate Invite         | Step 2 — Sign In or Sign Up      |             |
+| 16  | Step 2 — Sign In or Sign Up      | Step 3 — Accept Invite + Set PIN |             |
+| 17  | Step 3 — Accept Invite + Set PIN | Step 4 — Dashboard               |             |
+| 18  | Step 1 — Navigate                | Step 2 — Admin Authenticates     |             |
+| 19  | Step 2 — Admin Authenticates     | Step 3 — Kiosk Configuration     |             |
+| 20  | Step 3 — Kiosk Configuration     | Step 4 — Confirm and Enroll      |             |
+| 21  | Step 4 — Confirm and Enroll      | Step 5 — Kiosk Mode Activates    |             |
 
 #### 1. journeys/Onboarding.md → Entry Point 1
 
@@ -2311,6 +2311,250 @@ Use this document to verify each edge makes conceptual sense, and to annotate wi
 
 ---
 
+## Kiosk Enrollment
+
+### Flow Edges
+
+| # | From | To | Label |
+|---|------|----|-------|
+| 1 | journeys/Kiosk Enrollment.md | Entry: Kiosk Management |  |
+| 2 | journeys/Kiosk Enrollment.md | Entry: Onboarding Path C |  |
+| 3 | Entry: Kiosk Management | Step 1–3 — Auth + Crew + Premises |  |
+| 4 | Entry: Onboarding Path C | Step 1–3 — Auth + Crew + Premises |  |
+| 5 | Step 1–3 — Auth + Crew + Premises | Step 4 — Name Device |  |
+| 6 | Step 1–3 — Auth + Crew + Premises | Step 5 — Configure Actions |  |
+| 7 | Step 5 — Configure Actions | Step 6 — Confirm & Enroll |  |
+| 8 | Step 6 — Confirm & Enroll | Boot Sequence |  |
+| 9 | Boot Sequence | Re-Enrollment |  |
+
+#### 1. journeys/Kiosk Enrollment.md → Entry: Kiosk Management
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 2. journeys/Kiosk Enrollment.md → Entry: Onboarding Path C
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 3. Entry: Kiosk Management → Step 1–3 — Auth + Crew + Premises
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 4. Entry: Onboarding Path C → Step 1–3 — Auth + Crew + Premises
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 5. Step 1–3 — Auth + Crew + Premises → Step 4 — Name Device
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 6. Step 1–3 — Auth + Crew + Premises → Step 5 — Configure Actions
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 7. Step 5 — Configure Actions → Step 6 — Confirm & Enroll
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 8. Step 6 — Confirm & Enroll → Boot Sequence
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 9. Boot Sequence → Re-Enrollment
+
+**Data Flow:**
+
+**UI Detail:**
+
+### Entity References
+
+| # | From | To (Entity) | Label |
+|---|------|-------------|-------|
+| 1 | Step 6 — Confirm & Enroll | entities/KioskSession.md |  |
+
+### Mock References
+
+| # | Mock | Illustrates |
+|---|------|-------------|
+| 1 | [MOCK: Action Configuration] | Step 5 — Configure Actions |
+| 2 | [MOCK: Enrollment Summary] | Step 6 — Confirm & Enroll |
+
+---
+
+## Kiosk Daily Use
+
+### Flow Edges
+
+| # | From | To | Label |
+|---|------|----|-------|
+| 1 | journeys/Kiosk Daily Use.md | Identification Step 1 |  |
+| 2 | Identification Step 1 | Identification Step 2 |  |
+| 3 | Identification Step 2 | Kiosk Home Screen |  |
+| 4 | Kiosk Home Screen | Check Stock |  |
+| 5 | Kiosk Home Screen | Log Waste |  |
+| 6 | Kiosk Home Screen | Put Back |  |
+| 7 | Kiosk Home Screen | Start Batch |  |
+| 8 | Kiosk Home Screen | Other Actions |  |
+| 9 | Check Stock | Edge Function Architecture |  |
+| 10 | Log Waste | Edge Function Architecture |  |
+
+#### 1. journeys/Kiosk Daily Use.md → Identification Step 1
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 2. Identification Step 1 → Identification Step 2
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 3. Identification Step 2 → Kiosk Home Screen
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 4. Kiosk Home Screen → Check Stock
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 5. Kiosk Home Screen → Log Waste
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 6. Kiosk Home Screen → Put Back
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 7. Kiosk Home Screen → Start Batch
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 8. Kiosk Home Screen → Other Actions
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 9. Check Stock → Edge Function Architecture
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 10. Log Waste → Edge Function Architecture
+
+**Data Flow:**
+
+**UI Detail:**
+
+### Entity References
+
+| # | From | To (Entity) | Label |
+|---|------|-------------|-------|
+| 1 | Edge Function Architecture | entities/KioskSession.md |  |
+| 2 | Identification Step 2 | entities/CrewMember.md |  |
+
+### Mock References
+
+| # | Mock | Illustrates |
+|---|------|-------------|
+| 1 | [MOCK: Identification] | Identification Step 1 |
+| 2 | [MOCK: Kiosk Home] | Kiosk Home Screen |
+
+---
+
+## Kiosk Administration
+
+### Flow Edges
+
+| # | From | To | Label |
+|---|------|----|-------|
+| 1 | journeys/Kiosk Administration.md | Entry: Admin Area |  |
+| 2 | Entry: Admin Area | Device List |  |
+| 3 | Device List | Edit Configuration | Edit |
+| 4 | Device List | Deactivate / Reactivate | Activate/Deactivate |
+| 5 | Device List | Delete | Delete |
+| 6 | Device List | Activity Log | Activity |
+
+#### 1. journeys/Kiosk Administration.md → Entry: Admin Area
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 2. Entry: Admin Area → Device List
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 3. Device List → Edit Configuration (Edit)
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 4. Device List → Deactivate / Reactivate (Activate/Deactivate)
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 5. Device List → Delete (Delete)
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 6. Device List → Activity Log (Activity)
+
+**Data Flow:**
+
+**UI Detail:**
+
+### Entity References
+
+| # | From | To (Entity) | Label |
+|---|------|-------------|-------|
+| 1 | Edit Configuration | entities/KioskSession.md |  |
+| 2 | Deactivate / Reactivate | entities/KioskSession.md |  |
+| 3 | Delete | entities/KioskSession.md |  |
+
+### Mock References
+
+| # | Mock | Illustrates |
+|---|------|-------------|
+| 1 | [MOCK: Device List] | Device List |
+| 2 | [MOCK: Activity Log] | Activity Log |
+
+---
+
 ## Cross-Journey Links
 
 | # | From (Journey) | From Node | To (Journey) | To Node | Label |
@@ -2329,6 +2573,8 @@ Use this document to verify each edge makes conceptual sense, and to annotate wi
 | 12 | Auto-Generated Shopping List | Move to Real Lists | Building a Shopping List | List View | Move to list |
 | 13 | Building a Shopping List | List View | Shopping Trip | journeys/Shopping Trip.md | Start shopping |
 | 14 | Shopping Trip | After Checkout | Intake Session | journeys/Intake Session.md | Start intake |
+| 15 | Kiosk Enrollment | Boot Sequence | Kiosk Daily Use | journeys/Kiosk Daily Use.md | Device enters kiosk mode |
+| 16 | Kiosk Enrollment | Step 6 — Confirm & Enroll | Kiosk Administration | journeys/Kiosk Administration.md | Manage after enrollment |
 
 #### 1. [Onboarding] Step 5 — Set Up Spaces → [Space Setup] journeys/Space Setup.md (Detailed journey)
 
@@ -2409,6 +2655,18 @@ Use this document to verify each edge makes conceptual sense, and to annotate wi
 **UI Detail:**
 
 #### 14. [Shopping Trip] After Checkout → [Intake Session] journeys/Intake Session.md (Start intake)
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 15. [Kiosk Enrollment] Boot Sequence → [Kiosk Daily Use] journeys/Kiosk Daily Use.md (Device enters kiosk mode)
+
+**Data Flow:**
+
+**UI Detail:**
+
+#### 16. [Kiosk Enrollment] Step 6 — Confirm & Enroll → [Kiosk Administration] journeys/Kiosk Administration.md (Manage after enrollment)
 
 **Data Flow:**
 

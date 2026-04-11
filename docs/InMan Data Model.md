@@ -113,6 +113,9 @@
 - [[Journey - Space Reorganization]] — Six hierarchy operations: rename, move, merge, delete, split, reclassify. Preview panel for complex ops.
 - [[Journey - Cost Reporting]] — Unified cost dashboard: spending, waste, recipe costing, inventory valuation. Eight filter dimensions.
 - [[Journey - Data Export]] — Centralized export: eight data sets, three formats (CSV, Excel, PDF), configurable filters.
+- [[Journey - Kiosk Enrollment]] — Full device enrollment: multi-device, allowed actions vocabulary, token lifecycle, re-enrollment.
+- [[Journey - Kiosk Daily Use]] — Staff identification (name + PIN), nine Premises-scoped actions via edge functions.
+- [[Journey - Kiosk Administration]] — Device management: edit config, deactivate/reactivate, delete, re-enroll, activity logs.
 
 ---
 
