@@ -1,0 +1,63 @@
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500&family=Manrope:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap");
+@import "tailwindcss";
+
+@theme {
+  /* Typography — Manrope for marketing/auth body, Plus Jakarta Sans for
+     display/headings, Be Vietnam Pro for in-app body copy (onboarding +).
+     Source: Figma file 4DBHtgSn1OtwY5VyDdCHUV (InMan Prototype). */
+  --font-sans: "Manrope", system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-display: "Plus Jakarta Sans", "Manrope", system-ui, sans-serif;
+  --font-body-alt: "Be Vietnam Pro", "Manrope", system-ui, sans-serif;
+  --font-mono: ui-monospace, Consolas, monospace;
+
+  /* Brand — a two-tone green. Use 700 for gradient start / strong states,
+     500 for the default solid fill. Add 600 later if we need a mid-step. */
+  --color-brand-500: #4a8265;
+  --color-brand-700: #31694d;
+
+  /* Surface — warm neutrals, light → slightly darker. Used for progressively
+     nested backgrounds (page → card → chip/icon bg → input → progress track). */
+  --color-surface: #f2eee6;
+  --color-surface-raised: #fdf9f2;
+  --color-surface-input: #f7f3ec;
+  --color-surface-muted: #f1ede7;
+  --color-surface-chip: #ebe8e1;
+  --color-surface-track: #e6e2db;
+
+  /* Ink — text. `ink` is near-black with a warm tint. `ink-muted` is the
+     warmer body gray used on marketing. `ink-body` is the cooler body gray
+     used on in-app screens. `ink-placeholder` and `ink-chip` are further
+     de-emphasized. */
+  --color-ink: #1c1c18;
+  --color-ink-muted: #665e4c;
+  --color-ink-body: #404943;
+  --color-ink-placeholder: #707972;
+  --color-ink-chip: #605e58;
+
+  /* Accents — use sparingly for decorative chips / status indicators. */
+  --color-accent-mint: #b4f0cd;
+  --color-accent-peach: #ffddb9;
+
+  /* Elevation. `elevated` is the subtle one-layer shadow on marketing cards
+     and CTAs. `floating` is a heavier two-layer shadow for in-app cards
+     that need to look lifted off the surface. */
+  --shadow-elevated: 0 8px 24px -4px rgba(28, 28, 24, 0.06);
+  --shadow-floating:
+    0 4px 32px 0 rgba(28, 28, 24, 0.04),
+    0 8px 48px 0 rgba(28, 28, 24, 0.06);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
