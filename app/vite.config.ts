@@ -11,6 +11,7 @@ export default defineConfig({
     },
   },
   server: {
+    host: true, // bind to 0.0.0.0 for WSL2 compatibility
     // WSL on /mnt/c paths doesn't deliver inotify events reliably —
     // poll so edits from the Windows side actually trigger HMR.
     watch: { usePolling: true, interval: 300 },
