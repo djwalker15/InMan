@@ -29,6 +29,7 @@ interface PendingLink {
 /** Live destinations — already-shipped routes the user can actually visit. */
 const liveLinks: SidenavLink[] = [
   { to: '/dashboard', label: 'Home', icon: <Home size={18} />, end: true },
+  { to: '/inventory', label: 'Inventory', icon: <Clipboard size={18} /> },
   { to: '/spaces', label: 'Spaces', icon: <Boxes size={18} /> },
 ]
 
@@ -39,11 +40,6 @@ const liveLinks: SidenavLink[] = [
  * list into `liveLinks` (Navigation strategy task N5).
  */
 const pendingLinks: PendingLink[] = [
-  {
-    label: 'Inventory',
-    icon: <Clipboard size={18} />,
-    pendingNote: 'Phase 3',
-  },
   {
     label: 'Shopping',
     icon: <ShoppingCart size={18} />,

@@ -58,15 +58,29 @@ describe('SignedInLayout', () => {
       </SignedInLayout>,
     )
     const dialog = openSidenav()
-    // Inventory, Shopping, Batches, Crew settings appear in the Sidenav as
-    // text rows (not links). Scope queries to the dialog so we don't match
-    // BottomNav's Inventory tab.
-    const inventory = within(dialog).getByText(/^inventory$/i)
-    const inventoryRow = inventory.closest('[aria-disabled="true"]')
-    expect(inventoryRow).not.toBeNull()
+    // Shopping, Batches, Crew settings still appear as disabled text rows
+    // (Inventory promoted to a live link in P3.2). Scope to the dialog so we
+    // don't match BottomNav.
+    const shopping = within(dialog).getByText(/^shopping$/i)
+    const shoppingRow = shopping.closest('[aria-disabled="true"]')
+    expect(shoppingRow).not.toBeNull()
     expect(
-      within(dialog).queryByRole('link', { name: /^inventory$/i }),
+      within(dialog).queryByRole('link', { name: /^shopping$/i }),
     ).toBeNull()
+  })
+
+  it('Sidenav exposes Inventory as a live link (P3.2)', () => {
+    mockClerk({ user: { id: 'user_1' } })
+    renderWithRouter(
+      <SignedInLayout>
+        <p>x</p>
+      </SignedInLayout>,
+    )
+    const dialog = openSidenav()
+    const inventory = within(dialog).getByRole('link', {
+      name: /^inventory$/i,
+    })
+    expect(inventory).toHaveAttribute('href', '/inventory')
   })
 
   it('clicking a Sidenav link closes the drawer', () => {
