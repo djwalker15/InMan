@@ -8,6 +8,7 @@ import SSOCallbackPage from './routes/sso-callback'
 import CrewDecisionPage from './routes/onboarding/decision'
 import CrewCreationPage from './routes/onboarding/new'
 import OnboardingSpacesPage from './routes/onboarding/spaces'
+import SpacesPage from './routes/spaces'
 import InviteAcceptPage, { InviteEntryPage } from './routes/invite-accept'
 import DashboardPage from './routes/dashboard'
 
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/onboarding" element={<CrewDecisionPage />} />
         <Route path="/onboarding/new" element={<CrewCreationPage />} />
         <Route path="/onboarding/spaces" element={<OnboardingSpacesPage />} />
+        <Route path="/spaces" element={<SpacesPage />} />
         <Route path="/invite" element={<InviteEntryPage />} />
         <Route path="/invite/:code" element={<InviteAcceptPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
