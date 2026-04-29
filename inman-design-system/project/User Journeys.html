@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>InMan — User Journeys</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<style>
+  body { margin: 0; font-family: var(--font-body); background: #1A1916; color: var(--ink-900); }
+  /* Tighter padding inside the canvas around artboards */
+  .panel-mini-fade { background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.06)); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- UI Kit primitives -->
+<script type="text/babel" src="ui_kits/inman-app/Icons.jsx"></script>
+<script type="text/babel" src="ui_kits/inman-app/Brand.jsx"></script>
+<script type="text/babel" src="ui_kits/inman-app/Buttons.jsx"></script>
+<script type="text/babel" src="ui_kits/inman-app/Cards.jsx"></script>
+<script type="text/babel" src="ui_kits/inman-app/Components.jsx"></script>
+<script type="text/babel" src="ui_kits/inman-app/Onboarding.jsx"></script>
+<script type="text/babel" src="ui_kits/inman-app/Dashboard.jsx"></script>
+
+<!-- Tweaks panel + protocol -->
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+
+<!-- Canvas + journey shell -->
+<script type="text/babel" src="journeys/design-canvas.jsx"></script>
+<script type="text/babel" src="journeys/JourneyShell.jsx"></script>
+
+<!-- Stubs first; real journeys override the same names afterward. -->
+<script type="text/babel" src="journeys/_stubs.jsx"></script>
+<script type="text/babel" src="journeys/SpaceSetup.jsx"></script>
+<script type="text/babel" src="journeys/Onboarding.jsx"></script>
+<script type="text/babel" src="journeys/AddingInventory.jsx"></script>
+<script type="text/babel" src="journeys/CheckingStock.jsx"></script>
+<script type="text/babel" src="journeys/CrewManagement.jsx"></script>
+<script type="text/babel" src="journeys/SpaceReorganization.jsx"></script>
+
+<!-- Tweaks UI — must come AFTER React/ReactDOM and the tweaks-panel starter. -->
+<script type="text/babel" src="journeys/journey-tweaks.jsx"></script>
+
+<script type="text/babel">
+const W = 390, H = 844;
+
+function App() {
+  return (
+    <DesignCanvas title="InMan · User Journeys" subtitle="Six end-to-end flows, screen by screen. Pan with drag, zoom with scroll. Click any artboard for full screen.">
+      <DCSection id="onboarding" title="Onboarding" subtitle="From landing page → dashboard. Path A (new crew) and Path B (invite).">
+        <DCArtboard id="ob-landing"      label="01 · Landing"               width={W} height={H}><OB_Landing/></DCArtboard>
+        <DCArtboard id="ob-signup"       label="02 · Sign up (Clerk)"       width={W} height={H}><OB_SignUp/></DCArtboard>
+        <DCArtboard id="ob-decision"     label="03 · Crew decision"          width={W} height={H}><OB_CrewDecision/></DCArtboard>
+        <DCArtboard id="ob-crewname"     label="04 · Name your crew + PIN"   width={W} height={H}><OB_CrewName/></DCArtboard>
+        <DCArtboard id="ob-invite"       label="04b · Accept invite (Path B)" width={W} height={H}><OB_AcceptInvite/></DCArtboard>
+        <DCArtboard id="ob-checklist"    label="08 · Dashboard checklist"    width={W} height={H}><OB_Dashboard/></DCArtboard>
+        <DCArtboard id="ob-kiosk"        label="K · Kiosk enroll (Path C)"   width={W} height={H}><OB_KioskEnroll/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="space-setup" title="Space Setup" subtitle="The 5-phase first-time space hierarchy build. Explainer → Premises → Guided branch → Tree editor → Templates.">
+        <DCArtboard id="ss-explainer"    label="P1 · Explainer"              width={W} height={H}><SS1_Explainer/></DCArtboard>
+        <DCArtboard id="ss-premises"     label="P2 · Create premises"        width={W} height={H}><SS2_Premises/></DCArtboard>
+        <DCArtboard id="ss-guided"       label="P3 · Guided branch (mid)"    width={W} height={H}><SS3_Guided/></DCArtboard>
+        <DCArtboard id="ss-complete"     label="P3 · First branch complete"  width={W} height={H}><SS3_Complete/></DCArtboard>
+        <DCArtboard id="ss-editor"       label="P4 · Tree editor"            width={W} height={H}><SS4_TreeEditor/></DCArtboard>
+        <DCArtboard id="ss-add-child"    label="P4 · Add child sheet"        width={W} height={H}><SS4_AddChildSheet/></DCArtboard>
+        <DCArtboard id="ss-templates"    label="P5 · Templates browse"       width={W} height={H}><SS5_Templates/></DCArtboard>
+        <DCArtboard id="ss-merge"        label="P5 · Merge or replace"       width={W} height={H}><SS5_MergeReplace/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="add-inv" title="Adding Inventory" subtitle="Two-step product → details. Manual search, bulk import, barcode, quick add.">
+        <DCArtboard id="ai-search"       label="01 · Search products"        width={W} height={H}><AI_ProductSearch/></DCArtboard>
+        <DCArtboard id="ai-existing"     label="02 · Already in inventory"   width={W} height={H}><AI_ExistingMatch/></DCArtboard>
+        <DCArtboard id="ai-create"       label="03 · Create custom product"  width={W} height={H}><AI_CreateCustom/></DCArtboard>
+        <DCArtboard id="ai-details"      label="04 · Inventory details"      width={W} height={H}><AI_Details/></DCArtboard>
+        <DCArtboard id="ai-toast"        label="05 · Stay-in-flow + toast"   width={W} height={H}><AI_StayInFlow/></DCArtboard>
+        <DCArtboard id="ai-restock"      label="06 · Restock sub-flow"       width={W} height={H}><AI_Restock/></DCArtboard>
+        <DCArtboard id="ai-scan"         label="07 · Barcode scan"           width={W} height={H}><AI_Scan/></DCArtboard>
+        <DCArtboard id="ai-import"       label="08 · Bulk import: mapping"   width={W} height={H}><AI_BulkMapping/></DCArtboard>
+        <DCArtboard id="ai-quick"        label="09 · Quick add"              width={W} height={H}><AI_Quick/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="check-stock" title="Checking Stock" subtitle="The everyday read journey: search, filter, expand, act inline.">
+        <DCArtboard id="cs-list"         label="01 · Inventory list"         width={W} height={H}><CS_List/></DCArtboard>
+        <DCArtboard id="cs-expand"       label="02 · Inline expansion"       width={W} height={H}><CS_Expanded/></DCArtboard>
+        <DCArtboard id="cs-filters"      label="03 · Filter sheet"           width={W} height={H}><CS_Filters/></DCArtboard>
+        <DCArtboard id="cs-by-space"     label="04 · Browse by space"        width={W} height={H}><CS_BySpace/></DCArtboard>
+        <DCArtboard id="cs-alerts"       label="05 · Alerts summary"         width={W} height={H}><CS_Alerts/></DCArtboard>
+        <DCArtboard id="cs-empty"        label="06 · Empty / no results"     width={W} height={H}><CS_Empty/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="crew-mgmt" title="Crew Management" subtitle="Members, roles, invites, ownership, deletion countdown.">
+        <DCArtboard id="cm-switcher"     label="01 · Crew switcher"          width={W} height={H}><CM_Switcher/></DCArtboard>
+        <DCArtboard id="cm-settings"     label="02 · Crew settings"          width={W} height={H}><CM_Settings/></DCArtboard>
+        <DCArtboard id="cm-members"      label="03 · Members tab"            width={W} height={H}><CM_Members/></DCArtboard>
+        <DCArtboard id="cm-invite"       label="04 · Send invite"            width={W} height={H}><CM_Invite/></DCArtboard>
+        <DCArtboard id="cm-perms"        label="05 · Permission overrides"   width={W} height={H}><CM_Permissions/></DCArtboard>
+        <DCArtboard id="cm-transfer"     label="06 · Transfer ownership"     width={W} height={H}><CM_Transfer/></DCArtboard>
+        <DCArtboard id="cm-delete"       label="07 · Delete countdown"       width={W} height={H}><CM_DeleteBanner/></DCArtboard>
+      </DCSection>
+
+      <DCSection id="reorg" title="Space Reorganization" subtitle="Restructure the hierarchy itself — rename, move, merge, split, delete.">
+        <DCArtboard id="rg-mode"         label="01 · Reorganize mode"        width={W} height={H}><RG_Mode/></DCArtboard>
+        <DCArtboard id="rg-rename"       label="02 · Rename inline"          width={W} height={H}><RG_Rename/></DCArtboard>
+        <DCArtboard id="rg-move"         label="03 · Move + preview"         width={W} height={H}><RG_MovePreview/></DCArtboard>
+        <DCArtboard id="rg-merge"        label="04 · Merge"                  width={W} height={H}><RG_Merge/></DCArtboard>
+        <DCArtboard id="rg-split"        label="05 · Split"                  width={W} height={H}><RG_Split/></DCArtboard>
+        <DCArtboard id="rg-delete"       label="06 · Delete with items"      width={W} height={H}><RG_Delete/></DCArtboard>
+      </DCSection>
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
