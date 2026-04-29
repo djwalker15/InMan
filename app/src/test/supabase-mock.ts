@@ -37,6 +37,12 @@ export interface TableMock {
   lt: ReturnType<typeof vi.fn>
   gte: ReturnType<typeof vi.fn>
   lte: ReturnType<typeof vi.fn>
+  ilike: ReturnType<typeof vi.fn>
+  like: ReturnType<typeof vi.fn>
+  or: ReturnType<typeof vi.fn>
+  match: ReturnType<typeof vi.fn>
+  contains: ReturnType<typeof vi.fn>
+  containedBy: ReturnType<typeof vi.fn>
   order: ReturnType<typeof vi.fn>
   limit: ReturnType<typeof vi.fn>
   range: ReturnType<typeof vi.fn>
@@ -90,6 +96,12 @@ function makeBuilder(config: TableConfig): TableMock & PromiseLike<QueryResult> 
     lt: vi.fn(() => builder),
     gte: vi.fn(() => builder),
     lte: vi.fn(() => builder),
+    ilike: vi.fn(() => builder),
+    like: vi.fn(() => builder),
+    or: vi.fn(() => builder),
+    match: vi.fn(() => builder),
+    contains: vi.fn(() => builder),
+    containedBy: vi.fn(() => builder),
     order: vi.fn(() => builder),
     limit: vi.fn(() => builder),
     range: vi.fn(() => builder),

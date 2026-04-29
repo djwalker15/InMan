@@ -1,0 +1,219 @@
+import { describe, expect, it, vi, beforeEach } from 'vitest'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { renderWithRouter } from '@/test/utils'
+import { mockClerk } from '@/test/clerk-mock'
+import { makeSupabaseMock } from '@/test/supabase-mock'
+import AddInventoryPage from './add'
+
+const { mockNavigate } = vi.hoisted(() => ({ mockNavigate: vi.fn() }))
+
+vi.mock('react-router-dom', async () => {
+  const actual =
+    await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+  return { ...actual, useNavigate: () => mockNavigate }
+})
+
+const masterProduct = {
+  product_id: 'prod_master_1',
+  crew_id: null,
+  name: 'Tomato Paste',
+  brand: 'Heinz',
+  barcode: null,
+  image_url: null,
+  size_value: 6,
+  size_unit: 'oz',
+  default_category_id: null,
+}
+
+const existingItem = {
+  inventory_item_id: 'item_1',
+  crew_id: 'crew_abc',
+  product_id: 'prod_master_1',
+  current_space_id: 'space_a',
+  quantity: 3,
+  unit: 'count',
+}
+
+const sampleSpaces = [
+  { space_id: 'space_a', name: 'Cabinet 1', parent_id: 'space_p' },
+  { space_id: 'space_p', name: 'Kitchen', parent_id: null },
+]
+
+describe('AddInventoryPage — Step 1 product resolution', () => {
+  beforeEach(() => {
+    mockNavigate.mockClear()
+    mockClerk({ user: { id: 'user_1' } })
+  })
+
+  it('renders the search field and the create-custom CTA', async () => {
+    makeSupabaseMock({
+      crew_members: {
+        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+      },
+    })
+    renderWithRouter(<AddInventoryPage />)
+    await waitFor(() => {
+      expect(screen.getByText(/search for a product/i)).toBeInTheDocument()
+    })
+    expect(
+      screen.getByRole('button', { name: /create a custom product/i }),
+    ).toBeInTheDocument()
+  })
+
+  it('searches as the user types and groups catalog vs existing inventory', async () => {
+    makeSupabaseMock({
+      crew_members: {
+        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+      },
+      products: { select: { data: [masterProduct], error: null } },
+      inventory_items: { select: { data: [existingItem], error: null } },
+      spaces: { select: { data: sampleSpaces, error: null } },
+    })
+    renderWithRouter(<AddInventoryPage />)
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/tomato paste/i)).toBeInTheDocument()
+    })
+    fireEvent.change(screen.getByPlaceholderText(/tomato paste/i), {
+      target: { value: 'tom' },
+    })
+    await waitFor(
+      () => {
+        expect(screen.getByText(/in your inventory/i)).toBeInTheDocument()
+      },
+      { timeout: 2000 },
+    )
+    expect(screen.getByText(/catalog matches/i)).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /restock this/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /add another/i }),
+    ).toBeInTheDocument()
+    expect(screen.getByText(/Kitchen › Cabinet 1/)).toBeInTheDocument()
+  })
+
+  it('selects a catalog product and routes to the Step 2 placeholder', async () => {
+    makeSupabaseMock({
+      crew_members: {
+        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+      },
+      products: { select: { data: [masterProduct], error: null } },
+      inventory_items: { select: { data: [], error: null } },
+    })
+    renderWithRouter(<AddInventoryPage />)
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/tomato paste/i)).toBeInTheDocument()
+    })
+    fireEvent.change(screen.getByPlaceholderText(/tomato paste/i), {
+      target: { value: 'tom' },
+    })
+    await waitFor(
+      () => {
+        expect(screen.getByText(/catalog matches/i)).toBeInTheDocument()
+      },
+      { timeout: 2000 },
+    )
+    fireEvent.click(screen.getByRole('button', { name: /tomato paste/i }))
+    expect(screen.getByText(/Step 2 — coming next/i)).toBeInTheDocument()
+    expect(screen.getByText(/selected:/i)).toBeInTheDocument()
+  })
+
+  it('Restock on existing item routes to the restock placeholder', async () => {
+    makeSupabaseMock({
+      crew_members: {
+        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+      },
+      products: { select: { data: [masterProduct], error: null } },
+      inventory_items: { select: { data: [existingItem], error: null } },
+      spaces: { select: { data: sampleSpaces, error: null } },
+    })
+    renderWithRouter(<AddInventoryPage />)
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/tomato paste/i)).toBeInTheDocument()
+    })
+    fireEvent.change(screen.getByPlaceholderText(/tomato paste/i), {
+      target: { value: 'tom' },
+    })
+    await waitFor(
+      () => {
+        expect(
+          screen.getByRole('button', { name: /restock this/i }),
+        ).toBeInTheDocument()
+      },
+      { timeout: 2000 },
+    )
+    fireEvent.click(screen.getByRole('button', { name: /restock this/i }))
+    expect(screen.getByText(/Restock — coming next/i)).toBeInTheDocument()
+    expect(
+      screen.getByText(/Existing stock: 3 count at Kitchen › Cabinet 1/),
+    ).toBeInTheDocument()
+  })
+
+  it('opens the custom-product form and creates a crew-private product', async () => {
+    const newProduct = {
+      product_id: 'prod_custom_1',
+      crew_id: 'crew_abc',
+      name: 'Homemade syrup',
+      brand: null,
+      barcode: null,
+      image_url: null,
+      size_value: null,
+      size_unit: null,
+      default_category_id: null,
+    }
+    const sb = makeSupabaseMock({
+      crew_members: {
+        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+      },
+      categories: { select: { data: [], error: null } },
+      unit_definitions: { select: { data: [], error: null } },
+      products: { single: { data: newProduct, error: null } },
+    })
+    renderWithRouter(<AddInventoryPage />)
+    await waitFor(() => {
+      expect(
+        screen.getByRole('button', { name: /create a custom product/i }),
+      ).toBeInTheDocument()
+    })
+    fireEvent.click(
+      screen.getByRole('button', { name: /create a custom product/i }),
+    )
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: /create a custom product/i }),
+      ).toBeInTheDocument()
+    })
+    fireEvent.change(screen.getByLabelText(/product name/i), {
+      target: { value: 'Homemade syrup' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /create product/i }))
+    await waitFor(() => {
+      expect(sb.tables.products.insert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          crew_id: 'crew_abc',
+          name: 'Homemade syrup',
+          source: 'crew_created',
+          created_by: 'user_1',
+        }),
+      )
+    })
+    await waitFor(() => {
+      expect(screen.getByText(/Step 2 — coming next/i)).toBeInTheDocument()
+    })
+    expect(screen.getByText(/Homemade syrup/)).toBeInTheDocument()
+  })
+
+  it('back-arrow routes to /inventory', async () => {
+    makeSupabaseMock({
+      crew_members: {
+        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+      },
+    })
+    renderWithRouter(<AddInventoryPage />)
+    await waitFor(() => {
+      expect(screen.getByLabelText(/back to inventory/i)).toBeInTheDocument()
+    })
+    fireEvent.click(screen.getByLabelText(/back to inventory/i))
+    expect(mockNavigate).toHaveBeenCalledWith('/inventory')
+  })
+})
