@@ -4,15 +4,18 @@ import { Link, useNavigate } from 'react-router-dom'
 
 interface TopNavProps {
   rightAction?: ReactNode
+  onMenuClick?: () => void
 }
 
-export function TopNav({ rightAction }: TopNavProps) {
+export function TopNav({ rightAction, onMenuClick }: TopNavProps) {
   return (
     <header className="relative flex h-[72px] w-full items-center bg-paper-150/80 px-6 backdrop-blur-md">
       <button
         type="button"
         aria-label="Open menu"
-        className="absolute left-6 flex size-8 items-center justify-center text-sage-700"
+        onClick={onMenuClick}
+        disabled={!onMenuClick}
+        className="absolute left-6 flex size-8 items-center justify-center text-sage-700 disabled:cursor-not-allowed disabled:text-ink-500"
       >
         <Menu size={26} strokeWidth={2.5} />
       </button>

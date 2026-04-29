@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { Link } from 'react-router-dom'
 import { HelpCircle } from 'lucide-react'
-import { NavHeader, PrimaryButton } from '@/components/ds'
+import { PrimaryButton } from '@/components/ds'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
 import { SpacesExplainer } from '@/components/spaces/explainer'
 import { TemplateBrowser } from '@/components/spaces/template-browser'
@@ -147,10 +147,11 @@ export default function SpacesPage() {
 
   return (
     <SignedInLayout>
-      <NavHeader
-        leading="menu"
-        title="Spaces"
-        trailing={
+      <div className="mx-auto flex w-full max-w-[640px] flex-col gap-6 pt-4 pb-12">
+        <header className="flex items-center justify-between">
+          <h1 className="font-display text-[28px] font-bold leading-[34px] tracking-[-0.4px] text-ink-900">
+            Spaces
+          </h1>
           <button
             type="button"
             aria-label="Show the spaces explainer"
@@ -159,9 +160,8 @@ export default function SpacesPage() {
           >
             <HelpCircle size={20} strokeWidth={2.25} />
           </button>
-        }
-      />
-      <div className="mx-auto flex w-full max-w-[640px] flex-col gap-6 px-6 pt-4 pb-12">
+        </header>
+
         {showExplainer ? (
           <SpacesExplainer onDismiss={() => setShowExplainer(false)} />
         ) : !hasPremises && !loading ? (
