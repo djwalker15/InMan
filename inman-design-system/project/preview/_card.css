@@ -1,0 +1,53 @@
+/* Shared card chrome — used by all preview/*.html files */
+@import url('../colors_and_type.css');
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--font-body);
+}
+
+.card {
+  width: 700px;
+  padding: 24px;
+  background: var(--surface);
+}
+
+.card-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.swatch {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.swatch-block {
+  height: 64px;
+  border-radius: var(--r-md);
+  display: flex;
+  align-items: flex-end;
+  padding: 8px 10px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  color: var(--on-surface);
+}
+
+.swatch-meta {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--ink-600);
+  display: flex;
+  justify-content: space-between;
+}
+
+.row { display: flex; align-items: center; gap: 16px; }
+.col { display: flex; flex-direction: column; gap: 12px; }

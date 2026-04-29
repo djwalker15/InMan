@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>InMan — App UI Kit Prototype</title>
+<link rel="stylesheet" href="../../colors_and_type.css">
+<style>
+  body { margin: 0; background: #1C1C18; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 32px 0; font-family: var(--font-body); }
+  .stage { display: flex; gap: 32px; flex-wrap: wrap; justify-content: center; align-items: flex-start; }
+  .device {
+    width: 390px; height: 844px; border-radius: 48px; padding: 12px;
+    background: #0a0a0a;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.55), inset 0 0 0 2px rgba(255,255,255,0.06);
+    position: relative;
+  }
+  .device-inner {
+    width: 100%; height: 100%; border-radius: 36px; overflow: hidden;
+    background: var(--surface);
+    position: relative;
+  }
+  /* Status bar (iOS) */
+  .status {
+    position: absolute; top: 0; left: 0; right: 0; height: 48px;
+    z-index: 50; pointer-events: none;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 32px;
+    font-family: var(--font-display); font-weight: 700; font-size: 15px;
+    color: var(--ink-900);
+  }
+  .notch {
+    position: absolute; left: 50%; top: 8px; transform: translateX(-50%);
+    width: 120px; height: 30px; border-radius: 999px; background: #000; z-index: 60;
+  }
+  .screen-host { position: absolute; inset: 0; padding-top: 0; }
+  .screen-host > * { padding-top: 48px; box-sizing: border-box; }
+  /* Caption */
+  .caption {
+    color: rgba(253,249,242,0.6);
+    font-family: var(--font-body); font-size: 13px;
+    text-align: center; margin-top: 18px; letter-spacing: 0.3px;
+  }
+  /* Flow tabs */
+  .tabs {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 4px; padding: 6px;
+    background: rgba(253,249,242,0.08); backdrop-filter: blur(20px);
+    border: 1px solid rgba(253,249,242,0.1);
+    border-radius: 9999px; z-index: 200;
+  }
+  .tab {
+    border: none; background: transparent; cursor: pointer;
+    padding: 8px 14px; border-radius: 9999px;
+    font-family: var(--font-display); font-weight: 700; font-size: 12px;
+    color: rgba(253,249,242,0.7); letter-spacing: 0.3px;
+  }
+  .tab.active { background: var(--sage-700); color: #fff; }
+  .tab:hover:not(.active) { color: #fff; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="Icons.jsx"></script>
+<script type="text/babel" src="Brand.jsx"></script>
+<script type="text/babel" src="Buttons.jsx"></script>
+<script type="text/babel" src="Cards.jsx"></script>
+<script type="text/babel" src="Components.jsx"></script>
+<script type="text/babel" src="Onboarding.jsx"></script>
+<script type="text/babel" src="Dashboard.jsx"></script>
+<script type="text/babel" src="Screens.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+const SCREENS = [
+  { id: "landing",        label: "Landing",      Cmp: () => <LandingScreen   go={setScreen}/>,                            caption: "01 · Welcome to InMan" },
+  { id: "signup",         label: "Sign Up",      Cmp: () => <SignUpScreen    go={setScreen}/>,                            caption: "02 · Sign Up" },
+  { id: "crew-decision",  label: "Crew",         Cmp: () => <CrewDecisionScreen go={setScreen}/>,                         caption: "03 · Crew Decision" },
+  { id: "crew-name",      label: "Name",         Cmp: () => <CrewNameScreen go={setScreen} crewName={crewName} setCrewName={setCrewName}/>, caption: "04 · Name your Crew" },
+  { id: "spaces-intro",   label: "Spaces",       Cmp: () => <SpacesIntroScreen go={setScreen} crewName={crewName}/>,      caption: "05 · Map your Spaces" },
+  { id: "dashboard",      label: "Dashboard",    Cmp: () => <DashboardScreen go={setScreen} crewName={crewName}/>,        caption: "06 · Dashboard" },
+];
+
+let setScreen, setCrewName;
+
+function App() {
+  const [screen, _setScreen] = useState("landing");
+  const [crewName, _setCrewName] = useState("Walker Home");
+  setScreen = _setScreen;
+  setCrewName = _setCrewName;
+
+  const cur = SCREENS.find((s) => s.id === screen) || SCREENS[0];
+
+  // Re-resolve in case `crewName` changed
+  const Render = (() => {
+    switch (cur.id) {
+      case "landing":       return () => <LandingScreen go={_setScreen}/>;
+      case "signup":        return () => <SignUpScreen go={_setScreen}/>;
+      case "crew-decision": return () => <CrewDecisionScreen go={_setScreen}/>;
+      case "crew-name":     return () => <CrewNameScreen go={_setScreen} crewName={crewName} setCrewName={_setCrewName}/>;
+      case "spaces-intro":  return () => <SpacesIntroScreen go={_setScreen} crewName={crewName}/>;
+      case "dashboard":     return () => <DashboardScreen go={_setScreen} crewName={crewName}/>;
+      default:              return () => null;
+    }
+  })();
+
+  return (
+    <>
+      <div className="tabs">
+        {SCREENS.map((s) => (
+          <button key={s.id} className={`tab ${s.id === screen ? "active" : ""}`} onClick={() => _setScreen(s.id)}>
+            {s.label}
+          </button>
+        ))}
+      </div>
+      <div className="stage" data-screen-label={cur.caption}>
+        <div>
+          <div className="device">
+            <div className="device-inner">
+              <div className="notch"/>
+              <div className="status">
+                <span>9:41</span>
+                <span style={{display:'flex',gap:6,alignItems:'center'}}>
+                  <svg width="16" height="10" viewBox="0 0 16 10" fill="currentColor"><rect x="0" y="6" width="3" height="4" rx="0.5"/><rect x="4" y="4" width="3" height="6" rx="0.5"/><rect x="8" y="2" width="3" height="8" rx="0.5"/><rect x="12" y="0" width="3" height="10" rx="0.5"/></svg>
+                  <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor"><path d="M7 9 a4 4 0 0 1 -4 -4 a4 4 0 1 1 8 0 a4 4 0 0 1 -4 4 z" opacity="0.4"/><path d="M7 6 a1 1 0 1 0 0 -2 a1 1 0 0 0 0 2 z M3 5 a4 4 0 0 1 8 0 M1 5 a6 6 0 0 1 12 0" stroke="currentColor" strokeWidth="1.2" fill="none"/></svg>
+                  <svg width="22" height="10" viewBox="0 0 22 10" fill="none" stroke="currentColor" strokeWidth="1"><rect x="0.5" y="0.5" width="18" height="9" rx="2"/><rect x="2" y="2" width="14" height="6" rx="1" fill="currentColor"/><rect x="20" y="3.5" width="1.5" height="3" rx="0.5" fill="currentColor"/></svg>
+                </span>
+              </div>
+              <div className="screen-host"><Render/></div>
+            </div>
+          </div>
+          <div className="caption">{cur.caption}</div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

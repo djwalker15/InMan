@@ -1,0 +1,91 @@
+@import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap");
+@import "tailwindcss";
+
+@theme {
+  /* Type families. Mirrors `inman-design-system/project/colors_and_type.css`.
+     `sans` is the default body in Tailwind, set to Be Vietnam Pro (the
+     in-app body face). `display` is Plus Jakarta Sans for headings. `accent`
+     is Manrope for marketing details and a few CTAs. */
+  --font-sans: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-accent: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-numeric: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, Consolas, monospace;
+
+  /* Sage — primary green. 700 is the deep moss used for strong states and
+     gradient starts; 600 is the softer sage and gradient end; 500 is the
+     muted on-surface variant; 300 is the outline; 100 is the light
+     primary-container used over dark sage. */
+  --color-sage-700: #31694d;
+  --color-sage-600: #4a8265;
+  --color-sage-500: #708067;
+  --color-sage-300: #c0c9c1;
+  --color-sage-100: #b4f0cd;
+
+  /* Paper — warm stone. The surface stack progresses lightest (50) to
+     darkest (300). Use one tier at a time; never two paper-150 surfaces
+     touching. */
+  --color-paper-50: #fdf9f2;
+  --color-paper-100: #f7f3ec;
+  --color-paper-150: #f2eee6;
+  --color-paper-200: #f1ede7;
+  --color-paper-250: #ebe8e1;
+  --color-paper-300: #e6e2db;
+
+  /* Ink — text. Never #000. */
+  --color-ink-900: #1c1c18;
+  --color-ink-700: #404943;
+  --color-ink-600: #605e58;
+  --color-ink-500: #707972;
+  --color-ink-400: #a8a29e;
+  --color-ink-300: #6b7280;
+
+  /* Accent peach — kept from the previous palette for decorative chips that
+     don't fit the sage scale. Not part of the design-system core but
+     preserved to avoid losing existing visual variety. */
+  --color-accent-peach: #ffddb9;
+
+  /* Semantic */
+  --color-error: #ba1a1a;
+  --color-warn: #d97706;
+  --color-success: #31694d;
+  --color-info: #2563eb;
+
+  /* Ambient shadows — tinted near-black, never pure black. `sm` for
+     hairline lift, `md` for marketing cards and CTAs, `lg` for in-app
+     cards that need to feel lifted. */
+  --shadow-ambient-sm: 0 1px 2px 0 rgba(28, 28, 24, 0.05);
+  --shadow-ambient-md:
+    0 4px 32px 0 rgba(28, 28, 24, 0.04),
+    0 8px 24px -4px rgba(28, 28, 24, 0.06);
+  --shadow-ambient-lg:
+    0 8px 48px 0 rgba(28, 28, 24, 0.06),
+    0 4px 32px 0 rgba(28, 28, 24, 0.04);
+  --shadow-cta: 0 8px 16px -4px rgba(49, 105, 77, 0.2);
+  --shadow-cta-strong: 0 8px 20px 0 rgba(74, 130, 101, 0.25);
+}
+
+/* Composable design-system utilities. Not theme tokens — these don't need
+   to be Tailwind classes, just CSS variables that components reference. */
+:root {
+  --gradient-primary: linear-gradient(135deg, var(--color-sage-700) 0%, var(--color-sage-600) 100%);
+  --glass-bg: rgba(253, 249, 242, 0.8);
+  --glass-blur: blur(16px);
+  --glass-border: rgba(192, 201, 193, 0.15);
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--color-paper-150);
+  color: var(--color-ink-900);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
