@@ -53,15 +53,15 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-full bg-surface">
+    <div className="min-h-full bg-paper-150">
       <TopNav rightAction={<CloseButton />} />
 
       <main className="mx-auto flex w-full max-w-[448px] flex-col px-6 py-6">
         <div className="flex w-full flex-col items-center">
-          <h1 className="font-display text-[36px] font-extrabold leading-[40px] text-ink">
+          <h1 className="font-display text-[36px] font-extrabold leading-[40px] text-ink-900">
             Sign In
           </h1>
-          <p className="mt-4 text-lg leading-[29.25px] text-ink-muted">
+          <p className="mt-4 text-lg leading-[29.25px] text-ink-600">
             Welcome back
           </p>
         </div>
@@ -107,7 +107,7 @@ export default function SignInPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((v) => !v)}
-                  className="text-ink-muted"
+                  className="text-ink-600"
                   aria-label={
                     showPassword ? 'Hide password' : 'Show password'
                   }
@@ -119,7 +119,7 @@ export default function SignInPage() {
             <div className="mt-2 flex justify-end px-1">
               <button
                 type="button"
-                className="text-xs italic text-brand-500 hover:underline"
+                className="text-xs italic text-sage-600 hover:underline"
               >
                 Forgot password?
               </button>
@@ -135,15 +135,15 @@ export default function SignInPage() {
           <button
             type="submit"
             disabled={submitting || !isLoaded}
-            className="flex items-center justify-center rounded-lg bg-brand-500 py-5 font-display text-lg font-bold text-white shadow-[0_8px_20px_0_rgba(74,130,101,0.25)] transition hover:bg-brand-700 disabled:opacity-60"
+            className="flex items-center justify-center rounded-lg bg-sage-600 py-5 font-display text-lg font-bold text-white shadow-cta-strong transition hover:bg-sage-700 disabled:opacity-60"
           >
             {submitting ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
 
-        <p className="mt-6 text-center font-display text-base font-semibold text-ink">
+        <p className="mt-6 text-center font-display text-base font-semibold text-ink-900">
           Don't have an account?{' '}
-          <Link to="/sign-up" className="text-brand-500 hover:underline">
+          <Link to="/sign-up" className="text-sage-600 hover:underline">
             Sign up
           </Link>
         </p>

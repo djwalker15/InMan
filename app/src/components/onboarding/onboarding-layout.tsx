@@ -16,7 +16,7 @@ export function OnboardingLayout({
   footer,
 }: OnboardingLayoutProps) {
   return (
-    <div className="flex min-h-full flex-col bg-surface">
+    <div className="flex min-h-full flex-col bg-paper-150">
       <TopNav rightAction={<CloseButton to="/dashboard" />} />
       <main className="mx-auto flex w-full max-w-[512px] flex-1 flex-col px-6 pb-12 pt-4">
         <div className="p-4">

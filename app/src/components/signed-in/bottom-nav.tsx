@@ -27,7 +27,7 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-[512px] flex-col border-t border-[rgba(192,201,193,0.15)] bg-[rgba(253,249,242,0.8)] px-2 pt-[9px] backdrop-blur-md"
+      className="fixed inset-x-0 bottom-0 z-20 mx-auto flex max-w-[512px] flex-col border-t border-[var(--glass-border)] bg-[var(--glass-bg)] px-2 pt-[9px] backdrop-blur-md"
     >
       <ul className="flex h-14 items-center justify-around">
         {tabs.map((tab) => (
@@ -41,14 +41,14 @@ export function BottomNav() {
                 <>
                   <span
                     className={`flex items-center justify-center rounded-full px-4 py-1 transition ${
-                      isActive ? 'bg-surface-track/50 text-brand-700' : 'text-ink-body'
+                      isActive ? 'bg-paper-300/50 text-sage-700' : 'text-ink-700'
                     }`}
                   >
                     {tab.icon}
                   </span>
                   <span
-                    className={`font-body-alt text-[10px] font-medium leading-[10px] ${
-                      isActive ? 'text-brand-700' : 'text-ink-body'
+                    className={`font-body text-[10px] font-medium leading-[10px] ${
+                      isActive ? 'text-sage-700' : 'text-ink-700'
                     }`}
                   >
                     {tab.label}

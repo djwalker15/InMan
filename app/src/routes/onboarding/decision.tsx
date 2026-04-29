@@ -15,7 +15,7 @@ export default function CrewDecisionPage() {
           <button
             type="button"
             onClick={() => navigate('/dashboard')}
-            className="border-b border-transparent pb-[3px] font-body-alt text-sm text-ink-placeholder hover:border-ink-placeholder"
+            className="border-b border-transparent pb-[3px] font-body text-sm text-ink-500 hover:border-ink-500"
           >
             I'm just exploring — skip for now
           </button>
@@ -23,12 +23,12 @@ export default function CrewDecisionPage() {
       }
     >
       <div className="pb-10 pl-2">
-        <h1 className="font-display text-[30px] font-bold leading-[1.3] tracking-[-0.4px] text-ink">
+        <h1 className="font-display text-[30px] font-bold leading-[1.3] tracking-[-0.4px] text-ink-900">
           Welcome.
           <br />
           Let's get you set up.
         </h1>
-        <p className="mt-4 max-w-sm font-body-alt text-lg leading-[29.25px] text-ink-body">
+        <p className="mt-4 max-w-sm font-body text-lg leading-[29.25px] text-ink-700">
           A Crew is a shared workspace for your inventory. Pick one.
         </p>
       </div>
@@ -71,15 +71,15 @@ function DecisionCard({
     <button
       type="button"
       onClick={onClick}
-      className="flex w-full flex-col items-start rounded-xl bg-white p-6 text-left shadow-floating transition hover:-translate-y-px"
+      className="flex w-full flex-col items-start rounded-xl bg-white p-6 text-left shadow-ambient-lg transition hover:-translate-y-px"
     >
-      <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-surface-muted text-brand-700">
+      <div className="mb-6 flex size-12 items-center justify-center rounded-full bg-paper-200 text-sage-700">
         {icon}
       </div>
-      <h2 className="mb-2 font-display text-xl font-bold leading-7 text-ink">
+      <h2 className="mb-2 font-display text-xl font-bold leading-7 text-ink-900">
         {title}
       </h2>
-      <p className="mb-6 font-body-alt text-base leading-[26px] text-ink-body">
+      <p className="mb-6 font-body text-base leading-[26px] text-ink-700">
         {description}
       </p>
       {badge}
@@ -89,7 +89,7 @@ function DecisionCard({
 
 function RecommendedBadge() {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full bg-surface-chip px-3 py-1.5 font-body-alt text-xs text-ink-chip">
+    <span className="inline-flex items-center gap-2 rounded-full bg-paper-250 px-3 py-1.5 font-body text-xs text-ink-600">
       <Star size={11} className="fill-current" />
       Recommended for first-time users
     </span>

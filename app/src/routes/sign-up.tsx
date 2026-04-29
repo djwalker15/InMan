@@ -87,17 +87,17 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-full bg-surface">
+    <div className="min-h-full bg-paper-150">
       <TopNav rightAction={<CloseButton />} />
 
       <main className="mx-auto flex w-full max-w-[448px] flex-col px-6 py-6">
         {stage.kind === 'form' ? (
           <>
             <div className="flex w-full flex-col items-center">
-              <h1 className="font-display text-[36px] font-extrabold leading-[40px] text-ink">
+              <h1 className="font-display text-[36px] font-extrabold leading-[40px] text-ink-900">
                 Join InMan
               </h1>
-              <p className="mt-4 text-center text-lg leading-[29.25px] text-ink-muted">
+              <p className="mt-4 text-center text-lg leading-[29.25px] text-ink-600">
                 Professional inventory management
                 <br />
                 for any environment.
@@ -147,7 +147,7 @@ export default function SignUpPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="text-ink-muted"
+                    className="text-ink-600"
                     aria-label={
                       showPassword ? 'Hide password' : 'Show password'
                     }
@@ -169,15 +169,15 @@ export default function SignUpPage() {
               <button
                 type="submit"
                 disabled={submitting || !isLoaded}
-                className="flex items-center justify-center rounded-lg bg-brand-500 py-5 font-display text-lg font-bold text-white shadow-[0_8px_20px_0_rgba(74,130,101,0.25)] transition hover:bg-brand-700 disabled:opacity-60"
+                className="flex items-center justify-center rounded-lg bg-sage-600 py-5 font-display text-lg font-bold text-white shadow-cta-strong transition hover:bg-sage-700 disabled:opacity-60"
               >
                 {submitting ? 'Creating account…' : 'Create Account'}
               </button>
             </form>
 
-            <p className="mt-6 text-center font-display text-base font-semibold text-ink">
+            <p className="mt-6 text-center font-display text-base font-semibold text-ink-900">
               Already have an account?{' '}
-              <Link to="/sign-in" className="text-brand-500 hover:underline">
+              <Link to="/sign-in" className="text-sage-600 hover:underline">
                 Sign in
               </Link>
             </p>
@@ -185,10 +185,10 @@ export default function SignUpPage() {
         ) : (
           <>
             <div className="flex w-full flex-col items-center">
-              <h1 className="font-display text-[36px] font-extrabold leading-[40px] text-ink">
+              <h1 className="font-display text-[36px] font-extrabold leading-[40px] text-ink-900">
                 Verify
               </h1>
-              <p className="mt-4 text-center text-lg leading-[29.25px] text-ink-muted">
+              <p className="mt-4 text-center text-lg leading-[29.25px] text-ink-600">
                 We sent a code to your{' '}
                 {stage.channel === 'email' ? 'email' : 'phone'}.
                 <br />
@@ -220,7 +220,7 @@ export default function SignUpPage() {
               <button
                 type="submit"
                 disabled={submitting || !isLoaded || code.length < 4}
-                className="flex items-center justify-center rounded-lg bg-brand-500 py-5 font-display text-lg font-bold text-white shadow-[0_8px_20px_0_rgba(74,130,101,0.25)] transition hover:bg-brand-700 disabled:opacity-60"
+                className="flex items-center justify-center rounded-lg bg-sage-600 py-5 font-display text-lg font-bold text-white shadow-cta-strong transition hover:bg-sage-700 disabled:opacity-60"
               >
                 {submitting ? 'Verifying…' : 'Verify'}
               </button>
@@ -232,7 +232,7 @@ export default function SignUpPage() {
                   setCode('')
                   setError(null)
                 }}
-                className="text-center text-sm text-ink-muted hover:underline"
+                className="text-center text-sm text-ink-600 hover:underline"
               >
                 ← Change email or phone
               </button>

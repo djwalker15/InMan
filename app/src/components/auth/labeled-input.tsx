@@ -32,12 +32,12 @@ export function LabeledInput({
 }: LabeledInputProps) {
   return (
     <label className={cn('flex flex-col', className)}>
-      <span className="px-1 text-[11px] font-bold uppercase tracking-[0.55px] text-ink-muted">
+      <span className="px-1 text-[11px] font-bold uppercase tracking-[0.55px] text-ink-600">
         {label}
       </span>
       <div className="relative mt-1">
         {icon && (
-          <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-ink-muted">
+          <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-ink-600">
             {icon}
           </span>
         )}
@@ -50,7 +50,7 @@ export function LabeledInput({
           required={required}
           inputMode={inputMode}
           className={cn(
-            'w-full rounded-lg bg-white py-4 font-sans text-base text-ink outline-none placeholder:text-ink-muted focus:ring-2 focus:ring-brand-500/40',
+            'w-full rounded-lg bg-white py-4 font-sans text-base text-ink-900 outline-none placeholder:text-ink-600 focus:ring-2 focus:ring-sage-600/40',
             icon ? 'pl-12' : 'pl-4',
             trailing ? 'pr-12' : 'pr-4',
           )}
@@ -62,7 +62,7 @@ export function LabeledInput({
         )}
       </div>
       {helperText && (
-        <span className="mt-2 px-1 text-xs italic text-ink-muted">
+        <span className="mt-2 px-1 text-xs italic text-ink-600">
           {helperText}
         </span>
       )}

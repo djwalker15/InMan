@@ -58,10 +58,10 @@ export default function CrewCreationPage() {
     <OnboardingLayout step={2} total={5}>
       <form onSubmit={handleSubmit} className="flex flex-1 flex-col">
         <div className="pb-10 pl-2">
-          <h1 className="font-display text-[30px] font-bold leading-[1.3] tracking-[-0.4px] text-ink">
+          <h1 className="font-display text-[30px] font-bold leading-[1.3] tracking-[-0.4px] text-ink-900">
             Name your Crew
           </h1>
-          <p className="mt-4 max-w-sm font-body-alt text-base leading-[26px] text-ink-body">
+          <p className="mt-4 max-w-sm font-body text-base leading-[26px] text-ink-700">
             A Crew is a shared workspace. You'll be the Admin.
           </p>
         </div>
@@ -69,7 +69,7 @@ export default function CrewCreationPage() {
         <div className="flex flex-col gap-2">
           <label
             htmlFor="crew-name"
-            className="font-display text-sm font-bold uppercase tracking-[0.35px] text-ink"
+            className="font-display text-sm font-bold uppercase tracking-[0.35px] text-ink-900"
           >
             Crew Name
           </label>
@@ -82,10 +82,10 @@ export default function CrewCreationPage() {
             value={crewName}
             onChange={(e) => setCrewName(e.target.value)}
             placeholder="e.g. Walker Home, Haywire Bar"
-            className="rounded-xl bg-surface-input px-4 py-[18px] font-body-alt text-base text-ink outline-none placeholder:text-ink-placeholder focus:ring-2 focus:ring-brand-500/40"
+            className="rounded-xl bg-paper-100 px-4 py-[18px] font-body text-base text-ink-900 outline-none placeholder:text-ink-500 focus:ring-2 focus:ring-sage-600/40"
             autoFocus
           />
-          <p className="pt-1 font-body-alt text-sm text-ink-placeholder">
+          <p className="pt-1 font-body text-sm text-ink-500">
             You can rename this later.
           </p>
         </div>
@@ -100,7 +100,7 @@ export default function CrewCreationPage() {
           <button
             type="submit"
             disabled={submitting || crewName.trim().length < 2}
-            className="flex h-14 w-full items-center justify-center rounded-xl bg-gradient-to-br from-brand-700 to-brand-500 font-display text-lg font-bold text-white shadow-[0_8px_16px_-4px_rgba(49,105,77,0.2)] transition hover:brightness-105 disabled:opacity-60"
+            className="flex h-14 w-full items-center justify-center rounded-xl bg-gradient-to-br from-sage-700 to-sage-600 font-display text-lg font-bold text-white shadow-cta transition hover:brightness-105 disabled:opacity-60"
           >
             {submitting ? 'Creating…' : 'Create Crew'}
           </button>

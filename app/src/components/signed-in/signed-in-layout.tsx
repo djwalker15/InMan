@@ -5,7 +5,7 @@ import { BottomNav } from './bottom-nav'
 
 export function SignedInLayout({ children }: { children: ReactNode }) {
   return (
-    <div className="flex min-h-full flex-col bg-surface">
+    <div className="flex min-h-full flex-col bg-paper-150">
       <TopNav rightAction={<UserAvatarMenu />} />
       <main className="mx-auto w-full max-w-[512px] flex-1 px-4 pb-24 pt-2">
         {children}
@@ -21,7 +21,7 @@ function UserAvatarMenu() {
       afterSignOutUrl="/sign-in"
       appearance={{
         elements: {
-          avatarBox: 'h-10 w-10 bg-brand-500',
+          avatarBox: 'h-10 w-10 bg-sage-600',
           userButtonTrigger: 'focus:shadow-none',
         },
       }}

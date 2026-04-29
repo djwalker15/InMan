@@ -62,36 +62,36 @@ export default function DashboardPage() {
   return (
     <SignedInLayout>
       <section className="pb-4 pt-5">
-        <h1 className="font-display text-[30px] font-bold leading-[37.5px] text-ink">
+        <h1 className="font-display text-[30px] font-bold leading-[37.5px] text-ink-900">
           Welcome, {firstName}
         </h1>
       </section>
 
-      <section className="flex flex-col gap-2 rounded-lg bg-surface-input p-5">
+      <section className="flex flex-col gap-2 rounded-lg bg-paper-100 p-5">
         <HeroCard />
 
         <div className="flex flex-col">
-          <h2 className="font-display text-base font-semibold leading-6 text-ink">
+          <h2 className="font-display text-base font-semibold leading-6 text-ink-900">
             Setup Progress
           </h2>
           <div className="flex flex-col gap-3 p-2">
             <div className="flex items-baseline justify-between">
-              <p className="font-body-alt text-sm font-semibold uppercase tracking-[0.35px] text-ink-chip">
+              <p className="font-body text-sm font-semibold uppercase tracking-[0.35px] text-ink-600">
                 {completed}/{steps.length} Complete
               </p>
               {nextIncomplete?.resumeTo && (
                 <Link
                   to={nextIncomplete.resumeTo}
-                  className="flex items-center gap-2 font-body-alt text-sm font-semibold uppercase tracking-[0.35px] text-brand-500 hover:underline"
+                  className="flex items-center gap-2 font-body text-sm font-semibold uppercase tracking-[0.35px] text-sage-600 hover:underline"
                 >
                   Resume
                   <ArrowRight size={11} strokeWidth={2.5} />
                 </Link>
               )}
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface-track">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-paper-300">
               <div
-                className="h-full rounded-full bg-brand-700 transition-[width] duration-300"
+                className="h-full rounded-full bg-sage-700 transition-[width] duration-300"
                 style={{ width: `${pct}%` }}
               />
             </div>
@@ -113,7 +113,7 @@ export default function DashboardPage() {
 function HeroCard() {
   return (
     <div
-      className="relative flex h-[99px] w-full items-center justify-between overflow-hidden rounded-lg p-5 shadow-floating"
+      className="relative flex h-[99px] w-full items-center justify-between overflow-hidden rounded-lg p-5 shadow-ambient-lg"
       style={{
         backgroundImage: 'linear-gradient(162.7deg, #31694d 0%, #4a8265 100%)',
       }}
@@ -122,7 +122,7 @@ function HeroCard() {
         <h3 className="font-display text-[18px] font-bold leading-[22.5px] text-white">
           Your pantry is live 🎉
         </h3>
-        <p className="font-body-alt text-sm leading-5 text-accent-mint opacity-90">
+        <p className="font-body text-sm leading-5 text-sage-100 opacity-90">
           Complete the steps below
           <br />
           to finish onboarding
@@ -139,21 +139,21 @@ function ChecklistRow({ label, complete }: { label: string; complete: boolean })
   return (
     <div
       className={`flex w-full items-center gap-3 rounded-lg p-2 ${
-        complete ? 'bg-surface-input' : 'bg-surface-track'
+        complete ? 'bg-paper-100' : 'bg-paper-300'
       }`}
     >
       <span
         aria-hidden
         className={`flex size-5 shrink-0 items-center justify-center rounded ${
           complete
-            ? 'border-2 border-brand-700 bg-brand-700 text-white'
-            : 'border-2 border-[#c0c9c1]'
+            ? 'border-2 border-sage-700 bg-sage-700 text-white'
+            : 'border-2 border-sage-300'
         }`}
       >
         {complete && <Check size={12} strokeWidth={3} />}
       </span>
       <span
-        className={`font-body-alt text-sm leading-5 text-ink-body ${
+        className={`font-body text-sm leading-5 text-ink-700 ${
           complete ? 'line-through' : ''
         }`}
       >

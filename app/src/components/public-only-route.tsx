@@ -6,7 +6,7 @@ export function PublicOnlyRoute() {
 
   if (!isLoaded) {
     return (
-      <div className="flex h-full items-center justify-center text-ink-muted">
+      <div className="flex h-full items-center justify-center text-ink-600">
         Loading…
       </div>
     )

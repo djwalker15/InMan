@@ -8,11 +8,11 @@ interface TopNavProps {
 
 export function TopNav({ rightAction }: TopNavProps) {
   return (
-    <header className="relative flex h-[72px] w-full items-center bg-surface/80 px-6 backdrop-blur-md">
+    <header className="relative flex h-[72px] w-full items-center bg-paper-150/80 px-6 backdrop-blur-md">
       <button
         type="button"
         aria-label="Open menu"
-        className="absolute left-6 flex size-8 items-center justify-center text-brand-700"
+        className="absolute left-6 flex size-8 items-center justify-center text-sage-700"
       >
         <Menu size={26} strokeWidth={2.5} />
       </button>
@@ -40,7 +40,7 @@ export function CloseButton({ to = '/' }: CloseButtonProps) {
       type="button"
       onClick={() => navigate(to)}
       aria-label="Close"
-      className="flex size-10 items-center justify-center rounded-lg bg-surface-raised text-ink transition hover:bg-surface-raised/80"
+      className="flex size-10 items-center justify-center rounded-lg bg-paper-50 text-ink-900 transition hover:bg-paper-50/80"
     >
       <X size={20} />
     </button>
@@ -51,7 +51,7 @@ export function GetStartedPill() {
   return (
     <Link
       to="/sign-up"
-      className="flex h-[39px] w-[67px] flex-col items-center justify-center rounded-full bg-brand-500 text-[10px] font-semibold leading-[12px] text-white shadow-elevated transition hover:bg-brand-700"
+      className="flex h-[39px] w-[67px] flex-col items-center justify-center rounded-full bg-sage-600 text-[10px] font-semibold leading-[12px] text-white shadow-ambient-md transition hover:bg-sage-700"
     >
       <span>Get</span>
       <span>started</span>
