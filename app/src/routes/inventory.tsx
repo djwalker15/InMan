@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus, ShoppingBasket } from 'lucide-react'
 import { PrimaryButton } from '@/components/ds'
+import { InventoryList } from '@/components/inventory/inventory-list'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
 import { useSupabase } from '@/lib/supabase'
 
@@ -77,11 +78,7 @@ export default function InventoryPage() {
         ) : count === 0 ? (
           <EmptyState hasCrew={crewId !== null} />
         ) : (
-          // P3.3 / P4.1 will replace this with the real list rendering.
-          <p className="font-body text-base text-ink-700">
-            {count} item{count === 1 ? '' : 's'} in your inventory. Item rows
-            land in P4.1.
-          </p>
+          crewId && <InventoryList crewId={crewId} />
         )}
       </div>
     </SignedInLayout>
