@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Chip } from '@/components/ds'
 import { useSupabase } from '@/lib/supabase'
+import { InventoryFilters } from './inventory-filters'
 import {
   EMPTY_FILTERS,
-  InventoryFilters,
   type InventoryFiltersState,
-} from './inventory-filters'
+} from './inventory-filters-state'
 import {
   ALERT_LABEL,
   alertScore,
