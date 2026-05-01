@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import {
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from '@testing-library/react'
 import { mockClerk } from '@/test/clerk-mock'
 import { makeSupabaseMock } from '@/test/supabase-mock'
 import { InventoryList } from './inventory-list'
@@ -135,6 +141,57 @@ describe('InventoryList', () => {
     // Spices appears as both a filter chip AND a row badge.
     await waitFor(() => {
       expect(screen.getAllByText('Spices').length).toBeGreaterThan(0)
+    })
+  })
+
+  it('row click toggles the inline detail panel and lazy-loads recent flows', async () => {
+    mockClerk({ user: { id: 'user_1' } })
+    const itemsForExpand = [items[2]] // the in_place "Olive Oil" row
+    makeSupabaseMock({
+      inventory_items: { select: { data: itemsForExpand, error: null } },
+      products: { select: { data: products, error: null } },
+      categories: { select: { data: [], error: null } },
+      spaces: { select: { data: spaces, error: null } },
+      flows: {
+        select: {
+          data: [
+            {
+              flow_id: 'f1',
+              flow_type: 'purchase',
+              quantity: 8,
+              unit: 'oz',
+              performed_at: new Date(Date.now() - 120_000).toISOString(),
+              performed_by: 'user_1',
+              notes: null,
+            },
+          ],
+          error: null,
+        },
+      },
+    })
+    const { getByRole, getByTestId, queryByTestId } = render(
+      <InventoryList crewId="crew_abc" />,
+    )
+    await waitFor(() => {
+      expect(getByRole('button', { name: /olive oil/i })).toBeInTheDocument()
+    })
+    const rowBtn = getByRole('button', { name: /olive oil/i })
+    expect(rowBtn).toHaveAttribute('aria-expanded', 'false')
+    expect(queryByTestId('row-details-i_ok')).toBeNull()
+    fireEvent.click(rowBtn)
+    // After click: aria-expanded flips first.
+    await waitFor(() => {
+      expect(rowBtn).toHaveAttribute('aria-expanded', 'true')
+    })
+    expect(getByTestId('row-details-i_ok')).toBeInTheDocument()
+    // Recent flows arrive after a second async tick (the row-details
+    // useEffect kicks off the flows fetch on mount).
+    await waitFor(() => {
+      expect(
+        within(getByTestId('row-details-i_ok')).getByText(
+          /purchased 8 oz/i,
+        ),
+      ).toBeInTheDocument()
     })
   })
 

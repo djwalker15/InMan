@@ -6,6 +6,7 @@ import {
   EMPTY_FILTERS,
   type InventoryFiltersState,
 } from './inventory-filters-state'
+import { InventoryRowDetails } from './row-details'
 import {
   ALERT_LABEL,
   alertScore,
@@ -23,6 +24,7 @@ interface InventoryItemRow {
   category_id: string | null
   min_stock: number | null
   expiry_date: string | null
+  last_unit_cost: number | null
   notes: string | null
 }
 
@@ -30,6 +32,10 @@ interface ProductRow {
   product_id: string
   name: string
   brand: string | null
+  barcode: string | null
+  image_url: string | null
+  size_value: number | null
+  size_unit: string | null
   default_category_id: string | null
 }
 
@@ -60,21 +66,38 @@ interface InventoryListProps {
   crewId: string
 }
 
+interface LoadedData {
+  rows: RenderRow[]
+  categoryOptions: { category_id: string; name: string }[]
+  spaceOptions: { space_id: string; label: string }[]
+  spaceChildEntries: Array<readonly [string, string[]]>
+  allSpaceRows: SpaceLite[]
+}
+
+const EMPTY_LOAD: LoadedData = {
+  rows: [],
+  categoryOptions: [],
+  spaceOptions: [],
+  spaceChildEntries: [],
+  allSpaceRows: [],
+}
+
 export function InventoryList({ crewId }: InventoryListProps) {
   const supabase = useSupabase()
-  const [rows, setRows] = useState<RenderRow[] | null>(null)
+  const [loaded, setLoaded] = useState<LoadedData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState<InventoryFiltersState>(EMPTY_FILTERS)
-  // Cached refs for the filter UI:
-  const [categoryOptions, setCategoryOptions] = useState<
-    { category_id: string; name: string }[]
-  >([])
-  const [spaceOptions, setSpaceOptions] = useState<
-    { space_id: string; label: string }[]
-  >([])
-  const [spaceChildren, setSpaceChildren] = useState<
-    Map<string, Set<string>>
-  >(() => new Map())
+
+  const rows = loaded?.rows ?? null
+  const categoryOptions = loaded?.categoryOptions ?? EMPTY_LOAD.categoryOptions
+  const spaceOptions = loaded?.spaceOptions ?? EMPTY_LOAD.spaceOptions
+  const spaceChildren = useMemo(() => {
+    const m = new Map<string, Set<string>>()
+    for (const [id, list] of loaded?.spaceChildEntries ?? []) {
+      m.set(id, new Set(list))
+    }
+    return m
+  }, [loaded?.spaceChildEntries])
 
   useEffect(() => {
     let cancelled = false
@@ -83,19 +106,19 @@ export function InventoryList({ crewId }: InventoryListProps) {
       const { data: itemData, error: itemErr } = await supabase
         .from('inventory_items')
         .select(
-          'inventory_item_id, product_id, current_space_id, home_space_id, quantity, unit, category_id, min_stock, expiry_date, notes',
+          'inventory_item_id, product_id, current_space_id, home_space_id, quantity, unit, category_id, min_stock, expiry_date, last_unit_cost, notes',
         )
         .eq('crew_id', crewId)
         .is('deleted_at', null)
       if (cancelled) return
       if (itemErr) {
         setError(itemErr.message ?? 'Failed to load inventory.')
-        setRows([])
+        setLoaded(EMPTY_LOAD)
         return
       }
       const items = (Array.isArray(itemData) ? itemData : []) as InventoryItemRow[]
       if (items.length === 0) {
-        setRows([])
+        setLoaded(EMPTY_LOAD)
         return
       }
 
@@ -107,7 +130,9 @@ export function InventoryList({ crewId }: InventoryListProps) {
       const [productsRes, categoriesRes, spacesRes] = await Promise.all([
         supabase
           .from('products')
-          .select('product_id, name, brand, default_category_id')
+          .select(
+            'product_id, name, brand, barcode, image_url, size_value, size_unit, default_category_id',
+          )
           .in('product_id', productIds)
           .is('deleted_at', null),
         categoryIds.length > 0
@@ -130,6 +155,18 @@ export function InventoryList({ crewId }: InventoryListProps) {
         ? productsRes.data
         : []) as ProductRow[]) {
         products.set(p.product_id, p)
+      }
+      function fallbackProduct(id: string): ProductRow {
+        return {
+          product_id: id,
+          name: 'Unknown product',
+          brand: null,
+          barcode: null,
+          image_url: null,
+          size_value: null,
+          size_unit: null,
+          default_category_id: null,
+        }
       }
       // Hydrate the category lookup with both per-item categories and
       // product default categories so badges can show either.
@@ -174,12 +211,7 @@ export function InventoryList({ crewId }: InventoryListProps) {
       const today = new Date().toISOString().slice(0, 10)
 
       const rendered: RenderRow[] = items.map((item) => {
-        const product = products.get(item.product_id) ?? {
-          product_id: item.product_id,
-          name: 'Unknown product',
-          brand: null,
-          default_category_id: null,
-        }
+        const product = products.get(item.product_id) ?? fallbackProduct(item.product_id)
         const effectiveCategoryId =
           item.category_id ?? product.default_category_id
         const categoryName = effectiveCategoryId
@@ -216,13 +248,11 @@ export function InventoryList({ crewId }: InventoryListProps) {
         if (b.score !== a.score) return b.score - a.score
         return a.product.name.localeCompare(b.product.name)
       })
-      setRows(rendered)
 
       // Build the filter UI's reference data.
       const categoryOpts = Array.from(categories.values())
         .map((c) => ({ category_id: c.category_id, name: c.name }))
         .sort((a, b) => a.name.localeCompare(b.name))
-      setCategoryOptions(categoryOpts)
 
       const usedSpaceIds = new Set(items.map((i) => i.current_space_id))
       const ancestors = new Set<string>()
@@ -236,7 +266,6 @@ export function InventoryList({ crewId }: InventoryListProps) {
       const spaceOpts = Array.from(ancestors)
         .map((id) => ({ space_id: id, label: buildLocationPath(id, spaces) }))
         .sort((a, b) => a.label.localeCompare(b.label))
-      setSpaceOptions(spaceOpts)
 
       // Pre-compute "descendants" for each space so the include-children
       // toggle is O(1) at filter time.
@@ -263,13 +292,29 @@ export function InventoryList({ crewId }: InventoryListProps) {
         }
         descendants.set(s.space_id, set)
       }
-      setSpaceChildren(descendants)
+
+      setLoaded({
+        rows: rendered,
+        categoryOptions: categoryOpts,
+        spaceOptions: spaceOpts,
+        spaceChildEntries: Array.from(descendants.entries()).map(
+          ([id, set]) => [id, Array.from(set)] as const,
+        ),
+        allSpaceRows: Array.from(spaces.values()),
+      })
     }
     void load()
     return () => {
       cancelled = true
     }
   }, [supabase, crewId])
+
+  const [expandedId, setExpandedId] = useState<string | null>(null)
+  const allSpaces = useMemo(() => {
+    const map = new Map<string, SpaceLite>()
+    for (const s of loaded?.allSpaceRows ?? []) map.set(s.space_id, s)
+    return map
+  }, [loaded?.allSpaceRows])
 
   const filtered = useMemo(() => {
     const all = rows ?? []
@@ -333,11 +378,26 @@ export function InventoryList({ crewId }: InventoryListProps) {
         </p>
       ) : (
         <ul aria-label="Inventory items" className="flex flex-col gap-2">
-          {filtered.map((row) => (
-            <li key={row.item.inventory_item_id}>
-              <InventoryRow row={row} />
-            </li>
-          ))}
+          {filtered.map((row) => {
+            const expanded = expandedId === row.item.inventory_item_id
+            return (
+              <li key={row.item.inventory_item_id}>
+                <InventoryRow
+                  row={row}
+                  expanded={expanded}
+                  onToggle={() =>
+                    setExpandedId(expanded ? null : row.item.inventory_item_id)
+                  }
+                />
+                {expanded && (
+                  <InventoryRowDetailsAdapter
+                    row={row}
+                    spaces={allSpaces}
+                  />
+                )}
+              </li>
+            )
+          })}
         </ul>
       )}
     </div>
@@ -346,13 +406,19 @@ export function InventoryList({ crewId }: InventoryListProps) {
 
 interface InventoryRowProps {
   row: RenderRow
+  expanded: boolean
+  onToggle: () => void
 }
 
-function InventoryRow({ row }: InventoryRowProps) {
+function InventoryRow({ row, expanded, onToggle }: InventoryRowProps) {
   const { item, product, categoryName, locationPath, alerts } = row
   return (
-    <article
-      className="flex items-start gap-3 rounded-2xl bg-paper-50 p-4 shadow-ambient-sm"
+    <button
+      type="button"
+      aria-expanded={expanded}
+      aria-controls={`row-details-${row.item.inventory_item_id}`}
+      onClick={onToggle}
+      className="flex w-full items-start gap-3 rounded-2xl bg-paper-50 p-4 text-left shadow-ambient-sm transition hover:bg-paper-100 active:scale-[0.998]"
       data-alert-score={row.score}
     >
       <div className="flex min-w-0 flex-1 flex-col gap-1">
@@ -387,7 +453,52 @@ function InventoryRow({ row }: InventoryRowProps) {
           ))}
         </div>
       </div>
-    </article>
+    </button>
+  )
+}
+
+interface InventoryRowDetailsAdapterProps {
+  row: RenderRow
+  spaces: Map<string, SpaceLite>
+}
+
+function InventoryRowDetailsAdapter({
+  row,
+  spaces,
+}: InventoryRowDetailsAdapterProps) {
+  const { item, product, categoryName, alerts } = row
+  const home = item.home_space_id ? buildLocationPath(item.home_space_id, spaces) : null
+  let displacementState: 'in_place' | 'displaced' | 'unsorted' = 'in_place'
+  if (item.home_space_id === null) displacementState = 'unsorted'
+  else if (item.home_space_id !== item.current_space_id) displacementState = 'displaced'
+  const productSize =
+    product.size_value !== null && product.size_unit !== null
+      ? { value: product.size_value, unit: product.size_unit }
+      : null
+  const categoryOverridden =
+    item.category_id !== null && item.category_id !== product.default_category_id
+  return (
+    <InventoryRowDetails
+      inventoryItemId={item.inventory_item_id}
+      productId={product.product_id}
+      productName={product.name}
+      productBrand={product.brand}
+      productImageUrl={product.image_url}
+      productSize={productSize}
+      productBarcode={product.barcode}
+      effectiveCategoryName={categoryName}
+      categoryOverridden={categoryOverridden}
+      quantity={item.quantity}
+      unit={item.unit}
+      currentLocationPath={row.locationPath}
+      homeLocationPath={home}
+      displacementState={displacementState}
+      lastUnitCost={item.last_unit_cost}
+      minStock={item.min_stock}
+      expiryDate={item.expiry_date}
+      notes={item.notes}
+      alerts={alerts}
+    />
   )
 }
 
