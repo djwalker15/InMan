@@ -69,6 +69,8 @@ interface InventoryListProps {
 interface LoadedData {
   rows: RenderRow[]
   categoryOptions: { category_id: string; name: string }[]
+  /** Every category visible to this crew — used by the inline Edit form. */
+  allCategories: { category_id: string; name: string; crew_id: string | null }[]
   spaceOptions: { space_id: string; label: string }[]
   spaceChildEntries: Array<readonly [string, string[]]>
   allSpaceRows: SpaceLite[]
@@ -77,6 +79,7 @@ interface LoadedData {
 const EMPTY_LOAD: LoadedData = {
   rows: [],
   categoryOptions: [],
+  allCategories: [],
   spaceOptions: [],
   spaceChildEntries: [],
   allSpaceRows: [],
@@ -87,6 +90,7 @@ export function InventoryList({ crewId }: InventoryListProps) {
   const [loaded, setLoaded] = useState<LoadedData | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [filters, setFilters] = useState<InventoryFiltersState>(EMPTY_FILTERS)
+  const [reloadKey, setReloadKey] = useState(0)
 
   const rows = loaded?.rows ?? null
   const categoryOptions = loaded?.categoryOptions ?? EMPTY_LOAD.categoryOptions
@@ -293,9 +297,23 @@ export function InventoryList({ crewId }: InventoryListProps) {
         descendants.set(s.space_id, set)
       }
 
+      // Fetch ALL categories visible to this crew (system + crew-private)
+      // so the inline Edit form can offer the full picker, not just the
+      // categories already in use by some inventory item.
+      const { data: allCatsData } = await supabase
+        .from('categories')
+        .select('category_id, name, crew_id')
+        .is('deleted_at', null)
+        .order('name', { ascending: true })
+      if (cancelled) return
+      const allCategoriesData = (Array.isArray(allCatsData)
+        ? allCatsData
+        : []) as { category_id: string; name: string; crew_id: string | null }[]
+
       setLoaded({
         rows: rendered,
         categoryOptions: categoryOpts,
+        allCategories: allCategoriesData,
         spaceOptions: spaceOpts,
         spaceChildEntries: Array.from(descendants.entries()).map(
           ([id, set]) => [id, Array.from(set)] as const,
@@ -307,7 +325,7 @@ export function InventoryList({ crewId }: InventoryListProps) {
     return () => {
       cancelled = true
     }
-  }, [supabase, crewId])
+  }, [supabase, crewId, reloadKey])
 
   const [expandedId, setExpandedId] = useState<string | null>(null)
   const allSpaces = useMemo(() => {
@@ -392,6 +410,9 @@ export function InventoryList({ crewId }: InventoryListProps) {
                 {expanded && (
                   <InventoryRowDetailsAdapter
                     row={row}
+                    crewId={crewId}
+                    categories={loaded?.allCategories ?? []}
+                    onChanged={() => setReloadKey((k) => k + 1)}
                     spaces={allSpaces}
                   />
                 )}
@@ -460,11 +481,17 @@ function InventoryRow({ row, expanded, onToggle }: InventoryRowProps) {
 interface InventoryRowDetailsAdapterProps {
   row: RenderRow
   spaces: Map<string, SpaceLite>
+  crewId: string
+  categories: { category_id: string; name: string; crew_id: string | null }[]
+  onChanged: () => void
 }
 
 function InventoryRowDetailsAdapter({
   row,
   spaces,
+  crewId,
+  categories,
+  onChanged,
 }: InventoryRowDetailsAdapterProps) {
   const { item, product, categoryName, alerts } = row
   const home = item.home_space_id ? buildLocationPath(item.home_space_id, spaces) : null
@@ -491,13 +518,19 @@ function InventoryRowDetailsAdapter({
       quantity={item.quantity}
       unit={item.unit}
       currentLocationPath={row.locationPath}
+      currentSpaceId={item.current_space_id}
+      homeSpaceId={item.home_space_id}
       homeLocationPath={home}
       displacementState={displacementState}
       lastUnitCost={item.last_unit_cost}
       minStock={item.min_stock}
+      categoryId={item.category_id}
       expiryDate={item.expiry_date}
       notes={item.notes}
       alerts={alerts}
+      crewId={crewId}
+      categories={categories}
+      onChanged={onChanged}
     />
   )
 }

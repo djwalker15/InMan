@@ -3,6 +3,7 @@ import { useUser } from '@clerk/clerk-react'
 import { Chip } from '@/components/ds'
 import { useSupabase } from '@/lib/supabase'
 import { ALERT_LABEL, type InventoryAlert } from './inventory-status'
+import { RowActions } from './row-actions'
 
 interface InventoryRowDetailsProps {
   inventoryItemId: string
@@ -17,13 +18,20 @@ interface InventoryRowDetailsProps {
   quantity: number
   unit: string
   currentLocationPath: string
+  currentSpaceId?: string
+  homeSpaceId?: string | null
   homeLocationPath: string | null
   displacementState: 'in_place' | 'displaced' | 'unsorted'
   lastUnitCost: number | null
   minStock: number | null
+  categoryId?: string | null
   expiryDate: string | null
   notes: string | null
   alerts: InventoryAlert[]
+  /** When provided, renders the inline-actions panel. */
+  crewId?: string
+  categories?: { category_id: string; name: string; crew_id: string | null }[]
+  onChanged?: () => void
 }
 
 interface FlowRow {
@@ -210,6 +218,22 @@ export function InventoryRowDetails(props: InventoryRowDetailsProps) {
           </div>
         )}
       </Section>
+
+      {props.crewId && props.currentSpaceId && props.onChanged && (
+        <RowActions
+          crewId={props.crewId}
+          inventoryItemId={props.inventoryItemId}
+          currentSpaceId={props.currentSpaceId}
+          homeSpaceId={props.homeSpaceId ?? null}
+          unit={props.unit}
+          category_id={props.categoryId ?? null}
+          min_stock={props.minStock}
+          expiry_date={props.expiryDate}
+          notes={props.notes}
+          categories={props.categories ?? []}
+          onChanged={props.onChanged}
+        />
+      )}
 
       <Section title="Recent activity">
         {error ? (
