@@ -11,6 +11,7 @@ import OnboardingSpacesPage from './routes/onboarding/spaces'
 import SpacesPage from './routes/spaces'
 import InventoryPage from './routes/inventory'
 import AddInventoryPage from './routes/inventory/add'
+import AlertsPage from './routes/alerts'
 import InviteAcceptPage, { InviteEntryPage } from './routes/invite-accept'
 import DashboardPage from './routes/dashboard'
 
@@ -30,6 +31,7 @@ export default function App() {
         <Route path="/spaces" element={<SpacesPage />} />
         <Route path="/inventory" element={<InventoryPage />} />
         <Route path="/inventory/add" element={<AddInventoryPage />} />
+        <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/invite" element={<InviteEntryPage />} />
         <Route path="/invite/:code" element={<InviteAcceptPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />

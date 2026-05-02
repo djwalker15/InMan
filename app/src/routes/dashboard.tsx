@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, Wand } from 'lucide-react'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
 import { HeroCard, ChecklistRow } from '@/components/ds'
+import { AlertsWidget } from '@/components/inventory/alerts-widget'
+import { useCrewAlerts } from '@/components/inventory/use-crew-alerts'
 import { useSupabase } from '@/lib/supabase'
 
 interface ChecklistStep {
@@ -63,6 +65,9 @@ export default function DashboardPage() {
   const [steps, setSteps] = useState<ChecklistStep[]>(() =>
     buildPathA(false, false, false, false),
   )
+  const [activeCrewId, setActiveCrewId] = useState<string | null>(null)
+  const { counts: alertCounts, loading: alertsLoading } =
+    useCrewAlerts(activeCrewId)
 
   const firstName = user?.firstName ?? user?.username ?? 'there'
 
@@ -103,6 +108,7 @@ export default function DashboardPage() {
       }
 
       const { crew_id: crewId, role } = membership
+      setActiveCrewId(crewId)
       const isOwnerOrAdmin = role === 'owner' || role === 'admin'
 
       if (!isOwnerOrAdmin) {
@@ -198,6 +204,12 @@ export default function DashboardPage() {
           Welcome, {firstName}
         </h1>
       </section>
+
+      {activeCrewId && (
+        <section className="pb-4">
+          <AlertsWidget counts={alertCounts} loading={alertsLoading} />
+        </section>
+      )}
 
       <section className="flex flex-col gap-2 rounded-lg bg-paper-100 p-5">
         <HeroCard

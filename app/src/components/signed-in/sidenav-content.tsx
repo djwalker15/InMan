@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@clerk/clerk-react'
 import {
+  Bell,
   Boxes,
   Clipboard,
   Home,
@@ -30,6 +31,7 @@ interface PendingLink {
 const liveLinks: SidenavLink[] = [
   { to: '/dashboard', label: 'Home', icon: <Home size={18} />, end: true },
   { to: '/inventory', label: 'Inventory', icon: <Clipboard size={18} /> },
+  { to: '/alerts', label: 'Alerts', icon: <Bell size={18} /> },
   { to: '/spaces', label: 'Spaces', icon: <Boxes size={18} /> },
 ]
 
