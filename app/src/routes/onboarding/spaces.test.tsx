@@ -27,7 +27,7 @@ describe('OnboardingSpacesPage', () => {
 
   it('renders without crashing', () => {
     makeSupabaseMock({
-      crew_members: { maybeSingle: { data: null, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
     renderWithRouter(<OnboardingSpacesPage />)
     expect(
@@ -37,7 +37,7 @@ describe('OnboardingSpacesPage', () => {
 
   it('shows ProgressBar at step 3 of 5', () => {
     makeSupabaseMock({
-      crew_members: { maybeSingle: { data: null, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
     renderWithRouter(<OnboardingSpacesPage />)
     const bar = screen.getByRole('progressbar')
@@ -48,7 +48,7 @@ describe('OnboardingSpacesPage', () => {
 
   it('close button routes to /dashboard', () => {
     makeSupabaseMock({
-      crew_members: { maybeSingle: { data: null, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
     renderWithRouter(<OnboardingSpacesPage />)
     fireEvent.click(screen.getByLabelText(/^close$/i))
@@ -57,7 +57,7 @@ describe('OnboardingSpacesPage', () => {
 
   it('shows the explainer by default', () => {
     makeSupabaseMock({
-      crew_members: { maybeSingle: { data: null, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
     renderWithRouter(<OnboardingSpacesPage />)
     expect(
@@ -67,7 +67,7 @@ describe('OnboardingSpacesPage', () => {
 
   it('hides the explainer after dismiss and persists the flag', () => {
     makeSupabaseMock({
-      crew_members: { maybeSingle: { data: null, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
     renderWithRouter(<OnboardingSpacesPage />)
     fireEvent.click(
@@ -84,7 +84,7 @@ describe('OnboardingSpacesPage', () => {
   it('respects the persisted dismiss flag on remount', () => {
     sessionStorage.setItem(SPACES_EXPLAINER_DISMISSED_KEY, '1')
     makeSupabaseMock({
-      crew_members: { maybeSingle: { data: null, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
     renderWithRouter(<OnboardingSpacesPage />)
     expect(
@@ -94,7 +94,7 @@ describe('OnboardingSpacesPage', () => {
 
   it('"?" button reopens the explainer after dismiss', () => {
     makeSupabaseMock({
-      crew_members: { maybeSingle: { data: null, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
     renderWithRouter(<OnboardingSpacesPage />)
     fireEvent.click(
@@ -111,7 +111,7 @@ describe('OnboardingSpacesPage', () => {
   it('shows the premises form once explainer is dismissed', () => {
     sessionStorage.setItem(SPACES_EXPLAINER_DISMISSED_KEY, '1')
     makeSupabaseMock({
-      crew_members: { maybeSingle: { data: null, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
     renderWithRouter(<OnboardingSpacesPage />)
     expect(
@@ -124,8 +124,14 @@ describe('OnboardingSpacesPage', () => {
     sessionStorage.setItem(SPACES_EXPLAINER_DISMISSED_KEY, '1')
     const sb = makeSupabaseMock({
       crew_members: {
-        maybeSingle: {
-          data: { crew_id: 'crew_abc', role: 'owner' },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
           error: null,
         },
       },
@@ -180,8 +186,14 @@ describe('OnboardingSpacesPage', () => {
     sessionStorage.setItem(SPACES_EXPLAINER_DISMISSED_KEY, '1')
     makeSupabaseMock({
       crew_members: {
-        maybeSingle: {
-          data: { crew_id: 'crew_abc', role: 'owner' },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
           error: null,
         },
       },

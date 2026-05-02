@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Check } from 'lucide-react'
@@ -8,11 +8,7 @@ import { InventoryForm } from '@/components/inventory/inventory-form'
 import { ProductSearch } from '@/components/inventory/product-search'
 import { RestockForm } from '@/components/inventory/restock-form'
 import type { ProductRow, Selection } from '@/components/inventory/types'
-import { useSupabase } from '@/lib/supabase'
-
-interface MembershipRow {
-  crew_id: string
-}
+import { useActiveCrew } from '@/lib/active-crew'
 
 type Phase =
   | { kind: 'search' }
@@ -22,35 +18,14 @@ type Phase =
 
 export default function AddInventoryPage() {
   const { user } = useUser()
-  const supabase = useSupabase()
   const navigate = useNavigate()
+  const { loading: crewLoading, activeCrewId } = useActiveCrew(
+    user?.id ?? null,
+  )
 
-  const [crewId, setCrewId] = useState<string | null>(null)
   const [phase, setPhase] = useState<Phase>({ kind: 'search' })
-  const [crewLoading, setCrewLoading] = useState(true)
   const [sessionCount, setSessionCount] = useState(0)
   const [lastAddedName, setLastAddedName] = useState<string | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    async function load() {
-      const { data } = await supabase
-        .from('crew_members')
-        .select('crew_id')
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (cancelled) return
-      const row = data as MembershipRow | null
-      if (row?.crew_id) setCrewId(row.crew_id)
-      setCrewLoading(false)
-    }
-    void load()
-    return () => {
-      cancelled = true
-    }
-  }, [supabase])
 
   function handleSelect(selection: Selection) {
     if (selection.kind === 'restock') {
@@ -127,26 +102,26 @@ export default function AddInventoryPage() {
 
         {crewLoading ? (
           <p className="font-body text-sm text-ink-600">Loading…</p>
-        ) : !crewId || !user ? (
+        ) : !activeCrewId || !user ? (
           <p className="rounded-md bg-red-50 px-3 py-2 font-body text-sm text-red-700">
             We couldn't load your crew. Finish onboarding first.
           </p>
         ) : phase.kind === 'search' ? (
           <ProductSearch
-            crewId={crewId}
+            crewId={activeCrewId}
             onSelect={handleSelect}
             onCreateCustom={() => setPhase({ kind: 'custom' })}
           />
         ) : phase.kind === 'custom' ? (
           <CustomProductForm
-            crewId={crewId}
+            crewId={activeCrewId}
             userId={user.id}
             onCreated={handleCustomCreated}
             onCancel={() => setPhase({ kind: 'search' })}
           />
         ) : phase.kind === 'selected' ? (
           <InventoryForm
-            crewId={crewId}
+            crewId={activeCrewId}
             selection={phase.selection}
             onSaved={handleSaved}
             onCancel={() => setPhase({ kind: 'search' })}

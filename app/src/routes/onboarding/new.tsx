@@ -39,10 +39,13 @@ export default function CrewCreationPage() {
       if (crewError) throw crewError
       if (!crew) throw new Error('Crew insert returned no row')
 
+      // Ownership lives on crews.owner_id (set above); the creator's
+      // crew_members row uses the 'admin' role to satisfy the role
+      // CHECK constraint added in P5.1.
       const { error: memberError } = await supabase.from('crew_members').insert({
         crew_id: crew.crew_id,
         user_id: user.id,
-        role: 'owner',
+        role: 'admin',
       })
       if (memberError) throw memberError
 
@@ -56,7 +59,11 @@ export default function CrewCreationPage() {
 
   return (
     <form onSubmit={handleSubmit} className="flex min-h-full flex-col bg-paper-150">
-      <NavHeader leading="back" title="New crew" />
+      <NavHeader
+        leading="close"
+        leadingTo="/onboarding"
+        title="New crew"
+      />
       <main className="mx-auto flex w-full max-w-[512px] flex-1 flex-col gap-6 px-6 pt-4">
         <ProgressBar step={2} total={5} />
         <Field

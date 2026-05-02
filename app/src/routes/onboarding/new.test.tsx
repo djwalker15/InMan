@@ -59,10 +59,13 @@ describe('CrewCreationPage', () => {
     expect(sb.tables.crews.single).toHaveBeenCalled()
 
     expect(sb.from).toHaveBeenCalledWith('crew_members')
+    // Ownership lives on crews.owner_id (set above); the creator's
+    // crew_members row uses 'admin' to satisfy the role CHECK
+    // constraint added in P5.1 (admin / member / viewer).
     expect(sb.tables.crew_members.insert).toHaveBeenCalledWith({
       crew_id: 'crew_1',
       user_id: 'user_abc',
-      role: 'owner',
+      role: 'admin',
     })
   })
 

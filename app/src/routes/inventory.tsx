@@ -1,57 +1,45 @@
 import { useEffect, useState } from 'react'
+import { useUser } from '@clerk/clerk-react'
 import { Link } from 'react-router-dom'
 import { Plus, ShoppingBasket } from 'lucide-react'
 import { PrimaryButton } from '@/components/ds'
 import { InventoryList } from '@/components/inventory/inventory-list'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
+import { useActiveCrew } from '@/lib/active-crew'
 import { useSupabase } from '@/lib/supabase'
 
-interface MembershipRow {
-  crew_id: string
-}
-
 export default function InventoryPage() {
+  const { user } = useUser()
   const supabase = useSupabase()
-  const [crewId, setCrewId] = useState<string | null>(null)
+  const { loading: crewLoading, activeCrewId } = useActiveCrew(
+    user?.id ?? null,
+  )
   const [count, setCount] = useState<number | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
 
   useEffect(() => {
+    if (crewLoading || !activeCrewId) return
     let cancelled = false
     async function load() {
-      const { data: membership } = await supabase
-        .from('crew_members')
-        .select('crew_id')
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (cancelled) return
-      const row = membership as MembershipRow | null
-      if (!row?.crew_id) {
-        setCount(0)
-        return
-      }
-      setCrewId(row.crew_id)
-
       const { count: itemCount, error: itemErr } = await supabase
         .from('inventory_items')
         .select('inventory_item_id', { count: 'exact', head: true })
-        .eq('crew_id', row.crew_id)
+        .eq('crew_id', activeCrewId)
         .is('deleted_at', null)
       if (cancelled) return
       if (itemErr) {
         setLoadError(itemErr.message ?? 'Failed to load inventory.')
-        setCount(0)
+        setCount(null)
         return
       }
+      setLoadError(null)
       setCount(itemCount ?? 0)
     }
     void load()
     return () => {
       cancelled = true
     }
-  }, [supabase])
+  }, [supabase, activeCrewId, crewLoading])
 
   return (
     <SignedInLayout>
@@ -73,12 +61,16 @@ export default function InventoryPage() {
           <p className="rounded-md bg-red-50 px-3 py-2 font-body text-sm text-red-700">
             {loadError}
           </p>
+        ) : crewLoading ? (
+          <p className="font-body text-sm text-ink-600">Loading…</p>
+        ) : !activeCrewId ? (
+          <EmptyState hasCrew={false} />
         ) : count === null ? (
           <p className="font-body text-sm text-ink-600">Loading…</p>
         ) : count === 0 ? (
-          <EmptyState hasCrew={crewId !== null} />
+          <EmptyState hasCrew={true} />
         ) : (
-          crewId && <InventoryList crewId={crewId} />
+          <InventoryList crewId={activeCrewId} />
         )}
       </div>
     </SignedInLayout>

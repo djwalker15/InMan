@@ -21,7 +21,7 @@ describe('SpacesPage', () => {
 
   it('renders the Spaces title', () => {
     makeSupabaseMock({
-      crew_members: { maybeSingle: { data: null, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
     renderWithRouter(<SpacesPage />)
     expect(
@@ -32,8 +32,14 @@ describe('SpacesPage', () => {
   it('shows the empty state with a link to /onboarding/spaces when no premises exist', async () => {
     makeSupabaseMock({
       crew_members: {
-        maybeSingle: {
-          data: { crew_id: 'crew_abc', role: 'owner' },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
           error: null,
         },
       },
@@ -66,8 +72,14 @@ describe('SpacesPage', () => {
     ]
     makeSupabaseMock({
       crew_members: {
-        maybeSingle: {
-          data: { crew_id: 'crew_abc', role: 'owner' },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
           error: null,
         },
       },

@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo } from 'react'
+import { useUser } from '@clerk/clerk-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { Chip } from '@/components/ds'
@@ -8,11 +9,7 @@ import {
   ALERT_LABEL,
   type InventoryAlert,
 } from '@/components/inventory/inventory-status'
-import { useSupabase } from '@/lib/supabase'
-
-interface MembershipRow {
-  crew_id: string
-}
+import { useActiveCrew } from '@/lib/active-crew'
 
 const GROUPS: InventoryAlert[] = [
   'out_of_stock',
@@ -31,32 +28,11 @@ function chipVariant(
 }
 
 export default function AlertsPage() {
-  const supabase = useSupabase()
-  const [crewId, setCrewId] = useState<string | null>(null)
-  const [crewLoading, setCrewLoading] = useState(true)
-
-  useEffect(() => {
-    let cancelled = false
-    async function loadCrew() {
-      const { data } = await supabase
-        .from('crew_members')
-        .select('crew_id')
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (cancelled) return
-      const row = data as MembershipRow | null
-      if (row?.crew_id) setCrewId(row.crew_id)
-      setCrewLoading(false)
-    }
-    void loadCrew()
-    return () => {
-      cancelled = true
-    }
-  }, [supabase])
-
-  const { loading, error, rows, counts } = useCrewAlerts(crewId)
+  const { user } = useUser()
+  const { loading: crewLoading, activeCrewId } = useActiveCrew(
+    user?.id ?? null,
+  )
+  const { loading, error, rows, counts } = useCrewAlerts(activeCrewId)
   const [params] = useSearchParams()
   const focus = params.get('focus') as InventoryAlert | null
 

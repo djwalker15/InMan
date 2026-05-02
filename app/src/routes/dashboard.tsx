@@ -6,6 +6,7 @@ import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
 import { HeroCard, ChecklistRow } from '@/components/ds'
 import { AlertsWidget } from '@/components/inventory/alerts-widget'
 import { useCrewAlerts } from '@/components/inventory/use-crew-alerts'
+import { useActiveCrew } from '@/lib/active-crew'
 import { useSupabase } from '@/lib/supabase'
 
 interface ChecklistStep {
@@ -62,66 +63,35 @@ function buildPathB(crewName: string): ChecklistStep[] {
 export default function DashboardPage() {
   const { user } = useUser()
   const supabase = useSupabase()
+  const { loading: crewsLoading, memberships, activeCrewId } = useActiveCrew(
+    user?.id ?? null,
+  )
   const [steps, setSteps] = useState<ChecklistStep[]>(() =>
     buildPathA(false, false, false, false),
   )
-  const [activeCrewId, setActiveCrewId] = useState<string | null>(null)
   const { counts: alertCounts, loading: alertsLoading } =
     useCrewAlerts(activeCrewId)
 
   const firstName = user?.firstName ?? user?.username ?? 'there'
 
   useEffect(() => {
+    if (crewsLoading) return
     let cancelled = false
 
     async function load() {
-      // Step 1: count query — preserves existing test assertions
-      const { count, error: countError } = await supabase
-        .from('crew_members')
-        .select('crew_member_id', { count: 'exact', head: true })
-        .is('deleted_at', null)
-      if (cancelled) return
-
-      const hasMembership = !countError && (count ?? 0) > 0
-
-      if (!hasMembership) {
+      if (!activeCrewId) {
+        if (cancelled) return
         setSteps(buildPathA(false, false, false, false))
         return
       }
 
-      // Step 2: resolve role + crew_id from most recent active membership
-      const { data: rawMembership } = await supabase
-        .from('crew_members')
-        .select('crew_id, role')
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (cancelled) return
-
-      const membership = rawMembership as { crew_id: string; role: string } | null
-
-      if (!membership?.crew_id) {
-        // Couldn't determine crew context — fall back to Path A with crew complete
-        setSteps(buildPathA(true, false, false, false))
-        return
-      }
-
-      const { crew_id: crewId, role } = membership
-      setActiveCrewId(crewId)
-      const isOwnerOrAdmin = role === 'owner' || role === 'admin'
+      const active = memberships.find((m) => m.crew_id === activeCrewId)
+      if (!active) return
+      const isOwnerOrAdmin = active.is_owner || active.role === 'admin'
 
       if (!isOwnerOrAdmin) {
-        // Path B — get crew name then build the short checklist
-        const { data: crewData } = await supabase
-          .from('crews')
-          .select('name')
-          .eq('crew_id', crewId)
-          .single()
         if (cancelled) return
-        const crewName =
-          (crewData as { name: string } | null)?.name ?? 'your crew'
-        setSteps(buildPathB(crewName))
+        setSteps(buildPathB(active.crew_name))
         return
       }
 
@@ -135,7 +105,7 @@ export default function DashboardPage() {
         const { count: sc, error: se } = await supabase
           .from('spaces')
           .select('space_id', { count: 'exact', head: true })
-          .eq('crew_id', crewId)
+          .eq('crew_id', activeCrewId)
         if (cancelled) return
         if (!se || (se as { code?: string }).code === '42P01') {
           spacesCount = sc ?? 0
@@ -146,7 +116,7 @@ export default function DashboardPage() {
         const { count: ic, error: ie } = await supabase
           .from('inventory_items')
           .select('inventory_item_id', { count: 'exact', head: true })
-          .eq('crew_id', crewId)
+          .eq('crew_id', activeCrewId)
         if (cancelled) return
         if (!ie || (ie as { code?: string }).code === '42P01') {
           itemsCount = ic ?? 0
@@ -157,7 +127,7 @@ export default function DashboardPage() {
         const { count: mc } = await supabase
           .from('crew_members')
           .select('crew_member_id', { count: 'exact', head: true })
-          .eq('crew_id', crewId)
+          .eq('crew_id', activeCrewId)
           .is('deleted_at', null)
         if (cancelled) return
         memberCount = mc ?? 1
@@ -168,7 +138,7 @@ export default function DashboardPage() {
         const { count: invCount, error: invError } = await supabase
           .from('invites')
           .select('invite_id', { count: 'exact', head: true })
-          .eq('crew_id', crewId)
+          .eq('crew_id', activeCrewId)
           .eq('status', 'pending')
           .gt('expires_at', now)
         if (cancelled) return
@@ -191,7 +161,7 @@ export default function DashboardPage() {
     return () => {
       cancelled = true
     }
-  }, [supabase])
+  }, [supabase, activeCrewId, crewsLoading, memberships])
 
   const completed = steps.filter((s) => s.complete).length
   const pct = steps.length > 0 ? (completed / steps.length) * 100 : 0

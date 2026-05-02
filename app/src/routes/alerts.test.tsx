@@ -45,7 +45,16 @@ describe('AlertsPage', () => {
     mockClerk({ user: { id: 'user_1' } })
     makeSupabaseMock({
       crew_members: {
-        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
       },
       inventory_items: { select: { data: [], error: null } },
     })
@@ -59,7 +68,16 @@ describe('AlertsPage', () => {
     mockClerk({ user: { id: 'user_1' } })
     makeSupabaseMock({
       crew_members: {
-        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
       },
       inventory_items: { select: { data: items, error: null } },
       products: { select: { data: products, error: null } },
@@ -82,7 +100,16 @@ describe('AlertsPage', () => {
     mockClerk({ user: { id: 'user_1' } })
     makeSupabaseMock({
       crew_members: {
-        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
       },
       inventory_items: { select: { data: items, error: null } },
       products: { select: { data: products, error: null } },

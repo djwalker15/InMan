@@ -8,49 +8,26 @@ import { SpacesExplainer } from '@/components/spaces/explainer'
 import { TemplateBrowser } from '@/components/spaces/template-browser'
 import { TreeEditor } from '@/components/spaces/tree-editor'
 import type { SpaceNode, UnitType } from '@/components/spaces/types'
+import { useActiveCrew } from '@/lib/active-crew'
 import { useSupabase } from '@/lib/supabase'
-
-interface MembershipRow {
-  crew_id: string
-  role: string
-}
 
 export default function SpacesPage() {
   const { user } = useUser()
   const supabase = useSupabase()
+  const { activeCrewId } = useActiveCrew(user?.id ?? null)
 
-  const [crewId, setCrewId] = useState<string | null>(null)
   const [nodes, setNodes] = useState<SpaceNode[]>([])
   const [loading, setLoading] = useState(true)
   const [showExplainer, setShowExplainer] = useState(false)
 
   useEffect(() => {
-    let cancelled = false
-    async function loadCrew() {
-      const { data } = await supabase
-        .from('crew_members')
-        .select('crew_id, role')
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (cancelled) return
-      const row = data as MembershipRow | null
-      if (row?.crew_id) setCrewId(row.crew_id)
-    }
-    void loadCrew()
-    return () => {
-      cancelled = true
-    }
-  }, [supabase])
-
-  useEffect(() => {
-    if (!crewId) return
+    if (!activeCrewId) return
     let cancelled = false
     async function loadSpaces() {
       const { data } = await supabase
         .from('spaces')
         .select('space_id, parent_id, unit_type, name, deleted_at')
+        .eq('crew_id', activeCrewId)
         .is('deleted_at', null)
         .order('created_at', { ascending: true })
       if (cancelled) return
@@ -61,7 +38,7 @@ export default function SpacesPage() {
     return () => {
       cancelled = true
     }
-  }, [supabase, crewId])
+  }, [supabase, activeCrewId])
 
   const hasPremises = useMemo(
     () => nodes.some((n) => n.parent_id === null),
@@ -74,10 +51,11 @@ export default function SpacesPage() {
   )
 
   async function refetchSpaces() {
-    if (!crewId) return
+    if (!activeCrewId) return
     const { data } = await supabase
       .from('spaces')
       .select('space_id, parent_id, unit_type, name, deleted_at')
+      .eq('crew_id', activeCrewId)
       .is('deleted_at', null)
       .order('created_at', { ascending: true })
     setNodes(Array.isArray(data) ? (data as SpaceNode[]) : [])
@@ -88,11 +66,11 @@ export default function SpacesPage() {
     unit_type: UnitType
     name: string
   }): Promise<SpaceNode> {
-    if (!user || !crewId) throw new Error('Crew context not loaded.')
+    if (!user || !activeCrewId) throw new Error('Crew context not loaded.')
     const { data, error } = await supabase
       .from('spaces')
       .insert({
-        crew_id: crewId,
+        crew_id: activeCrewId,
         parent_id: input.parent_id,
         unit_type: input.unit_type,
         name: input.name,

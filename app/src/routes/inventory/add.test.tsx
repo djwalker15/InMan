@@ -48,7 +48,16 @@ describe('AddInventoryPage — Step 1 product resolution', () => {
   it('renders the search field and the create-custom CTA', async () => {
     makeSupabaseMock({
       crew_members: {
-        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
       },
     })
     renderWithRouter(<AddInventoryPage />)
@@ -63,7 +72,16 @@ describe('AddInventoryPage — Step 1 product resolution', () => {
   it('searches as the user types and groups catalog vs existing inventory', async () => {
     makeSupabaseMock({
       crew_members: {
-        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
       },
       products: { select: { data: [masterProduct], error: null } },
       inventory_items: { select: { data: [existingItem], error: null } },
@@ -95,7 +113,16 @@ describe('AddInventoryPage — Step 1 product resolution', () => {
   it('selects a catalog product and routes to the inventory form (P3.4)', async () => {
     makeSupabaseMock({
       crew_members: {
-        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
       },
       products: { select: { data: [masterProduct], error: null } },
       inventory_items: { select: { data: [], error: null } },
@@ -126,7 +153,16 @@ describe('AddInventoryPage — Step 1 product resolution', () => {
   it('Restock on existing item routes to the RestockForm', async () => {
     makeSupabaseMock({
       crew_members: {
-        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
       },
       products: { select: { data: [masterProduct], error: null } },
       inventory_items: { select: { data: [existingItem], error: null } },
@@ -168,7 +204,16 @@ describe('AddInventoryPage — Step 1 product resolution', () => {
     }
     const sb = makeSupabaseMock({
       crew_members: {
-        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
       },
       categories: { select: { data: [], error: null } },
       unit_definitions: { select: { data: [], error: null } },
@@ -214,7 +259,16 @@ describe('AddInventoryPage — Step 1 product resolution', () => {
     makeSupabaseMock(
       {
         crew_members: {
-          maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+          select: {
+            data: [
+              {
+                crew_id: 'crew_abc',
+                role: 'admin',
+                crews: { name: 'Test', owner_id: 'user_1' },
+              },
+            ],
+            error: null,
+          },
         },
         products: { select: { data: [masterProduct], error: null } },
         inventory_items: { select: { data: [], error: null } },
@@ -260,7 +314,16 @@ describe('AddInventoryPage — Step 1 product resolution', () => {
   it('back-arrow routes to /inventory', async () => {
     makeSupabaseMock({
       crew_members: {
-        maybeSingle: { data: { crew_id: 'crew_abc' }, error: null },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
       },
     })
     renderWithRouter(<AddInventoryPage />)

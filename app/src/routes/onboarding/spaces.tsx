@@ -16,51 +16,25 @@ import { TemplateBrowser } from '@/components/spaces/template-browser'
 import { Tree } from '@/components/spaces/tree'
 import { TreeEditor } from '@/components/spaces/tree-editor'
 import type { SpaceNode, UnitType } from '@/components/spaces/types'
+import { useActiveCrew } from '@/lib/active-crew'
 import { useSupabase } from '@/lib/supabase'
 
 type Phase = 'explainer' | 'premises' | 'guided' | 'editor'
-
-interface MembershipRow {
-  crew_id: string
-  role: string
-}
 
 export default function OnboardingSpacesPage() {
   // TODO(P2.7): "Use a template" entry point
   const { user } = useUser()
   const supabase = useSupabase()
   const navigate = useNavigate()
+  const { activeCrewId: crewId } = useActiveCrew(user?.id ?? null)
 
   const [phase, setPhase] = useState<Phase>(() =>
     readExplainerDismissed() ? 'premises' : 'explainer',
   )
-  const [crewId, setCrewId] = useState<string | null>(null)
   const [premises, setPremises] = useState<SpaceNode | null>(null)
   const [nodes, setNodes] = useState<SpaceNode[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  // Resolve the active crew from the user's most-recent active membership.
-  useEffect(() => {
-    let cancelled = false
-    async function loadCrew() {
-      const { data, error: queryError } = await supabase
-        .from('crew_members')
-        .select('crew_id, role')
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-      if (cancelled) return
-      if (queryError) return
-      const row = data as MembershipRow | null
-      if (row?.crew_id) setCrewId(row.crew_id)
-    }
-    void loadCrew()
-    return () => {
-      cancelled = true
-    }
-  }, [supabase])
 
   // Pull existing spaces for the crew so the tree reflects reality on remount.
   useEffect(() => {

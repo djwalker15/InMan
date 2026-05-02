@@ -16,12 +16,13 @@ vi.mock('react-router-dom', async () => {
 describe('DashboardPage', () => {
   beforeEach(() => {
     mockNavigate.mockClear()
+    localStorage.clear()
   })
 
-  it('queries crew_members count with head:true and deleted_at IS NULL', async () => {
+  it('queries crew_members via useActiveCrew (joined select, deleted_at IS NULL)', async () => {
     mockClerk({ user: { id: 'user_1', firstName: 'Davontae' } })
     const sb = makeSupabaseMock({
-      crew_members: { select: { count: 0, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
 
     renderWithRouter(<DashboardPage />)
@@ -30,16 +31,29 @@ describe('DashboardPage', () => {
       expect(sb.from).toHaveBeenCalledWith('crew_members')
     })
     expect(sb.tables.crew_members.select).toHaveBeenCalledWith(
-      'crew_member_id',
-      { count: 'exact', head: true },
+      'crew_id, role, crews(name, owner_id)',
     )
     expect(sb.tables.crew_members.is).toHaveBeenCalledWith('deleted_at', null)
   })
 
-  it('marks "Create your Crew" complete (line-through) when count > 0', async () => {
+  it('marks "Create your Crew" complete (line-through) when user has a membership', async () => {
     mockClerk({ user: { id: 'user_1', firstName: 'Davontae' } })
     makeSupabaseMock({
-      crew_members: { select: { count: 1, error: null } },
+      crew_members: {
+        select: {
+          data: [
+            {
+              crew_id: 'crew_1',
+              role: 'admin',
+              crews: { name: 'Walker Home', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
+      },
+      spaces: { select: { count: 0, error: null } },
+      inventory_items: { select: { count: 0, error: null } },
+      invites: { select: { count: 0, error: null } },
     })
 
     renderWithRouter(<DashboardPage />)
@@ -53,7 +67,7 @@ describe('DashboardPage', () => {
   it('does not mark crew row complete when there is no membership', async () => {
     mockClerk({ user: { id: 'user_1', firstName: 'Davontae' } })
     makeSupabaseMock({
-      crew_members: { select: { count: 0, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
 
     renderWithRouter(<DashboardPage />)
@@ -64,7 +78,7 @@ describe('DashboardPage', () => {
   it('renders the user firstName in the welcome heading', async () => {
     mockClerk({ user: { id: 'user_1', firstName: 'Davontae' } })
     makeSupabaseMock({
-      crew_members: { select: { count: 0, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
 
     renderWithRouter(<DashboardPage />)
@@ -78,7 +92,7 @@ describe('DashboardPage', () => {
       user: { id: 'user_1', firstName: null, username: null },
     })
     makeSupabaseMock({
-      crew_members: { select: { count: 0, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
 
     renderWithRouter(<DashboardPage />)
@@ -91,9 +105,14 @@ describe('DashboardPage', () => {
     mockClerk({ user: { id: 'user_1', firstName: 'Davontae' } })
     makeSupabaseMock({
       crew_members: {
-        select: { count: 1, error: null },
-        maybeSingle: {
-          data: { crew_id: 'crew_1', role: 'owner' },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_1',
+              role: 'admin',
+              crews: { name: 'Walker Home', owner_id: 'user_1' },
+            },
+          ],
           error: null,
         },
       },
@@ -130,13 +149,17 @@ describe('DashboardPage', () => {
     mockClerk({ user: { id: 'user_2', firstName: 'Alex' } })
     makeSupabaseMock({
       crew_members: {
-        select: { count: 1, error: null },
-        maybeSingle: {
-          data: { crew_id: 'crew_1', role: 'member' },
+        select: {
+          data: [
+            {
+              crew_id: 'crew_1',
+              role: 'member',
+              crews: { name: 'Walker Home', owner_id: 'user_1' },
+            },
+          ],
           error: null,
         },
       },
-      crews: { single: { data: { name: 'Walker Home' }, error: null } },
     })
 
     renderWithRouter(<DashboardPage />)
