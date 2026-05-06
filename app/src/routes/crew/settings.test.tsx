@@ -163,14 +163,47 @@ describe('CrewSettingsPage', () => {
     ).toBeInTheDocument()
   })
 
-  it('Permissions tab shows the P5.5 placeholder', async () => {
+  it('Permissions tab lets the Owner pick an editable member', async () => {
     mockClerk({ user: { id: 'user_1' } })
     setupSupabase()
     renderWithRouter(<CrewSettingsPage />, {
       route: '/crew/settings?tab=permissions',
     })
+    // The eligible member is preselected (Owner is filtered out, the
+    // viewer is filtered out, so only the friend remains). The grid for
+    // that member renders.
     await waitFor(() => {
-      expect(screen.getByText(/coming with p5\.5/i)).toBeInTheDocument()
+      expect(
+        screen.getByLabelText(/permissions for member · 2abc99/i),
+      ).toBeInTheDocument()
+    })
+    // The picker only has the friend — the Owner row never appears.
+    const picker = screen.getByRole('combobox', { name: /^member$/i })
+    expect(within(picker).getAllByRole('option')).toHaveLength(1)
+  })
+
+  it('Permissions tab tells Members it is admin-only', async () => {
+    mockClerk({ user: { id: 'user_friend_2abc99' } })
+    setupSupabase({
+      members: [
+        {
+          crew_member_id: 'cm_2',
+          crew_id: 'crew_a',
+          user_id: 'user_friend_2abc99',
+          role: 'member',
+          created_at: '2026-03-22T10:00:00Z',
+          permission_overrides: {},
+          crews: { name: 'Walker Home', owner_id: 'user_1' },
+        },
+      ],
+    })
+    renderWithRouter(<CrewSettingsPage />, {
+      route: '/crew/settings?tab=permissions',
+    })
+    await waitFor(() => {
+      expect(
+        screen.getByText(/managed by admins and the owner/i),
+      ).toBeInTheDocument()
     })
   })
 

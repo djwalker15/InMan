@@ -13,6 +13,10 @@ import {
 import { HeroCard, SecondaryButton } from '@/components/ds'
 import { InviteForm } from '@/components/crew/invite-form'
 import { MemberRowActions } from '@/components/crew/member-row-actions'
+import {
+  PermissionsGrid,
+  type OverrideValue,
+} from '@/components/crew/permissions-grid'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
 import { useActiveCrew } from '@/lib/active-crew'
 import { useSupabase } from '@/lib/supabase'
@@ -32,6 +36,7 @@ interface MemberRow {
   user_id: string
   role: string
   created_at: string
+  permission_overrides: Record<string, OverrideValue> | null
 }
 
 interface InviteRow {
@@ -112,7 +117,9 @@ export default function CrewSettingsPage() {
             .maybeSingle(),
           supabase
             .from('crew_members')
-            .select('crew_member_id, user_id, role, created_at')
+            .select(
+              'crew_member_id, user_id, role, created_at, permission_overrides',
+            )
             .eq('crew_id', id)
             .is('deleted_at', null)
             .order('created_at', { ascending: true }),
@@ -236,7 +243,15 @@ export default function CrewSettingsPage() {
                 onChanged={() => setRefetchTick((t) => t + 1)}
               />
             )}
-            {tab === 'permissions' && <ComingSoonTab phase="P5.5" />}
+            {tab === 'permissions' && (
+              <PermissionsTab
+                userId={user?.id ?? null}
+                userRole={userRole}
+                members={members ?? []}
+                ownerId={crew.owner_id}
+                onChanged={() => setRefetchTick((t) => t + 1)}
+              />
+            )}
             {tab === 'danger' && <ComingSoonTab phase="P5.6" />}
           </>
         )}
@@ -559,6 +574,108 @@ function computeCanRemove(
   if (viewerRole === 'owner') return true
   if (viewerRole === 'admin') return rowRole !== 'admin'
   return false
+}
+
+function PermissionsTab({
+  userId,
+  userRole,
+  members,
+  ownerId,
+  onChanged,
+}: {
+  userId: string | null
+  userRole: 'owner' | 'admin' | 'member' | 'viewer'
+  members: MemberRow[]
+  ownerId: string
+  onChanged: () => void
+}) {
+  const canManage = userRole === 'owner' || userRole === 'admin'
+
+  // Editable rows: every active member except the Owner and the viewer
+  // themselves. Admins additionally can't edit other Admins (the RPC
+  // enforces this; we hide the row to match).
+  const editable = useMemo(
+    () =>
+      members.filter((m) => {
+        if (m.user_id === ownerId) return false
+        if (m.user_id === userId) return false
+        if (userRole === 'admin' && m.role === 'admin') return false
+        return true
+      }),
+    [members, ownerId, userId, userRole],
+  )
+
+  const [pickedId, setPickedId] = useState<string | null>(null)
+
+  // Resolve the selected row by preferring the user's pick, falling
+  // back to the first eligible member. Doing this with useMemo means we
+  // never need an effect-driven reset when the editable list churns.
+  const selected = useMemo(() => {
+    if (pickedId) {
+      const match = editable.find((m) => m.crew_member_id === pickedId)
+      if (match) return match
+    }
+    return editable[0] ?? null
+  }, [editable, pickedId])
+
+  if (!canManage) {
+    return (
+      <section
+        role="tabpanel"
+        aria-label="Permissions"
+        className="rounded-2xl bg-paper-100 p-5 font-body text-sm text-ink-600"
+      >
+        Permission overrides are managed by Admins and the Owner. Reach out
+        to a crew Admin to adjust your access.
+      </section>
+    )
+  }
+
+  if (editable.length === 0 || !selected) {
+    return (
+      <section
+        role="tabpanel"
+        aria-label="Permissions"
+        className="rounded-2xl bg-paper-100 p-5 font-body text-sm text-ink-600"
+      >
+        No members are eligible for permission overrides yet. Invite a
+        member or change someone's role to use this tab.
+      </section>
+    )
+  }
+
+  return (
+    <section
+      role="tabpanel"
+      aria-label="Permissions"
+      className="flex flex-col gap-3"
+    >
+      <label className="flex flex-col gap-1">
+        <span className="px-1 font-display text-[10px] font-bold uppercase tracking-[0.55px] text-ink-500">
+          Member
+        </span>
+        <select
+          value={selected.crew_member_id}
+          onChange={(e) => setPickedId(e.target.value)}
+          className="rounded-xl bg-paper-100 px-3 py-3 font-body text-base text-ink-900 outline-none transition focus:bg-paper-250"
+        >
+          {editable.map((m) => (
+            <option key={m.crew_member_id} value={m.crew_member_id}>
+              {maskUserId(m.user_id)} — {capitalize(m.role)}
+            </option>
+          ))}
+        </select>
+      </label>
+      <PermissionsGrid
+        key={selected.crew_member_id}
+        crewMemberId={selected.crew_member_id}
+        memberRole={selected.role as 'admin' | 'member' | 'viewer'}
+        initialOverrides={selected.permission_overrides ?? {}}
+        memberDisplayName={maskUserId(selected.user_id)}
+        onSaved={onChanged}
+      />
+    </section>
+  )
 }
 
 function ComingSoonTab({ phase }: { phase: string }) {
