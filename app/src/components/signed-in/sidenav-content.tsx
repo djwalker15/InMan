@@ -33,6 +33,7 @@ const liveLinks: SidenavLink[] = [
   { to: '/inventory', label: 'Inventory', icon: <Clipboard size={18} /> },
   { to: '/alerts', label: 'Alerts', icon: <Bell size={18} /> },
   { to: '/spaces', label: 'Spaces', icon: <Boxes size={18} /> },
+  { to: '/crew/settings', label: 'Crew settings', icon: <Settings size={18} /> },
 ]
 
 /**
@@ -51,11 +52,6 @@ const pendingLinks: PendingLink[] = [
     label: 'Batches',
     icon: <Layers size={18} />,
     pendingNote: 'Later',
-  },
-  {
-    label: 'Crew settings',
-    icon: <Settings size={18} />,
-    pendingNote: 'Phase 5',
   },
 ]
 

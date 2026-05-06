@@ -58,8 +58,8 @@ describe('SignedInLayout', () => {
       </SignedInLayout>,
     )
     const dialog = openSidenav()
-    // Shopping, Batches, Crew settings still appear as disabled text rows
-    // (Inventory promoted to a live link in P3.2). Scope to the dialog so we
+    // Shopping and Batches still appear as disabled text rows (Inventory
+    // promoted in P3.2, Crew settings in P5.3). Scope to the dialog so we
     // don't match BottomNav.
     const shopping = within(dialog).getByText(/^shopping$/i)
     const shoppingRow = shopping.closest('[aria-disabled="true"]')
@@ -67,6 +67,20 @@ describe('SignedInLayout', () => {
     expect(
       within(dialog).queryByRole('link', { name: /^shopping$/i }),
     ).toBeNull()
+  })
+
+  it('Sidenav exposes Crew settings as a live link (P5.3)', () => {
+    mockClerk({ user: { id: 'user_1' } })
+    renderWithRouter(
+      <SignedInLayout>
+        <p>x</p>
+      </SignedInLayout>,
+    )
+    const dialog = openSidenav()
+    const settings = within(dialog).getByRole('link', {
+      name: /^crew settings$/i,
+    })
+    expect(settings).toHaveAttribute('href', '/crew/settings')
   })
 
   it('Sidenav exposes Inventory as a live link (P3.2)', () => {

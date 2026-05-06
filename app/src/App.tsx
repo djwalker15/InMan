@@ -13,6 +13,7 @@ import InventoryPage from './routes/inventory'
 import AddInventoryPage from './routes/inventory/add'
 import AlertsPage from './routes/alerts'
 import CrewsPage from './routes/crews'
+import CrewSettingsPage from './routes/crew/settings'
 import InviteAcceptPage, { InviteEntryPage } from './routes/invite-accept'
 import DashboardPage from './routes/dashboard'
 
@@ -34,6 +35,7 @@ export default function App() {
         <Route path="/inventory/add" element={<AddInventoryPage />} />
         <Route path="/alerts" element={<AlertsPage />} />
         <Route path="/crews" element={<CrewsPage />} />
+        <Route path="/crew/settings" element={<CrewSettingsPage />} />
         <Route path="/invite" element={<InviteEntryPage />} />
         <Route path="/invite/:code" element={<InviteAcceptPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
