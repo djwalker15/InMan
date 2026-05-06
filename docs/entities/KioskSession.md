@@ -74,5 +74,5 @@ For a home kitchen, OS lockdown isn't necessary. For Haywire, the tablet would u
 ## See Also
 
 - [[User Attribution]] — kiosk actions are still user-stamped
-- [[CrewMember]] — `kiosk_pin` field (required) for PIN-based identification
+- [[CrewMember]] — `kiosk_pin` field (nullable; prompted on first kiosk setup or use, not at sign-up) for PIN-based identification
 - [[Journey - Onboarding]] — kiosk enrollment is Path C of the onboarding flow

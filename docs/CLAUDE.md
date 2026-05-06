@@ -1,32 +1,27 @@
 # CLAUDE.md — InMan Project Context
 
 > **Last updated:** April 9, 2026
-> **Repositories:** djwalker15/Inmanprototype (app), djwalker15/InManVault (Obsidian vault)
+> **Repositories:** djwalker15/InMan (app), djwalker15/InManVault (Obsidian vault)
 > **Owner:** Davontae Walker (djwalker@tenacioustech.net)
 
 ---
 
 ## What Is InMan?
 
-InMan is an inventory management application for tracking what you have, where it's stored, how much is left, and what needs restocking. It's designed to scale from a single person in an apartment to a family household to a commercial environment like a bar.
+InMan is an inventory management application for tracking what you have, where it's stored, how much is left, and what needs restocking. It scales from a single person in an apartment to a family household to a commercial environment like a bar.
 
-The project started as a kitchen consumable tracker using Excel prototypes to validate the data model. The validated model is now being implemented as a full web application.
+The project has a complete conceptual data model (43 entities across 11 features), 26 documented user journeys, and 19 architecture decisions — ready for implementation.
 
 ---
 
 ## Tech Stack
 
-### Current (prototype)
-- **Frontend:** React 18, TypeScript, Vite, Tailwind CSS 4, Zustand 5 (state management)
-- **UI Components:** shadcn/ui (Radix primitives), Lucide icons, Sonner (toasts)
-- **Data:** Mock data in `src/app/data/mock-data.ts`, API layer in `src/app/data/api.ts`
-- **Routing:** React Router 7
-
-### Target (production)
-- **Backend/DB:** Supabase (PostgreSQL with RLS, Realtime subscriptions)
-- **Auth:** Clerk (third-party auth provider integrated with Supabase)
-- **Frontend:** Same React/TypeScript/Zustand stack, Clerk React components for auth UI
-- **State:** Zustand store interface stays the same — swap mock data source for Supabase client
+- **Frontend:** React 19, TypeScript, Vite 8, Tailwind CSS 4
+- **UI Components:** Custom design-system primitives under `app/src/components/ds/`, migrated from `inman-design-system/`
+- **Routing:** React Router v7
+- **Testing:** Vitest 4, Playwright 1.59
+- **Backend/DB:** Supabase (PostgreSQL with RLS, Edge Functions, Realtime subscriptions), Supabase JS v2
+- **Auth:** Clerk v5 (third-party auth provider integrated with Supabase, Clerk React components for auth UI)
 
 ---
 
@@ -100,12 +95,12 @@ A `unit_definitions` reference table provides conversion factors within unit cat
 | kg | weight | g | 1000 |
 | oz | weight | g | 28.3495 |
 | lbs | weight | g | 453.592 |
-| ml | volume | ml | 1 |
-| L | volume | ml | 1000 |
-| tsp | volume | ml | 4.929 |
-| tbsp | volume | ml | 14.787 |
-| cup | volume | ml | 236.588 |
-| fl_oz | volume | ml | 29.574 |
+| ml | volume | fl_oz | 0.033814 |
+| L | volume | fl_oz | 33.814 |
+| tsp | volume | fl_oz | 0.166667 |
+| tbsp | volume | fl_oz | 0.5 |
+| cup | volume | fl_oz | 8 |
+| fl_oz | volume | fl_oz | 1 |
 | count | count | count | 1 |
 | pkg | count | count | 1 |
 
@@ -334,33 +329,6 @@ Immutable entities (Flow, all Flow child tables, WasteEvent, waste details, Batc
 
 ---
 
-## Current File Structure
-
-```
-src/
-├── app/
-│   ├── components/
-│   │   ├── ui/           # shadcn/ui components (card, button, dialog, table, etc.)
-│   │   ├── layout.tsx    # Main layout with nav sidebar
-│   │   ├── dashboard.tsx
-│   │   ├── inventory-page.tsx
-│   │   ├── spaces-page.tsx
-│   │   ├── categories-page.tsx
-│   │   └── low-stock-page.tsx
-│   ├── data/
-│   │   ├── types.ts      # TypeScript interfaces (Space, Category, InventoryItem)
-│   │   ├── store.ts      # Zustand store
-│   │   ├── api.ts        # Data access layer (currently mock, will swap to Supabase)
-│   │   └── mock-data.ts  # Seed data (53 spaces, 12 categories, 227 items)
-│   └── App.tsx           # Router setup
-├── imports/
-│   ├── inman-project-context.md
-│   └── inman-supabase-refactor.md
-└── index.tsx
-```
-
----
-
 ## Key Design Principles
 
 1. **Flow ledger is canonical.** `quantity` on InventoryItem is a cache. All inventory changes go through Flows. No direct quantity updates.
@@ -415,87 +383,75 @@ src/
 
 ---
 
-## Implementation Build Order
+## MVP Scope
 
-Foundation-up, following the dependency chain:
+The MVP delivers the core inventory loop: auth, Crews, Spaces, Products, InventoryItems, and Flows. Six journeys: Onboarding (Path A), Space Setup, Adding Inventory (manual), Checking Stock, Moving Items (single + put-back), Crew Management (invite + roles).
 
-### Phase 1 — Foundation
-1. `users` (slim Clerk reference)
-2. `crews`
-3. `crew_members`
-4. `invites`
-5. `spaces` + `space_templates`
-6. `categories`
-7. `products`
-8. `product_groups`
-9. `product_submissions`
-10. `inventory_items`
-11. `unit_definitions` (seed data)
+**13 tables:** users, crews, crew_members, invites, spaces, categories, product_groups, products, inventory_items, unit_definitions, flows, flow_purchase_details, flow_transfer_details.
 
-### Phase 2 — Transactions
-12. `flows` (base table)
-13. `flow_purchase_details` + `flow_transfer_details` + `flow_prep_usage_details` + `flow_adjustment_details`
-14. `waste_events` + all 6 waste detail tables
-15. `intake_sessions` + `intake_session_items`
+**Post-MVP phases:** v1.1 Waste → v1.2 Recipes & Batching → v1.3 Shopping → v1.4 Kiosk → v1.5 Admin & Reporting.
 
-### Phase 3 — Recipes & Batching
-16. `recipes` + `recipe_versions` + `recipe_steps`
-17. `recipe_ingredients` (base table) + `recipe_ingredient_product_refs` + `recipe_ingredient_group_refs` + `recipe_ingredient_recipe_refs` + `recipe_ingredient_free_texts`
-18. `batch_events` + `batch_inputs` + `batch_outputs`
-19. Edge functions for batch completion (progressive deduction + atomic output creation)
-
-### Phase 4 — Shopping & Kiosk
-20. `shopping_lists`
-21. `shopping_list_items` (base table) + `shopping_list_item_low_stock_sources` + `shopping_list_item_recipe_sources` + `shopping_list_item_batch_sources`
-22. `kiosk_sessions`
-23. Edge functions for shopping checkout, intake session completion, kiosk action routing
-
-Each phase includes: SQL migration, RLS policies, soft delete support, updated_at triggers, TypeScript types, Zustand store updates, and UI components.
+Full implementation plan: `inman-vault/InMan Implementation Plan.md`
 
 ---
 
-## What Exists Now vs. What's Changing
+## Implementation Sequence
 
-### Exists (keep the shape, update the implementation):
-- Self-referencing space hierarchy with parent_id — correct, stays
-- Zustand store interface — stays, swap data source to Supabase
-- Recursive breadcrumb logic in UI — works with new model
-- Tree dropdown for space selection — works
+**Hybrid approach:** Foundation DB first (all 13 MVP tables with RLS, triggers, seed data), then vertical journey-by-journey frontend development.
 
-### Changing:
-- `Location` → `Space` terminology (partially done in types.ts, needs full sweep)
-- 6 unit types → 7 (adding `sub_section`, redefining `container` as portable-only)
-- Single `space_id` on items → split into `home_space_id` + `current_space_id`
-- Flat item model → Product + InventoryItem split
-- `location_id` → `space_id` (partially done)
-- Mock data → Supabase with Clerk auth
-- Integer user IDs → text (Clerk string IDs)
-- No cost tracking → full cost pipeline
-- No flow history → unified Flow ledger (quantity on items is a cache)
-- No direction column on Flow — derived from flow_type
-- No soft deletes → `deleted_at` on all mutable entities
-- No unit conversion → UnitDefinition reference table with within-category conversion
+### Phase 0 — Project Scaffolding ✅ done
+Repo (`djwalker15/InMan`), Vite + React 19 + TypeScript, Tailwind CSS 4, Clerk + Supabase wiring, root `CLAUDE.md`, `app/` scaffolding all in place.
+
+### Phase 1 — Foundation DB (13 steps) — in progress
+Auth slice (`users`, `crews`, `crew_members`), invites slice, spaces slice, and inventory slice (`categories`, `products`, `inventory_items`, `unit_definitions`, `flows`, `flow_purchase_details`, `flow_transfer_details`) are landed under `supabase/migrations/`. The 20 documented system categories are fully seeded, and a starter master catalog of 227 hand-categorized products derived from the curator's kitchen CSV is in place — enough to drive the Adding Inventory journey end-to-end. The Open Food Facts pipeline for ~50–100 `product_groups` and a 500–1000-product expansion is still ahead. `product_groups` itself is deferred to v1.2 Recipes (no inventory journey depends on it).
+
+Each step: SQL migration, RLS policies (`auth.jwt()->>'sub'`), `updated_at` trigger, soft delete (`deleted_at`), indexes.
+
+### Phase 2 — Vertical Journeys (6 journeys) — in progress
+2.1 Onboarding (Path A) → 2.2 Space Setup → 2.3 Adding Inventory → 2.4 Checking Stock → 2.5 Moving Items → 2.6 Crew Management
+
+Adding Inventory (product resolution, atomic `record_purchase` RPC, restock sub-flow, list shell) is the active slice. Each journey: TypeScript types → Supabase queries → React components under `app/src/components/` → route registration.
 
 ---
 
-## Superseded Guidance
+## Edge Function Inventory
 
-The following documents contain decisions that have been **superseded** by the conceptual data model. Use this CLAUDE.md as the authoritative reference.
+### Database RPC Functions (MVP)
+- `add_inventory_item` — insert InventoryItem + Flow + FlowPurchaseDetail
+- `restock_inventory_item` — insert Flow + FlowPurchaseDetail + update cached quantity
+- `move_inventory_item` — update current_space_id + insert Flow + FlowTransferDetail
+- `put_back_items` — batch: update current_space_id + insert Flows for each checked item
+- `create_crew_with_owner` — insert Crew + CrewMember
+- `accept_invite` — update Invite + insert CrewMember
 
-### From `src/imports/inman-supabase-refactor.md`:
-- ❌ **6 unit types** → ✅ now 7 (added `sub_section`, redefined `container` as portable-only)
-- ❌ **Single `space_id` on items** → ✅ now `home_space_id` + `current_space_id`
-- ❌ **`cabinet`, `drawer`, `compartment` unit types** → ✅ all become `sub_section`
-- ❌ **`container` meant cabinets/drawers** → ✅ now means portable storage only
-- ❌ **RLS using `auth.uid()`** → ✅ now `auth.jwt()->>'sub'` (Clerk)
-- ❌ **Single-user assumption** → ✅ now multi-tenant via Crew
-- ❌ **No Product/InventoryItem split** → ✅ now two-layer catalog
-- ❌ **`on delete restrict` with app-layer cascade** → ✅ now soft deletes (`deleted_at`)
+### Edge Functions (MVP)
+- `send_invite` — insert Invite + send email (external API)
+- `sync_clerk_user` — Clerk webhook handler → insert/update User row
 
-### From `src/imports/inman-project-context.md`:
-- ❌ **12 categories from pantry catalog** → ✅ consolidated to 14 in v4, becoming system defaults + crew-custom
-- ❌ **`location_id`** → ✅ `home_space_id` + `current_space_id`
-- ❌ **Phase 2 (CLI/SQLite)** → ✅ skipped, going directly to Supabase
+### Post-MVP Edge Functions (identified)
+- `log_waste` (v1.1), `complete_batch` (v1.2), `checkout_shopping_trip` (v1.3), `complete_intake_session` (v1.3), `kiosk_action_router` (v1.4), `run_reconciliation` (v1.5)
+
+---
+
+## Route Map (MVP — 10 routes)
+
+**Public:** `/`, `/sign-up`, `/sign-in`, `/invite/:code`
+**No Crew:** `/onboarding`
+**Main app:** `/dashboard`, `/inventory`, `/spaces`, `/spaces/setup`, `/crews`, `/crew/settings`
+
+---
+
+## Seed Data Strategy
+
+| Data | Rows | Method |
+|------|------|--------|
+| `unit_definitions` | 12 | SQL migration — hardcoded |
+| `categories` (global) | 20 | SQL migration — hardcoded |
+| `product_groups` (global) | 50-100 | Pre-launch pipeline — Open Food Facts taxonomy |
+| `products` (master catalog) | 500-1000 | Pre-launch pipeline — Open Food Facts filtered import, linked to groups |
+| `space_templates` | 0 | Post-launch — built iteratively |
+
+**Open Food Facts pipeline:** Download bulk CSV → filter US products with valid UPC/brand → extract ProductGroups from mid-level taxonomy → map to 20 categories → link Products to groups → manual review → output SQL seed files.
 
 ---
 
@@ -504,7 +460,7 @@ The following documents contain decisions that have been **superseded** by the c
 Full index with statuses, dependencies, and entity frequency: `inman-vault/InMan User Journeys.md`
 
 ### Onboarding & Setup (3 journeys)
-- **Onboarding** — Three entry points: root URL (landing page), invite link, kiosk enrollment. Path A: sign up → create Crew → PIN setup → space setup → add items → invite members → dashboard. Path B: invite link → accept → dashboard. Path C: admin enrolls kiosk device with token.
+- **Onboarding** — Three entry points: root URL (landing page), invite link, kiosk enrollment. Path A: sign up → create Crew → space setup → add items → invite members → dashboard. Path B: invite link → accept → dashboard. Path C: admin enrolls kiosk device with token. Kiosk PIN is collected the first time a member touches kiosk setup or use, not at sign-up or invite acceptance.
 - **Space Setup** — Five phases: visual explainer → create Premises → guided first branch (smart defaults, live tree, wider/deeper prompts) → tree editor handoff → template option (merge or replace).
 - **Crew Management** — Eight admin actions: invite, change roles, permission overrides, remove members, transfer ownership (Owner-only), leave crew, edit settings, delete crew (48h waiting period). Owner distinct from Admin. Crew switcher + dedicated settings page.
 
@@ -547,8 +503,7 @@ Full index with statuses, dependencies, and entity frequency: `inman-vault/InMan
 
 ## Reference Documents
 
-- `inman-vault/` — Complete Obsidian vault with 83 markdown files: 43 entities, 11 features, 24 user journeys, 3 cross-cutting concerns, 2 index documents. Hosted at github.com/djwalker15/InManVault.
+- `inman-vault/` — Complete Obsidian vault with 84 markdown files: 43 entities, 11 features, 24 user journeys, 3 cross-cutting concerns, 3 index documents. Hosted at github.com/djwalker15/InManVault.
+- `inman-vault/InMan Implementation Plan.md` — MVP scope, implementation sequence, edge function inventory, route map, seed data strategy
 - `InMan_ERD.mermaid` — Full entity relationship diagram with all 43 entities and relationships
-- `src/imports/inman-project-context.md` — Original project context from prototype phase (**see Superseded Guidance above**)
-- `src/imports/inman-supabase-refactor.md` — Earlier refactor decisions (**see Superseded Guidance above**)
 - FigJam diagrams — Onboarding flow (Paths A+B, Path C) and ERD cluster diagrams in Figma
