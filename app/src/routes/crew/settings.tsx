@@ -6,9 +6,13 @@ import {
   ArrowLeft,
   Lock,
   Mail,
+  Plus,
   ShieldCheck,
+  X,
 } from 'lucide-react'
-import { Chip, HeroCard } from '@/components/ds'
+import { HeroCard, SecondaryButton } from '@/components/ds'
+import { InviteForm } from '@/components/crew/invite-form'
+import { MemberRowActions } from '@/components/crew/member-row-actions'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
 import { useActiveCrew } from '@/lib/active-crew'
 import { useSupabase } from '@/lib/supabase'
@@ -81,6 +85,9 @@ export default function CrewSettingsPage() {
 
   const [snapshot, setSnapshot] = useState<CrewSnapshot | null>(null)
   const [error, setError] = useState<string | null>(null)
+  // Bumping this triggers the load effect to refetch — used after mutations
+  // (invite send, role change, remove member, revoke invite).
+  const [refetchTick, setRefetchTick] = useState(0)
   // Loading is derived: we have not yet fetched data for the current crewId.
   const loading = crewId !== null && snapshot?.crewId !== crewId && !error
   const crew = snapshot?.crewId === crewId ? snapshot.crew : null
@@ -144,7 +151,7 @@ export default function CrewSettingsPage() {
     return () => {
       cancelled = true
     }
-  }, [supabase, crewId])
+  }, [supabase, crewId, refetchTick])
 
   if (crewsLoading) {
     return (
@@ -220,10 +227,13 @@ export default function CrewSettingsPage() {
             )}
             {tab === 'members' && (
               <MembersTab
+                crewId={crew.crew_id}
+                userId={user?.id ?? null}
+                userRole={userRole}
                 members={members ?? []}
                 ownerId={crew.owner_id}
-                currentUserId={user?.id ?? null}
                 pendingInvites={pendingInvites ?? []}
+                onChanged={() => setRefetchTick((t) => t + 1)}
               />
             )}
             {tab === 'permissions' && <ComingSoonTab phase="P5.5" />}
@@ -306,7 +316,7 @@ function GeneralTab({
       />
       {(userRole === 'owner' || userRole === 'admin') && (
         <p className="px-1 font-body text-xs text-ink-500">
-          Editing crew name and preferences is part of P5.4.
+          Editing crew name and preferences is queued for a later phase.
         </p>
       )}
     </section>
@@ -327,16 +337,23 @@ function DetailCard({ label, value }: { label: string; value: string }) {
 }
 
 function MembersTab({
+  crewId,
+  userId,
+  userRole,
   members,
   ownerId,
-  currentUserId,
   pendingInvites,
+  onChanged,
 }: {
+  crewId: string
+  userId: string | null
+  userRole: 'owner' | 'admin' | 'member' | 'viewer'
   members: MemberRow[]
   ownerId: string
-  currentUserId: string | null
   pendingInvites: InviteRow[]
+  onChanged: () => void
 }) {
+  const [inviteOpen, setInviteOpen] = useState(false)
   const sorted = [...members].sort((a, b) => {
     const ar = a.user_id === ownerId ? -1 : (ROLE_RANK[a.role] ?? 99)
     const br = b.user_id === ownerId ? -1 : (ROLE_RANK[b.role] ?? 99)
@@ -344,17 +361,51 @@ function MembersTab({
     return a.created_at.localeCompare(b.created_at)
   })
 
+  const canManageMembers = userRole === 'owner' || userRole === 'admin'
+
   return (
     <section
       role="tabpanel"
       aria-label="Members"
       className="flex flex-col gap-4"
     >
+      {canManageMembers && (
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="px-1 font-display text-[10px] font-bold uppercase tracking-[0.55px] text-ink-500">
+            Active members · {sorted.length}
+          </h2>
+          {!inviteOpen && (
+            <SecondaryButton
+              type="button"
+              onClick={() => setInviteOpen(true)}
+              className="!h-10 !w-auto px-3 !text-sm"
+            >
+              <Plus size={14} aria-hidden />
+              Invite
+            </SecondaryButton>
+          )}
+        </div>
+      )}
+
+      {canManageMembers && inviteOpen && userId && (
+        <InviteForm
+          crewId={crewId}
+          invitedBy={userId}
+          onSent={onChanged}
+          onCancel={() => setInviteOpen(false)}
+        />
+      )}
+
       <ul aria-label="Active members" className="flex flex-col gap-2">
         {sorted.map((m) => {
           const isOwner = m.user_id === ownerId
-          const isYou = m.user_id === currentUserId
-          const role = isOwner ? 'owner' : m.role
+          const isYou = m.user_id === userId
+          const role: 'owner' | 'admin' | 'member' | 'viewer' = isOwner
+            ? 'owner'
+            : (m.role as 'admin' | 'member' | 'viewer')
+          const canChangeRole = computeCanChangeRole(userRole, role, isYou)
+          const canRemove = computeCanRemove(userRole, role, isYou)
+          const displayName = isYou ? 'You' : maskUserId(m.user_id)
           return (
             <li
               key={m.crew_member_id}
@@ -364,16 +415,21 @@ function MembersTab({
               <div className="flex flex-1 flex-col gap-1 min-w-0">
                 <span className="flex items-center gap-2">
                   <span className="truncate font-display text-base font-bold text-ink-900">
-                    {isYou ? 'You' : maskUserId(m.user_id)}
+                    {displayName}
                   </span>
                 </span>
                 <span className="font-body text-xs text-ink-500">
                   Joined {formatDate(m.created_at)}
                 </span>
               </div>
-              <Chip variant={isOwner ? 'sage' : 'default'}>
-                {capitalize(role)}
-              </Chip>
+              <MemberRowActions
+                crewMemberId={m.crew_member_id}
+                effectiveRole={role}
+                canChangeRole={canChangeRole}
+                canRemove={canRemove}
+                displayName={displayName}
+                onChanged={onChanged}
+              />
             </li>
           )
         })}
@@ -385,37 +441,124 @@ function MembersTab({
         </h2>
         {pendingInvites.length === 0 ? (
           <p className="rounded-2xl bg-paper-100 px-4 py-3 font-body text-sm text-ink-600">
-            No pending invites. Inviting members ships in P5.4.
+            {canManageMembers
+              ? 'No pending invites. Use Invite above to add members.'
+              : 'No pending invites.'}
           </p>
         ) : (
           <ul aria-label="Pending invites" className="flex flex-col gap-2">
             {pendingInvites.map((inv) => (
-              <li
+              <PendingInviteRow
                 key={inv.invite_id}
-                className="flex items-center gap-3 rounded-2xl bg-paper-50 p-4 shadow-ambient-sm"
-              >
-                <span
-                  aria-hidden
-                  className="flex size-9 shrink-0 items-center justify-center rounded-full bg-paper-200 text-ink-600"
-                >
-                  <Mail size={16} />
-                </span>
-                <div className="flex flex-1 flex-col min-w-0">
-                  <span className="truncate font-display text-base font-bold text-ink-900">
-                    {inv.email}
-                  </span>
-                  <span className="font-body text-xs text-ink-500">
-                    {capitalize(inv.role)} · sent {formatDate(inv.created_at)}{' '}
-                    · expires {formatDate(inv.expires_at)}
-                  </span>
-                </div>
-              </li>
+                invite={inv}
+                canRevoke={canManageMembers}
+                onRevoked={onChanged}
+              />
             ))}
           </ul>
         )}
       </div>
     </section>
   )
+}
+
+function PendingInviteRow({
+  invite,
+  canRevoke,
+  onRevoked,
+}: {
+  invite: InviteRow
+  canRevoke: boolean
+  onRevoked: () => void
+}) {
+  const supabase = useSupabase()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleRevoke() {
+    if (busy) return
+    const ok = window.confirm(
+      `Revoke the invite for ${invite.email}? They won't be able to use the link to join.`,
+    )
+    if (!ok) return
+    setBusy(true)
+    setError(null)
+    const { error: updateError } = await supabase
+      .from('invites')
+      .update({ status: 'revoked' })
+      .eq('invite_id', invite.invite_id)
+    setBusy(false)
+    if (updateError) {
+      setError(updateError.message ?? 'Failed to revoke invite.')
+      return
+    }
+    onRevoked()
+  }
+
+  return (
+    <li className="flex flex-col gap-2 rounded-2xl bg-paper-50 p-4 shadow-ambient-sm">
+      <div className="flex items-center gap-3">
+        <span
+          aria-hidden
+          className="flex size-9 shrink-0 items-center justify-center rounded-full bg-paper-200 text-ink-600"
+        >
+          <Mail size={16} />
+        </span>
+        <div className="flex flex-1 flex-col min-w-0">
+          <span className="truncate font-display text-base font-bold text-ink-900">
+            {invite.email}
+          </span>
+          <span className="font-body text-xs text-ink-500">
+            {capitalize(invite.role)} · sent {formatDate(invite.created_at)} ·
+            expires {formatDate(invite.expires_at)}
+          </span>
+        </div>
+        {canRevoke && (
+          <button
+            type="button"
+            aria-label={`Revoke invite for ${invite.email}`}
+            disabled={busy}
+            onClick={() => void handleRevoke()}
+            className="flex size-9 items-center justify-center rounded-full text-ink-600 transition hover:bg-paper-200 disabled:opacity-50"
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
+      {error && (
+        <p
+          role="alert"
+          className="rounded-md bg-red-50 px-3 py-2 font-body text-xs text-red-700"
+        >
+          {error}
+        </p>
+      )}
+    </li>
+  )
+}
+
+function computeCanChangeRole(
+  viewerRole: 'owner' | 'admin' | 'member' | 'viewer',
+  rowRole: 'owner' | 'admin' | 'member' | 'viewer',
+  isSelf: boolean,
+): boolean {
+  if (isSelf) return false
+  if (rowRole === 'owner') return false
+  if (viewerRole === 'owner') return true
+  if (viewerRole === 'admin') return rowRole !== 'admin'
+  return false
+}
+
+function computeCanRemove(
+  viewerRole: 'owner' | 'admin' | 'member' | 'viewer',
+  rowRole: 'owner' | 'admin' | 'member' | 'viewer',
+  isSelf: boolean,
+): boolean {
+  if (isSelf) return false
+  if (rowRole === 'owner') return false
+  if (viewerRole === 'owner') return true
+  if (viewerRole === 'admin') return rowRole !== 'admin'
+  return false
 }
 
 function ComingSoonTab({ phase }: { phase: string }) {
