@@ -69,14 +69,6 @@ describe('ReorganizeMode (shell)', () => {
     ).toBeInTheDocument()
   })
 
-  it('Delete still shows the P6.4 placeholder', () => {
-    makeSupabaseMock({})
-    render(<ReorganizeMode {...defaultProps()} />)
-    fireEvent.click(screen.getByRole('button', { name: /^Delete\b/ }))
-    expect(
-      screen.getByText(/delete — coming with p6\.4/i),
-    ).toBeInTheDocument()
-  })
 
   it('Done and Cancel both invoke onExit', () => {
     makeSupabaseMock({})
@@ -209,5 +201,120 @@ describe('ReorganizeMode › Merge', () => {
     expect(impact).toHaveTextContent('Transfer Flows')
     expect(impact).toHaveTextContent('Home updates')
     expect(impact).toHaveTextContent('Children re-parented')
+  })
+})
+
+describe('ReorganizeMode › Delete', () => {
+  it('pre-selects the source parent as the items target and confirms the delete', async () => {
+    const sb = makeSupabaseMock(
+      {},
+      { delete_space_with_items: { error: null } },
+    )
+    const props = defaultProps()
+    renderWithRouter(<ReorganizeMode {...props} />)
+    fireEvent.click(screen.getByRole('button', { name: /^Delete\b/ }))
+    fireEvent.change(screen.getByLabelText(/delete this space/i), {
+      target: { value: 'sub2' },
+    })
+    // The default target is sub2's parent (z) — Confirm delete should be
+    // enabled without the user touching the target picker.
+    const confirm = screen.getByRole('button', { name: /confirm delete/i })
+    expect(confirm).toBeEnabled()
+    fireEvent.click(confirm)
+    await waitFor(() => {
+      expect(sb.rpc).toHaveBeenCalledWith('delete_space_with_items', {
+        p_space_id: 'sub2',
+        p_items_target_id: 'z',
+        p_clear_homes: false,
+      })
+    })
+    expect(props.onApplied).toHaveBeenCalled()
+  })
+
+  it('toggling Clear homes flips p_clear_homes to true', async () => {
+    const sb = makeSupabaseMock(
+      {},
+      { delete_space_with_items: { error: null } },
+    )
+    renderWithRouter(<ReorganizeMode {...defaultProps()} />)
+    fireEvent.click(screen.getByRole('button', { name: /^Delete\b/ }))
+    fireEvent.change(screen.getByLabelText(/delete this space/i), {
+      target: { value: 'sub2' },
+    })
+    fireEvent.click(screen.getByLabelText(/clear home location/i))
+    fireEvent.click(screen.getByRole('button', { name: /confirm delete/i }))
+    await waitFor(() => {
+      expect(sb.rpc).toHaveBeenCalledWith('delete_space_with_items', {
+        p_space_id: 'sub2',
+        p_items_target_id: 'z',
+        p_clear_homes: true,
+      })
+    })
+  })
+})
+
+describe('ReorganizeMode › Split', () => {
+  it('Confirm split is disabled until a source AND a non-empty new name', () => {
+    makeSupabaseMock({})
+    renderWithRouter(<ReorganizeMode {...defaultProps()} />)
+    fireEvent.click(screen.getByRole('button', { name: /^Split\b/ }))
+    const confirm = screen.getByRole('button', { name: /confirm split/i })
+    expect(confirm).toBeDisabled()
+    fireEvent.change(screen.getByLabelText(/split this space/i), {
+      target: { value: 'sub2' },
+    })
+    expect(confirm).toBeDisabled()
+    fireEvent.change(screen.getByLabelText(/new sibling name/i), {
+      target: { value: 'Cabinet 2 (Right)' },
+    })
+    expect(confirm).toBeEnabled()
+  })
+
+  it('passes the picked item ids and the picked child ids to split_space', async () => {
+    const sb = makeSupabaseMock({}, { split_space: { error: null } })
+    const props = defaultProps()
+    renderWithRouter(<ReorganizeMode {...props} />)
+    fireEvent.click(screen.getByRole('button', { name: /^Split\b/ }))
+    fireEvent.change(screen.getByLabelText(/split this space/i), {
+      target: { value: 'z' },
+    })
+    fireEvent.change(screen.getByLabelText(/new sibling name/i), {
+      target: { value: 'Back (Right)' },
+    })
+    // Children of 'z' are sub1 and sub2; pick sub2 to move to the new
+    // sibling. (z has no items in the baseItems, so the items list is
+    // empty for this node.)
+    fireEvent.click(
+      screen.getByRole('checkbox', { name: /^cabinet 2$/i }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: /confirm split/i }))
+    await waitFor(() => {
+      expect(sb.rpc).toHaveBeenCalledWith('split_space', {
+        p_space_id: 'z',
+        p_new_name: 'Back (Right)',
+        p_item_ids: [],
+        p_child_space_ids: ['sub2'],
+      })
+    })
+    expect(props.onApplied).toHaveBeenCalled()
+  })
+
+  it("trims the new sibling name before sending it", async () => {
+    const sb = makeSupabaseMock({}, { split_space: { error: null } })
+    renderWithRouter(<ReorganizeMode {...defaultProps()} />)
+    fireEvent.click(screen.getByRole('button', { name: /^Split\b/ }))
+    fireEvent.change(screen.getByLabelText(/split this space/i), {
+      target: { value: 'sub2' },
+    })
+    fireEvent.change(screen.getByLabelText(/new sibling name/i), {
+      target: { value: '  Cabinet 2 (Right)  ' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /confirm split/i }))
+    await waitFor(() => {
+      expect(sb.rpc).toHaveBeenCalledWith(
+        'split_space',
+        expect.objectContaining({ p_new_name: 'Cabinet 2 (Right)' }),
+      )
+    })
   })
 })

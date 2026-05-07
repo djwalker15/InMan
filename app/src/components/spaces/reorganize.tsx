@@ -30,15 +30,12 @@ const OPERATIONS: {
   label: string
   blurb: string
   icon: React.ComponentType<{ size?: number; 'aria-hidden'?: boolean }>
-  /** Phase the operation's behavior is queued behind. */
-  phase: 'P6.3' | 'P6.4'
 }[] = [
   {
     id: 'move',
     label: 'Move',
     blurb: 'Relocate a Space (and its children) to a new parent. No item Flows.',
     icon: ArrowRightLeft,
-    phase: 'P6.3',
   },
   {
     id: 'merge',
@@ -46,23 +43,20 @@ const OPERATIONS: {
     blurb:
       'Combine two Spaces. Items move to the target with transfer Flows; source is soft-deleted.',
     icon: GitMerge,
-    phase: 'P6.3',
   },
   {
     id: 'delete',
     label: 'Delete',
     blurb:
-      'Remove a Space and reassign / clear its items and children explicitly.',
+      'Remove a Space. Items move to a target you pick; children re-parent to the deleted Space’s parent.',
     icon: Trash2,
-    phase: 'P6.4',
   },
   {
     id: 'split',
     label: 'Split',
     blurb:
-      'Divide one Space into two. Pick which items and child Spaces go where.',
+      'Divide one Space into two. Pick which items and child Spaces go to the new sibling.',
     icon: Scissors,
-    phase: 'P6.4',
   },
 ]
 
@@ -88,7 +82,6 @@ export function ReorganizeMode({
     () => nodes.filter((n) => !n.deleted_at),
     [nodes],
   )
-  const selected = OPERATIONS.find((o) => o.id === operation) ?? null
 
   return (
     <section
@@ -167,12 +160,28 @@ export function ReorganizeMode({
             setOperation(null)
           }}
         />
-      ) : selected ? (
-        <ComingSoonPanel operation={selected} />
+      ) : operation === 'delete' ? (
+        <DeletePanel
+          nodes={liveNodes}
+          items={items}
+          onConfirmed={() => {
+            onApplied()
+            setOperation(null)
+          }}
+        />
+      ) : operation === 'split' ? (
+        <SplitPanel
+          nodes={liveNodes}
+          items={items}
+          onConfirmed={() => {
+            onApplied()
+            setOperation(null)
+          }}
+        />
       ) : (
         <p className="rounded-xl bg-paper-100 p-4 font-body text-sm text-ink-600">
-          Pick an operation above to begin. The currently-shipped tree editor
-          remains available — return to it any time with “Done”.
+          Pick an operation above to begin. The currently-shipped tree
+          editor remains available — return to it any time with “Done”.
         </p>
       )}
 
@@ -186,33 +195,6 @@ export function ReorganizeMode({
         </SecondaryButton>
       </footer>
     </section>
-  )
-}
-
-function ComingSoonPanel({
-  operation,
-}: {
-  operation: (typeof OPERATIONS)[number]
-}) {
-  const Icon = operation.icon
-  return (
-    <div
-      aria-label={`${operation.label} configuration`}
-      className="flex items-start gap-3 rounded-xl bg-paper-100 p-4"
-    >
-      <span
-        aria-hidden
-        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-paper-200 text-ink-700"
-      >
-        <Icon size={16} />
-      </span>
-      <div className="flex flex-col gap-1">
-        <p className="font-display text-base font-bold text-ink-900">
-          {operation.label} — coming with {operation.phase}
-        </p>
-        <p className="font-body text-sm text-ink-600">{operation.blurb}</p>
-      </div>
-    </div>
   )
 }
 
@@ -499,6 +481,388 @@ function MergePanel({ nodes, items, onConfirmed }: MergePanelProps) {
           className="!h-10 !w-auto px-4 !text-sm"
         >
           {busy ? 'Merging…' : 'Confirm merge'}
+        </PrimaryButton>
+      </div>
+      <PreviewTree nodes={nodes} highlightedSourceId={sourceId} />
+    </div>
+  )
+}
+
+/* ─────────────────────────────────────────────────────────────────
+ * Delete
+ * ───────────────────────────────────────────────────────────────── */
+
+interface DeletePanelProps {
+  nodes: SpaceNode[]
+  items: ReorganizeItem[]
+  onConfirmed: () => void
+}
+
+function DeletePanel({ nodes, items, onConfirmed }: DeletePanelProps) {
+  const supabase = useSupabase()
+  const [sourceId, setSourceId] = useState<string>('')
+  const [targetId, setTargetId] = useState<string>('')
+  const [clearHomes, setClearHomes] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const sourceOptions = useMemo(
+    () =>
+      nodes
+        .filter((n) => n.parent_id !== null)
+        .map((n) => ({ id: n.space_id, label: pathLabel(nodes, n.space_id) }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [nodes],
+  )
+
+  const source = useMemo(
+    () => nodes.find((n) => n.space_id === sourceId) ?? null,
+    [nodes, sourceId],
+  )
+
+  // Items target must (a) be live, (b) live OUTSIDE the source's subtree
+  // (so it isn't deleted next), and (c) NOT be the source itself.
+  const targetOptions = useMemo(() => {
+    if (!source) return []
+    const excluded = new Set<string>([sourceId, ...descendantIds(nodes, sourceId)])
+    return nodes
+      .filter((n) => !excluded.has(n.space_id))
+      .map((n) => ({ id: n.space_id, label: pathLabel(nodes, n.space_id) }))
+      .sort((a, b) => a.label.localeCompare(b.label))
+  }, [nodes, source, sourceId])
+
+  // Pre-select source's parent as the default target — matches the
+  // journey's "Move to parent" option which is the most common case.
+  const effectiveTargetId =
+    targetId !== ''
+      ? targetId
+      : source?.parent_id && targetOptions.some((o) => o.id === source.parent_id)
+        ? source.parent_id
+        : ''
+
+  const itemsAtSource = useMemo(
+    () =>
+      sourceId
+        ? items.filter((it) => it.current_space_id === sourceId).length
+        : 0,
+    [items, sourceId],
+  )
+  const homeReferencingSource = useMemo(
+    () =>
+      sourceId
+        ? items.filter((it) => it.home_space_id === sourceId).length
+        : 0,
+    [items, sourceId],
+  )
+  const childCount = useMemo(
+    () =>
+      sourceId
+        ? nodes.filter((n) => n.parent_id === sourceId).length
+        : 0,
+    [nodes, sourceId],
+  )
+
+  const valid = sourceId !== '' && effectiveTargetId !== '' && !busy
+
+  async function handleSubmit() {
+    if (!valid) return
+    setBusy(true)
+    setError(null)
+    const { error: rpcError } = await supabase.rpc(
+      'delete_space_with_items',
+      {
+        p_space_id: sourceId,
+        p_items_target_id: effectiveTargetId,
+        p_clear_homes: clearHomes,
+      },
+    )
+    setBusy(false)
+    if (rpcError) {
+      setError(rpcError.message ?? 'Failed to delete Space.')
+      return
+    }
+    setSourceId('')
+    setTargetId('')
+    setClearHomes(false)
+    onConfirmed()
+  }
+
+  return (
+    <div
+      aria-label="Delete configuration"
+      className="flex flex-col gap-3 rounded-xl bg-paper-100 p-4"
+    >
+      <PickerSelect
+        label="Delete this Space"
+        value={sourceId}
+        onChange={(v) => {
+          setSourceId(v)
+          setTargetId('')
+          setClearHomes(false)
+        }}
+        options={sourceOptions}
+      />
+      <PickerSelect
+        label="Move its items to"
+        value={effectiveTargetId}
+        onChange={setTargetId}
+        options={targetOptions}
+        disabled={!sourceId}
+        emptyHint={
+          sourceId && targetOptions.length === 0
+            ? 'No valid targets — every other Space is inside this subtree.'
+            : undefined
+        }
+      />
+      <label className="flex items-center gap-2 px-1 font-body text-sm text-ink-700">
+        <input
+          type="checkbox"
+          checked={clearHomes}
+          onChange={(e) => setClearHomes(e.target.checked)}
+          disabled={!sourceId}
+        />
+        Clear home location for affected items (mark them unsorted)
+      </label>
+      {sourceId && (
+        <ImpactSummary
+          rows={[
+            { label: 'Items moving', value: itemsAtSource.toLocaleString() },
+            {
+              label: 'Transfer Flows',
+              value: itemsAtSource.toLocaleString(),
+            },
+            {
+              label: clearHomes ? 'Homes cleared' : 'Home updates',
+              value: homeReferencingSource.toLocaleString(),
+            },
+            {
+              label: 'Children re-parented',
+              value: childCount.toLocaleString(),
+            },
+          ]}
+        />
+      )}
+      {error && (
+        <p
+          role="alert"
+          className="rounded-md bg-red-50 px-3 py-2 font-body text-sm text-red-700"
+        >
+          {error}
+        </p>
+      )}
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={() => void handleSubmit()}
+          disabled={!valid}
+          className="inline-flex h-10 w-auto items-center justify-center rounded-xl bg-error px-4 font-display text-sm font-bold text-white shadow-cta transition hover:shadow-cta-strong disabled:opacity-50 disabled:shadow-none"
+        >
+          {busy ? 'Deleting…' : 'Confirm delete'}
+        </button>
+      </div>
+      <PreviewTree nodes={nodes} highlightedSourceId={sourceId} />
+    </div>
+  )
+}
+
+/* ─────────────────────────────────────────────────────────────────
+ * Split
+ * ───────────────────────────────────────────────────────────────── */
+
+interface SplitPanelProps {
+  nodes: SpaceNode[]
+  items: ReorganizeItem[]
+  onConfirmed: () => void
+}
+
+function SplitPanel({ nodes, items, onConfirmed }: SplitPanelProps) {
+  const supabase = useSupabase()
+  const [sourceId, setSourceId] = useState<string>('')
+  const [newName, setNewName] = useState<string>('')
+  const [pickedItemIds, setPickedItemIds] = useState<Set<string>>(new Set())
+  const [pickedChildIds, setPickedChildIds] = useState<Set<string>>(new Set())
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const sourceOptions = useMemo(
+    () =>
+      nodes
+        .filter((n) => n.parent_id !== null)
+        .map((n) => ({ id: n.space_id, label: pathLabel(nodes, n.space_id) }))
+        .sort((a, b) => a.label.localeCompare(b.label)),
+    [nodes],
+  )
+
+  const itemsAtSource = useMemo(
+    () =>
+      sourceId
+        ? items.filter((it) => it.current_space_id === sourceId)
+        : [],
+    [items, sourceId],
+  )
+  const childrenOfSource = useMemo(
+    () =>
+      sourceId
+        ? nodes.filter((n) => n.parent_id === sourceId)
+        : [],
+    [nodes, sourceId],
+  )
+
+  function toggleSetMember(set: Set<string>, id: string): Set<string> {
+    const next = new Set(set)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    return next
+  }
+
+  const trimmedName = newName.trim()
+  const nameValid = trimmedName.length > 0 && trimmedName.length <= 64
+  const valid = sourceId !== '' && nameValid && !busy
+
+  async function handleSubmit() {
+    if (!valid) return
+    setBusy(true)
+    setError(null)
+    const { error: rpcError } = await supabase.rpc('split_space', {
+      p_space_id: sourceId,
+      p_new_name: trimmedName,
+      p_item_ids: Array.from(pickedItemIds),
+      p_child_space_ids: Array.from(pickedChildIds),
+    })
+    setBusy(false)
+    if (rpcError) {
+      setError(rpcError.message ?? 'Failed to split Space.')
+      return
+    }
+    setSourceId('')
+    setNewName('')
+    setPickedItemIds(new Set())
+    setPickedChildIds(new Set())
+    onConfirmed()
+  }
+
+  return (
+    <div
+      aria-label="Split configuration"
+      className="flex flex-col gap-3 rounded-xl bg-paper-100 p-4"
+    >
+      <PickerSelect
+        label="Split this Space"
+        value={sourceId}
+        onChange={(v) => {
+          setSourceId(v)
+          setPickedItemIds(new Set())
+          setPickedChildIds(new Set())
+        }}
+        options={sourceOptions}
+      />
+      <label className="flex flex-col gap-1">
+        <span className="px-1 font-display text-[10px] font-bold uppercase tracking-[0.55px] text-ink-500">
+          New sibling name
+        </span>
+        <input
+          type="text"
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          disabled={!sourceId}
+          placeholder="Cabinet 1 (Right)"
+          className="rounded-xl bg-paper-50 px-3 py-3 font-body text-base text-ink-900 outline-none transition focus:bg-paper-200 disabled:opacity-50"
+        />
+      </label>
+      {sourceId && itemsAtSource.length > 0 && (
+        <fieldset
+          aria-label="Items to move"
+          className="flex flex-col gap-1 rounded-lg bg-paper-50 p-3"
+        >
+          <legend className="px-1 font-display text-[10px] font-bold uppercase tracking-[0.55px] text-ink-500">
+            Items to move ({pickedItemIds.size}/{itemsAtSource.length})
+          </legend>
+          {itemsAtSource.map((it) => {
+            const checked = pickedItemIds.has(it.inventory_item_id)
+            return (
+              <label
+                key={it.inventory_item_id}
+                className="flex items-center gap-2 px-1 font-body text-sm text-ink-700"
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() =>
+                    setPickedItemIds((prev) =>
+                      toggleSetMember(prev, it.inventory_item_id),
+                    )
+                  }
+                />
+                {it.name}
+              </label>
+            )
+          })}
+        </fieldset>
+      )}
+      {sourceId && childrenOfSource.length > 0 && (
+        <fieldset
+          aria-label="Children to move"
+          className="flex flex-col gap-1 rounded-lg bg-paper-50 p-3"
+        >
+          <legend className="px-1 font-display text-[10px] font-bold uppercase tracking-[0.55px] text-ink-500">
+            Children to move ({pickedChildIds.size}/{childrenOfSource.length})
+          </legend>
+          {childrenOfSource.map((c) => {
+            const checked = pickedChildIds.has(c.space_id)
+            return (
+              <label
+                key={c.space_id}
+                className="flex items-center gap-2 px-1 font-body text-sm text-ink-700"
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  onChange={() =>
+                    setPickedChildIds((prev) =>
+                      toggleSetMember(prev, c.space_id),
+                    )
+                  }
+                />
+                {c.name}
+              </label>
+            )
+          })}
+        </fieldset>
+      )}
+      {sourceId && (
+        <ImpactSummary
+          rows={[
+            {
+              label: 'Items moving',
+              value: pickedItemIds.size.toLocaleString(),
+            },
+            {
+              label: 'Transfer Flows',
+              value: pickedItemIds.size.toLocaleString(),
+            },
+            {
+              label: 'Children moving',
+              value: pickedChildIds.size.toLocaleString(),
+            },
+          ]}
+        />
+      )}
+      {error && (
+        <p
+          role="alert"
+          className="rounded-md bg-red-50 px-3 py-2 font-body text-sm text-red-700"
+        >
+          {error}
+        </p>
+      )}
+      <div className="flex justify-end">
+        <PrimaryButton
+          type="button"
+          onClick={() => void handleSubmit()}
+          disabled={!valid}
+          className="!h-10 !w-auto px-4 !text-sm"
+        >
+          {busy ? 'Splitting…' : 'Confirm split'}
         </PrimaryButton>
       </div>
       <PreviewTree nodes={nodes} highlightedSourceId={sourceId} />
