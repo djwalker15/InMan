@@ -2,21 +2,18 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate, useSearchParams } from 'react-router-dom'
 import { useUser } from '@clerk/clerk-react'
 import {
-  AlertTriangle,
   ArrowLeft,
-  Lock,
   Mail,
   Plus,
   ShieldCheck,
   X,
 } from 'lucide-react'
 import { HeroCard, SecondaryButton } from '@/components/ds'
+import { DangerZoneTab } from '@/components/crew/danger-zone'
 import { InviteForm } from '@/components/crew/invite-form'
 import { MemberRowActions } from '@/components/crew/member-row-actions'
-import {
-  PermissionsGrid,
-  type OverrideValue,
-} from '@/components/crew/permissions-grid'
+import { PermissionsGrid } from '@/components/crew/permissions-grid'
+import { type OverrideValue } from '@/components/crew/permissions'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
 import { useActiveCrew } from '@/lib/active-crew'
 import { useSupabase } from '@/lib/supabase'
@@ -252,7 +249,17 @@ export default function CrewSettingsPage() {
                 onChanged={() => setRefetchTick((t) => t + 1)}
               />
             )}
-            {tab === 'danger' && <ComingSoonTab phase="P5.6" />}
+            {tab === 'danger' && (
+              <DangerZoneTab
+                crewId={crew.crew_id}
+                crewName={crew.name}
+                ownerId={crew.owner_id}
+                userRole={userRole}
+                deletionRequestedAt={crew.deletion_requested_at}
+                members={members ?? []}
+                onChanged={() => setRefetchTick((t) => t + 1)}
+              />
+            )}
           </>
         )}
       </div>
@@ -674,36 +681,6 @@ function PermissionsTab({
         memberDisplayName={maskUserId(selected.user_id)}
         onSaved={onChanged}
       />
-    </section>
-  )
-}
-
-function ComingSoonTab({ phase }: { phase: string }) {
-  return (
-    <section
-      role="tabpanel"
-      className="flex items-start gap-3 rounded-2xl bg-paper-100 p-5"
-    >
-      <span
-        aria-hidden
-        className="flex size-9 shrink-0 items-center justify-center rounded-full bg-paper-200 text-ink-600"
-      >
-        {phase === 'P5.6' ? (
-          <AlertTriangle size={18} />
-        ) : (
-          <Lock size={18} />
-        )}
-      </span>
-      <div className="flex flex-col gap-1">
-        <p className="font-display text-base font-bold text-ink-900">
-          Coming with {phase}
-        </p>
-        <p className="font-body text-sm text-ink-600">
-          {phase === 'P5.5'
-            ? 'Per-member permission overrides will live on this tab.'
-            : 'Transfer ownership, leave the crew, and request deletion live here once danger-zone actions ship.'}
-        </p>
-      </div>
     </section>
   )
 }

@@ -207,15 +207,24 @@ describe('CrewSettingsPage', () => {
     })
   })
 
-  it('Danger zone tab shows the P5.6 placeholder', async () => {
+  it('Danger zone tab renders Owner-only Transfer + Delete sections', async () => {
     mockClerk({ user: { id: 'user_1' } })
     setupSupabase()
     renderWithRouter(<CrewSettingsPage />, {
       route: '/crew/settings?tab=danger',
     })
     await waitFor(() => {
-      expect(screen.getByText(/coming with p5\.6/i)).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: /start transfer/i }),
+      ).toBeInTheDocument()
     })
+    expect(
+      screen.getByRole('button', { name: /schedule deletion…/i }),
+    ).toBeInTheDocument()
+    // Owner does not see the Leave button.
+    expect(
+      screen.queryByRole('button', { name: /^leave crew$/i }),
+    ).toBeNull()
   })
 
   it('clicking a tab updates aria-selected and swaps the panel', async () => {
