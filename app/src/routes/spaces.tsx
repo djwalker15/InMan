@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useUser } from '@clerk/clerk-react'
-import { Link } from 'react-router-dom'
-import { HelpCircle } from 'lucide-react'
-import { PrimaryButton } from '@/components/ds'
+import { Link, useSearchParams } from 'react-router-dom'
+import { HelpCircle, Wrench } from 'lucide-react'
+import { PrimaryButton, SecondaryButton } from '@/components/ds'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
 import { SpacesExplainer } from '@/components/spaces/explainer'
+import { ReorganizeMode } from '@/components/spaces/reorganize'
 import { TemplateBrowser } from '@/components/spaces/template-browser'
 import { TreeEditor } from '@/components/spaces/tree-editor'
 import type { SpaceNode, UnitType } from '@/components/spaces/types'
@@ -15,6 +16,15 @@ export default function SpacesPage() {
   const { user } = useUser()
   const supabase = useSupabase()
   const { activeCrewId } = useActiveCrew(user?.id ?? null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const reorganize = searchParams.get('mode') === 'reorganize'
+
+  function setMode(next: 'view' | 'reorganize') {
+    const params = new URLSearchParams(searchParams)
+    if (next === 'view') params.delete('mode')
+    else params.set('mode', 'reorganize')
+    setSearchParams(params, { replace: true })
+  }
 
   const [nodes, setNodes] = useState<SpaceNode[]>([])
   const [loading, setLoading] = useState(true)
@@ -144,9 +154,23 @@ export default function SpacesPage() {
           <SpacesExplainer onDismiss={() => setShowExplainer(false)} />
         ) : !hasPremises && !loading ? (
           <EmptyState />
+        ) : reorganize ? (
+          <ReorganizeMode
+            nodes={nodes}
+            onExit={() => setMode('view')}
+          />
         ) : (
           <>
-            <div className="flex justify-end">
+            <div className="flex flex-wrap justify-end gap-2">
+              <SecondaryButton
+                type="button"
+                onClick={() => setMode('reorganize')}
+                disabled={!hasNonPremisesSpaces}
+                className="!h-10 !w-auto px-3 !text-sm"
+              >
+                <Wrench size={14} aria-hidden />
+                Reorganize
+              </SecondaryButton>
               <TemplateBrowser
                 hasExistingSpaces={hasNonPremisesSpaces}
                 onApplied={refetchSpaces}
