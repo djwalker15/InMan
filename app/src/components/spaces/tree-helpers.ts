@@ -138,3 +138,80 @@ export function canReclassifyTo(
 export function unitTypeRank(t: UnitType): number {
   return LEVEL_RANK[t]
 }
+
+/**
+ * Returns true when a parent's unit_type accepts the given child type.
+ * Mirrors public.space_parent_allows_child in the database — keep in sync.
+ */
+export function unitTypeAllowsChild(
+  parent: UnitType,
+  child: UnitType,
+): boolean {
+  return ALLOWED_CHILD_TYPES[parent].includes(child)
+}
+
+/**
+ * Returns the set of space IDs that includes `sourceId` AND all of its
+ * descendants (live ones). Useful for excluding the source's subtree from
+ * Move / Merge target pickers — moving a Space into its own subtree is a
+ * cycle and is rejected by the matching DB RPCs.
+ */
+export function subtreeIds(nodes: SpaceNode[], sourceId: string): Set<string> {
+  const out = new Set<string>([sourceId])
+  for (const id of descendantIds(nodes, sourceId)) out.add(id)
+  return out
+}
+
+/**
+ * Valid `move_space` targets: the new parent must (a) live outside the
+ * source's subtree (no cycles), (b) sit in a different position than the
+ * current parent (no self-move), and (c) have a unit_type that accepts the
+ * source's unit_type as a child. Mirrors move_space's plpgsql guards.
+ */
+export function validMoveParentIds(
+  nodes: SpaceNode[],
+  sourceId: string,
+): Set<string> {
+  const source = nodes.find((n) => n.space_id === sourceId && !n.deleted_at)
+  if (!source) return new Set()
+  if (source.parent_id === null) return new Set() // Premises never moves.
+  const excluded = subtreeIds(nodes, sourceId)
+  const out = new Set<string>()
+  for (const n of nodes) {
+    if (n.deleted_at) continue
+    if (excluded.has(n.space_id)) continue
+    if (n.space_id === source.parent_id) continue
+    if (!unitTypeAllowsChild(n.unit_type, source.unit_type)) continue
+    out.add(n.space_id)
+  }
+  return out
+}
+
+/**
+ * Valid `merge_spaces` targets: target lives outside the source's subtree,
+ * is not the source itself, AND target's unit_type accepts every direct
+ * child of the source as a legal child. Mirrors merge_spaces' plpgsql guards.
+ */
+export function validMergeTargetIds(
+  nodes: SpaceNode[],
+  sourceId: string,
+): Set<string> {
+  const source = nodes.find((n) => n.space_id === sourceId && !n.deleted_at)
+  if (!source) return new Set()
+  if (source.parent_id === null) return new Set()
+  const excluded = subtreeIds(nodes, sourceId)
+  const sourceChildren = nodes.filter(
+    (n) => n.parent_id === sourceId && !n.deleted_at,
+  )
+  const out = new Set<string>()
+  for (const n of nodes) {
+    if (n.deleted_at) continue
+    if (excluded.has(n.space_id)) continue
+    const childrenOk = sourceChildren.every((c) =>
+      unitTypeAllowsChild(n.unit_type, c.unit_type),
+    )
+    if (!childrenOk) continue
+    out.add(n.space_id)
+  }
+  return out
+}

@@ -5,7 +5,10 @@ import { HelpCircle, Wrench } from 'lucide-react'
 import { PrimaryButton, SecondaryButton } from '@/components/ds'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
 import { SpacesExplainer } from '@/components/spaces/explainer'
-import { ReorganizeMode } from '@/components/spaces/reorganize'
+import {
+  ReorganizeMode,
+  type ReorganizeItem,
+} from '@/components/spaces/reorganize'
 import { TemplateBrowser } from '@/components/spaces/template-browser'
 import { TreeEditor } from '@/components/spaces/tree-editor'
 import type { SpaceNode, UnitType } from '@/components/spaces/types'
@@ -27,28 +30,40 @@ export default function SpacesPage() {
   }
 
   const [nodes, setNodes] = useState<SpaceNode[]>([])
+  const [items, setItems] = useState<ReorganizeItem[]>([])
   const [loading, setLoading] = useState(true)
   const [showExplainer, setShowExplainer] = useState(false)
+  const [refetchTick, setRefetchTick] = useState(0)
 
   useEffect(() => {
     if (!activeCrewId) return
     let cancelled = false
-    async function loadSpaces() {
-      const { data } = await supabase
-        .from('spaces')
-        .select('space_id, parent_id, unit_type, name, deleted_at')
-        .eq('crew_id', activeCrewId)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: true })
+    async function loadSnapshot() {
+      const [{ data: spaceRows }, { data: itemRows }] = await Promise.all([
+        supabase
+          .from('spaces')
+          .select('space_id, parent_id, unit_type, name, deleted_at')
+          .eq('crew_id', activeCrewId)
+          .is('deleted_at', null)
+          .order('created_at', { ascending: true }),
+        supabase
+          .from('inventory_items')
+          .select(
+            'inventory_item_id, name, current_space_id, home_space_id',
+          )
+          .eq('crew_id', activeCrewId)
+          .is('deleted_at', null),
+      ])
       if (cancelled) return
-      setNodes(Array.isArray(data) ? (data as SpaceNode[]) : [])
+      setNodes(Array.isArray(spaceRows) ? (spaceRows as SpaceNode[]) : [])
+      setItems(Array.isArray(itemRows) ? (itemRows as ReorganizeItem[]) : [])
       setLoading(false)
     }
-    void loadSpaces()
+    void loadSnapshot()
     return () => {
       cancelled = true
     }
-  }, [supabase, activeCrewId])
+  }, [supabase, activeCrewId, refetchTick])
 
   const hasPremises = useMemo(
     () => nodes.some((n) => n.parent_id === null),
@@ -155,10 +170,15 @@ export default function SpacesPage() {
         ) : !hasPremises && !loading ? (
           <EmptyState />
         ) : reorganize ? (
-          <ReorganizeMode
-            nodes={nodes}
-            onExit={() => setMode('view')}
-          />
+          activeCrewId ? (
+            <ReorganizeMode
+              crewId={activeCrewId}
+              nodes={nodes}
+              items={items}
+              onExit={() => setMode('view')}
+              onApplied={() => setRefetchTick((t) => t + 1)}
+            />
+          ) : null
         ) : (
           <>
             <div className="flex flex-wrap justify-end gap-2">

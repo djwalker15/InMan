@@ -84,6 +84,7 @@ describe('SpacesPage', () => {
         },
       },
       spaces: { select: { data: rows, error: null } },
+      inventory_items: { select: { data: [], error: null } },
     })
     renderWithRouter(<SpacesPage />)
     await waitFor(() => {
@@ -126,6 +127,7 @@ describe('SpacesPage', () => {
         },
       },
       spaces: { select: { data: rows, error: null } },
+      inventory_items: { select: { data: [], error: null } },
     })
     renderWithRouter(<SpacesPage />)
     await waitFor(() => {
@@ -170,6 +172,7 @@ describe('SpacesPage', () => {
         },
       },
       spaces: { select: { data: rows, error: null } },
+      inventory_items: { select: { data: [], error: null } },
     })
     renderWithRouter(<SpacesPage />)
     await waitFor(() => {
