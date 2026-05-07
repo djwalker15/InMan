@@ -111,6 +111,32 @@ describe('TreeEditor', () => {
     })
   })
 
+  it('reclassify submits the picked unit_type', async () => {
+    const m = makeMocks()
+    // Back (zone, child of Kitchen area) is a leaf, so any of section /
+    // sub_section / container / shelf is a valid reclassify target.
+    render(<TreeEditor nodes={baseNodes} {...m} />)
+    fireEvent.click(screen.getByRole('button', { name: /actions for back/i }))
+    fireEvent.click(screen.getByRole('button', { name: /change type/i }))
+    const select = screen.getByLabelText(/new unit type/i)
+    fireEvent.change(select, { target: { value: 'section' } })
+    fireEvent.click(screen.getByRole('button', { name: /^save$/i }))
+    await waitFor(() => {
+      expect(m.onReclassify).toHaveBeenCalledWith('z', 'section')
+    })
+  })
+
+  it('reclassify is hidden on the Premises root', () => {
+    const m = makeMocks()
+    render(<TreeEditor nodes={baseNodes} {...m} />)
+    fireEvent.click(
+      screen.getByRole('button', { name: /actions for my house/i }),
+    )
+    expect(
+      screen.queryByRole('button', { name: /change type/i }),
+    ).not.toBeInTheDocument()
+  })
+
   it('Premises does not expose a delete or sibling action', () => {
     const m = makeMocks()
     render(<TreeEditor nodes={baseNodes} {...m} />)
