@@ -17,6 +17,8 @@ A Crew represents any group using InMan together: a solo person in an apartment,
 | `settings` | JSON | Configurable preferences (low stock threshold, expiry alert threshold, default currency, etc.) |
 | `deletion_requested_at` | timestamp | Nullable — set when Owner requests deletion, starts 48-hour countdown |
 | `deletion_requested_by` | text FK → [[User]] | Nullable — Clerk user ID of who requested deletion |
+| `is_ownerless` | boolean | Default `false`. Flipped to `true` by `request_account_deletion` when the sole Owner deletes their account and other members remain but no other Admins exist. Surfaces an in-app banner; downstream handoff is the Ownerless-crew flow (ClickUp 86e1cey7j). |
+| `became_ownerless_at` | timestamp | Nullable — set alongside `is_ownerless`. |
 | `created_at` | timestamp | |
 | `updated_at` | timestamp | Auto-maintained by trigger |
 
@@ -43,6 +45,13 @@ Deletion has a **48-hour waiting period**:
 3. Owner can cancel at any time
 4. After 48 hours, a scheduled job soft-deletes the Crew and cascades to all child entities
 5. Immutable records ([[Flow]], [[WasteEvent]], [[BatchEvent]]) are not deleted but become inaccessible via RLS
+
+## Crew Effect of Owner Account Deletion
+
+When the sole Owner deletes their account via `request_account_deletion`, this crew is affected in one of three ways:
+1. **Transfer** — if the deleting Owner specifies a transferee who is a current Admin of this crew, `owner_id` is reassigned and the deleting user's `crew_members` row is soft-deleted.
+2. **Ownerless** — if other members exist but no transferee is named, `is_ownerless` flips to `true` and `became_ownerless_at` is set. The crew stays functional; the [Ownerless-crew handoff flow](https://app.clickup.com/t/86e1cey7j) takes over from there.
+3. **Solo soft-delete** — if no other members exist, the crew is soft-deleted alongside the user.
 
 ## Relationships
 

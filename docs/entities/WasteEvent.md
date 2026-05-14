@@ -26,6 +26,7 @@ A specialized record linked to a waste [[Flow]]. Captures the reason, cost, and 
 - `total_cost` includes derived cost for recipe-produced items (e.g., a wasted bottle of housemade simple syrup costs the sum of its [[Recipe]] inputs)
 - Pattern detection (e.g., "items in Crisper expire 2x more often") is a future enhancement built on this logging foundation
 - **Immutable record** — WasteEvents are never modified or deleted after creation
+- **User attribution persists across account deletion.** WasteEvent derives its `logged_by` by joining to the parent [[Flow]]'s `performed_by`, which is retained indefinitely after a user's account is deleted (see [[CLAUDE]] §"User Account Deletion"). Waste history stays attributable to the user who logged it.
 
 ## Detail Tables
 

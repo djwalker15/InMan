@@ -112,6 +112,26 @@ Two layers of protection against Recipe A → Recipe B → Recipe A chains:
 - **App layer** — checks before saving, provides friendly error message
 - **DB trigger** — fires on `recipe_ingredient_recipe_refs` INSERT/UPDATE, walks the chain via recursive CTE to detect cycles, raises exception if found
 
+### User Account Deletion — soft-delete with 30-day restore, immutable-ledger attribution retained
+
+User-account deletion is a **soft-delete with a 30-day restore window**, orchestrated by `request_account_deletion(p_transfer_to_user_id text default null)` and reversible by `restore_account()` within the window. After 30 days, `process_due_user_deletions()` (pg_cron daily, 03:00 UTC) reports the row as past-cool-down; the row itself **stays as a tombstone**.
+
+**Crew-branching contract:** for each crew the deleting user owns —
+- transferee passed → ownership moves to that user (must be a current Admin of the crew); caller's `crew_members` row is soft-deleted.
+- otherwise + other members exist → `crews.is_ownerless = true`, `became_ownerless_at = now()` (downstream handoff is the separate Ownerless-crew flow).
+- otherwise + no other members → crew is soft-deleted alongside the user.
+
+For crews the user is just a member of, only their `crew_members` row is soft-deleted.
+
+**Immutable ledger tables retain attribution.** `flows.performed_by`, `batch_events.performed_by`, `waste_prep_failure_details.prepped_by`, and every other immutable-row FK to `users(user_id)` keep pointing to the user's original Clerk `sub` — no anonymization, no tombstoning, no cascading. Audit trails, cost rollups, and waste-by-user analytics remain intact.
+
+**Why tombstone instead of hard-DELETE:**
+- The `users` table is a slim local ref (`user_id` + `created_at` + the two soft-delete timestamps). It carries no PII; that lives in Clerk and is purged via the outbound `users.deleteUser()` admin-API call on commit.
+- 12+ immutable ledger tables FK to `users(user_id)`. Hard-DELETE would force either dropping those constraints (loses referential integrity) or anonymizing the rows (contradicts the resolved decision above).
+- Clerk does not reuse `sub` values, so "fresh tenant on re-signup after 30 days" works naturally — the new Clerk identity won't collide with the old tombstone regardless of whether the row still exists.
+
+If literal row-level DELETE is ever required (GDPR variant, EU residency requirement, etc.), the follow-up is a migration that drops the FK constraints on the immutable ledger tables and extends `process_due_user_deletions()` to perform the DELETE. Track separately.
+
 ---
 
 ## Data Model Overview
