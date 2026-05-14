@@ -22,6 +22,8 @@ erDiagram
     User {
         text user_id PK "Clerk string ID"
         timestamp created_at
+        timestamp deletion_requested_at "nullable, UI click timestamp"
+        timestamp deleted_at "nullable, 30-day restore window"
     }
 
     CrewMember {

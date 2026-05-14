@@ -3,6 +3,8 @@ export type CrewRole = 'owner' | 'admin' | 'member'
 export interface User {
   user_id: string
   created_at: string
+  deletion_requested_at: string | null
+  deleted_at: string | null
 }
 
 export interface Crew {
