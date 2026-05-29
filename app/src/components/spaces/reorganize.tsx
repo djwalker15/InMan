@@ -6,7 +6,7 @@ import {
   Scissors,
   Trash2,
 } from 'lucide-react'
-import { PrimaryButton, SecondaryButton, TextButton } from '@/components/ds'
+import { PrimaryButton, SecondaryButton, TextButton, Toast } from '@/components/ds'
 import { useSupabase } from '@/lib/supabase'
 import { Tree } from './tree'
 import {
@@ -77,6 +77,13 @@ export function ReorganizeMode({
   onApplied,
 }: ReorganizeModeProps) {
   const [operation, setOperation] = useState<ReorganizeOperation | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
+
+  function handleConfirmed(summary: string) {
+    setToast(summary)
+    onApplied()
+    setOperation(null)
+  }
 
   const liveNodes = useMemo(
     () => nodes.filter((n) => !n.deleted_at),
@@ -145,38 +152,26 @@ export function ReorganizeMode({
         <MovePanel
           nodes={liveNodes}
           items={items}
-          onConfirmed={() => {
-            onApplied()
-            setOperation(null)
-          }}
+          onConfirmed={handleConfirmed}
         />
       ) : operation === 'merge' ? (
         <MergePanel
           crewId={crewId}
           nodes={liveNodes}
           items={items}
-          onConfirmed={() => {
-            onApplied()
-            setOperation(null)
-          }}
+          onConfirmed={handleConfirmed}
         />
       ) : operation === 'delete' ? (
         <DeletePanel
           nodes={liveNodes}
           items={items}
-          onConfirmed={() => {
-            onApplied()
-            setOperation(null)
-          }}
+          onConfirmed={handleConfirmed}
         />
       ) : operation === 'split' ? (
         <SplitPanel
           nodes={liveNodes}
           items={items}
-          onConfirmed={() => {
-            onApplied()
-            setOperation(null)
-          }}
+          onConfirmed={handleConfirmed}
         />
       ) : (
         <p className="rounded-xl bg-paper-100 p-4 font-body text-sm text-ink-600">
@@ -194,6 +189,7 @@ export function ReorganizeMode({
           Cancel
         </SecondaryButton>
       </footer>
+      {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
     </section>
   )
 }
@@ -205,7 +201,7 @@ export function ReorganizeMode({
 interface MovePanelProps {
   nodes: SpaceNode[]
   items: ReorganizeItem[]
-  onConfirmed: () => void
+  onConfirmed: (summary: string) => void
 }
 
 function MovePanel({ nodes, items, onConfirmed }: MovePanelProps) {
@@ -256,6 +252,8 @@ function MovePanel({ nodes, items, onConfirmed }: MovePanelProps) {
     if (!valid) return
     setBusy(true)
     setError(null)
+    const sourceName = nodes.find((n) => n.space_id === sourceId)?.name ?? 'Space'
+    const targetName = nodes.find((n) => n.space_id === targetId)?.name ?? 'parent'
     const { error: rpcError } = await supabase.rpc('move_space', {
       p_space_id: sourceId,
       p_new_parent_id: targetId,
@@ -267,7 +265,7 @@ function MovePanel({ nodes, items, onConfirmed }: MovePanelProps) {
     }
     setSourceId('')
     setTargetId('')
-    onConfirmed()
+    onConfirmed(`Moved ${sourceName} to ${targetName}.`)
   }
 
   return (
@@ -342,7 +340,7 @@ interface MergePanelProps {
   crewId: string
   nodes: SpaceNode[]
   items: ReorganizeItem[]
-  onConfirmed: () => void
+  onConfirmed: (summary: string) => void
 }
 
 function MergePanel({ nodes, items, onConfirmed }: MergePanelProps) {
@@ -403,6 +401,9 @@ function MergePanel({ nodes, items, onConfirmed }: MergePanelProps) {
     if (!valid) return
     setBusy(true)
     setError(null)
+    const sourceName = nodes.find((n) => n.space_id === sourceId)?.name ?? 'Space'
+    const targetName = nodes.find((n) => n.space_id === targetId)?.name ?? 'target'
+    const movedCount = itemsAtSource
     const { error: rpcError } = await supabase.rpc('merge_spaces', {
       p_source_id: sourceId,
       p_target_id: targetId,
@@ -414,7 +415,11 @@ function MergePanel({ nodes, items, onConfirmed }: MergePanelProps) {
     }
     setSourceId('')
     setTargetId('')
-    onConfirmed()
+    const itemSuffix =
+      movedCount > 0
+        ? ` — ${movedCount} item${movedCount === 1 ? '' : 's'} moved.`
+        : '.'
+    onConfirmed(`Merged ${sourceName} into ${targetName}${itemSuffix}`)
   }
 
   return (
@@ -495,7 +500,7 @@ function MergePanel({ nodes, items, onConfirmed }: MergePanelProps) {
 interface DeletePanelProps {
   nodes: SpaceNode[]
   items: ReorganizeItem[]
-  onConfirmed: () => void
+  onConfirmed: (summary: string) => void
 }
 
 function DeletePanel({ nodes, items, onConfirmed }: DeletePanelProps) {
@@ -568,6 +573,8 @@ function DeletePanel({ nodes, items, onConfirmed }: DeletePanelProps) {
     if (!valid) return
     setBusy(true)
     setError(null)
+    const sourceName = nodes.find((n) => n.space_id === sourceId)?.name ?? 'Space'
+    const movedCount = itemsAtSource
     const { error: rpcError } = await supabase.rpc(
       'delete_space_with_items',
       {
@@ -584,7 +591,11 @@ function DeletePanel({ nodes, items, onConfirmed }: DeletePanelProps) {
     setSourceId('')
     setTargetId('')
     setClearHomes(false)
-    onConfirmed()
+    const itemSuffix =
+      movedCount > 0
+        ? ` — ${movedCount} item${movedCount === 1 ? '' : 's'} reclassified.`
+        : '.'
+    onConfirmed(`Deleted ${sourceName}${itemSuffix}`)
   }
 
   return (
@@ -672,7 +683,7 @@ function DeletePanel({ nodes, items, onConfirmed }: DeletePanelProps) {
 interface SplitPanelProps {
   nodes: SpaceNode[]
   items: ReorganizeItem[]
-  onConfirmed: () => void
+  onConfirmed: (summary: string) => void
 }
 
 function SplitPanel({ nodes, items, onConfirmed }: SplitPanelProps) {
@@ -723,6 +734,9 @@ function SplitPanel({ nodes, items, onConfirmed }: SplitPanelProps) {
     if (!valid) return
     setBusy(true)
     setError(null)
+    const sourceName = nodes.find((n) => n.space_id === sourceId)?.name ?? 'Space'
+    const movedItems = pickedItemIds.size
+    const movedChildren = pickedChildIds.size
     const { error: rpcError } = await supabase.rpc('split_space', {
       p_space_id: sourceId,
       p_new_name: trimmedName,
@@ -734,11 +748,17 @@ function SplitPanel({ nodes, items, onConfirmed }: SplitPanelProps) {
       setError(rpcError.message ?? 'Failed to split Space.')
       return
     }
+    const newSibling = trimmedName
     setSourceId('')
     setNewName('')
     setPickedItemIds(new Set())
     setPickedChildIds(new Set())
-    onConfirmed()
+    const parts: string[] = []
+    if (movedItems > 0) parts.push(`${movedItems} item${movedItems === 1 ? '' : 's'}`)
+    if (movedChildren > 0)
+      parts.push(`${movedChildren} child Space${movedChildren === 1 ? '' : 's'}`)
+    const suffix = parts.length > 0 ? ` — moved ${parts.join(' and ')}.` : '.'
+    onConfirmed(`Split ${sourceName} → ${newSibling}${suffix}`)
   }
 
   return (
