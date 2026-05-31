@@ -12,12 +12,23 @@ export interface DeletionSummary {
   crews_transferred: number
   crews_marked_ownerless: number
   crews_soft_deleted: number
-  clerk_deletion_pending: boolean
 }
 
 export interface RestoreEligibility {
   eligible: boolean
   deleted_at: string | null
+}
+
+/** One row per active crew the caller is in. Drives the Danger Zone preview. */
+export interface PreviewItem {
+  crew_id: string
+  crew_name: string
+  caller_role: 'owner' | 'admin' | 'member' | 'viewer'
+  outcome: 'transfer' | 'ownerless' | 'solo_delete' | 'leave'
+  /** Populated only when outcome === 'transfer'. */
+  admin_candidates: Array<{ user_id: string }> | null
+  /** Populated only when outcome === 'transfer'; auto-selected for the picker. */
+  default_transferee: string | null
 }
 
 /**
@@ -56,6 +67,18 @@ export async function restoreAccount(
   const { data, error } = await supabase.rpc('restore_account')
   if (error) throw error
   return data as string
+}
+
+/**
+ * Returns one row per crew the caller is in (owner or member). The UI
+ * uses this to render the impact preview before the user confirms.
+ */
+export async function previewAccountDeletion(
+  supabase: SupabaseClient,
+): Promise<PreviewItem[]> {
+  const { data, error } = await supabase.rpc('preview_account_deletion')
+  if (error) throw error
+  return (data as PreviewItem[] | null) ?? []
 }
 
 /**

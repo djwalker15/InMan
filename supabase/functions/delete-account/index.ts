@@ -1,9 +1,8 @@
 // delete-account
 //
 // Outbound deletion flow. Called by the Settings → Account UI after
-// the user reauths and confirms. Wraps the Supabase RPC
-// request_account_deletion() and the Clerk admin-API delete-user call
-// in a single round-trip from the client.
+// the user confirms (type-DELETE-to-confirm). Wraps the Supabase
+// soft-delete RPC and signs the user out client-side after success.
 //
 // Sequence:
 //   1. Validate the user's Clerk JWT (the user-context Supabase client
@@ -11,17 +10,21 @@
 //      reads auth.jwt()->>'sub' to identify the caller).
 //   2. Invoke request_account_deletion(transfer_to_user_id) — the RPC
 //      handles all crew branches atomically.
-//   3. Call Clerk users.deleteUser(userId) to purge PII server-side.
-//   4. If the Clerk call fails after the Supabase soft-delete succeeded,
-//      we log and return success with `clerk_deletion_pending: true`.
-//      The clerk-webhook handler is idempotent and will reconcile if
-//      a retry succeeds; otherwise support can manually delete the
-//      Clerk user. Rolling back the soft-delete here is worse than the
-//      brief divergence — the user already saw the goodbye screen.
+//   3. Return the deletion summary. The UI then signs the user out.
+//
+// We intentionally do NOT call Clerk users.deleteUser here. The
+// 30-day restore-within-cool-down decision requires the Clerk
+// identity to remain valid during the window so the user can sign
+// back in and trigger restoreAccount(). Clerk hard-delete is the
+// concern of a future ticket — likely tied into process_due_user_deletions()
+// at the 30-day mark, or a separate admin/dashboard flow.
+//
+// The clerk-webhook handler covers the reverse direction (admin
+// deletes via the Clerk dashboard); in that scenario Clerk is gone
+// and restore is naturally unavailable.
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
-import { clerk } from '../_shared/clerk.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
@@ -81,16 +84,7 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: 'request_account_deletion returned no summary row' }, 500)
   }
 
-  // Clerk deletion. Failures here do NOT roll back the Supabase soft-delete.
-  let clerkDeletionPending = false
-  try {
-    await clerk.users.deleteUser(summary.user_id)
-  } catch (clerkErr) {
-    clerkDeletionPending = true
-    console.error('Clerk deleteUser failed for', summary.user_id, clerkErr)
-  }
-
-  return jsonResponse({ ...summary, clerk_deletion_pending: clerkDeletionPending }, 200)
+  return jsonResponse(summary, 200)
 })
 
 function jsonResponse(payload: unknown, status: number): Response {

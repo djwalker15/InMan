@@ -4,9 +4,9 @@ Deno-runtime functions deployed to the InMan Supabase project. See each function
 
 ## Functions
 
-- **`delete-account`** — Outbound flow. Called by the Settings → Account Danger Zone after Clerk reauth. Runs `request_account_deletion()` on Supabase and `users.deleteUser()` on Clerk.
+- **`delete-account`** — Outbound flow. Called by the Settings → Account Danger Zone after type-DELETE confirmation. Runs `request_account_deletion()` (soft-delete on the Supabase side). Does NOT call Clerk: the 30-day restore-within-cool-down decision requires the Clerk identity to stay valid during the window so the user can sign back in to trigger `restore_account()`. Clerk hard-delete is deferred to a future ticket.
 - **`clerk-webhook`** — Inbound reconciliation. Receives `user.deleted` events from Clerk and mirrors the deletion into our DB via the service-role variant of `request_account_deletion()`. Idempotent.
-- **`_shared/`** — CORS, Clerk client, and service-role Supabase client helpers used by both functions.
+- **`_shared/`** — CORS and service-role Supabase client helpers used by the functions.
 
 ## Required secrets
 
@@ -14,15 +14,15 @@ Set via `supabase secrets set` or the Supabase dashboard (Project Settings → E
 
 | Secret | Purpose | Used by |
 |---|---|---|
-| `CLERK_SECRET_KEY` | Clerk backend admin API (deleteUser) | `delete-account` |
 | `CLERK_WEBHOOK_SECRET` | Svix signing-secret verification | `clerk-webhook` |
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are auto-injected by the Supabase runtime; no manual setup needed.
 
 ```sh
-supabase secrets set CLERK_SECRET_KEY=sk_live_…
 supabase secrets set CLERK_WEBHOOK_SECRET=whsec_…
 ```
+
+> `CLERK_SECRET_KEY` was previously listed here for an immediate Clerk delete-user call in `delete-account`. That step was removed when the restore-within-cool-down decision landed; reintroduce when the deferred Clerk hard-delete is implemented.
 
 ## Clerk dashboard configuration
 

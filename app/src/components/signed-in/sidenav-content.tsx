@@ -10,6 +10,7 @@ import {
   LogOut,
   Settings,
   ShoppingCart,
+  UserCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -34,6 +35,7 @@ const liveLinks: SidenavLink[] = [
   { to: '/alerts', label: 'Alerts', icon: <Bell size={18} /> },
   { to: '/spaces', label: 'Spaces', icon: <Boxes size={18} /> },
   { to: '/crew/settings', label: 'Crew settings', icon: <Settings size={18} /> },
+  { to: '/settings/account', label: 'Account', icon: <UserCircle size={18} /> },
 ]
 
 /**
