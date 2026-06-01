@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { HelpCircle, Wrench } from 'lucide-react'
-import { PrimaryButton, SecondaryButton } from '@/components/ds'
+import { PrimaryButton, SecondaryButton, Toast } from '@/components/ds'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
 import { SpacesExplainer } from '@/components/spaces/explainer'
 import {
@@ -34,6 +34,7 @@ export default function SpacesPage() {
   const [loading, setLoading] = useState(true)
   const [showExplainer, setShowExplainer] = useState(false)
   const [refetchTick, setRefetchTick] = useState(0)
+  const [toast, setToast] = useState<string | null>(null)
 
   useEffect(() => {
     if (!activeCrewId) return
@@ -134,6 +135,9 @@ export default function SpacesPage() {
 
   async function softDelete(space_ids: string[]): Promise<void> {
     if (space_ids.length === 0) return
+    const rootName =
+      nodes.find((n) => n.space_id === space_ids[0])?.name ?? 'Space'
+    const cascadeCount = space_ids.length - 1
     const { error } = await supabase.rpc('cascade_soft_delete_spaces', {
       p_space_ids: space_ids,
     })
@@ -145,6 +149,11 @@ export default function SpacesPage() {
         idSet.has(n.space_id) ? { ...n, deleted_at: stamp } : n,
       ),
     )
+    const suffix =
+      cascadeCount > 0
+        ? ` and ${cascadeCount} descendant${cascadeCount === 1 ? '' : 's'}`
+        : ''
+    setToast(`Deleted ${rootName}${suffix}.`)
   }
 
   return (
@@ -207,6 +216,7 @@ export default function SpacesPage() {
           </>
         )}
       </div>
+      {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
     </SignedInLayout>
   )
 }

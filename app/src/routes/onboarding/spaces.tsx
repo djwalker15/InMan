@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { useNavigate } from 'react-router-dom'
 import { HelpCircle } from 'lucide-react'
-import { CtaTray, NavHeader, PrimaryButton, ProgressBar } from '@/components/ds'
+import {
+  CtaTray,
+  NavHeader,
+  PrimaryButton,
+  ProgressBar,
+  Toast,
+} from '@/components/ds'
 import {
   SpacesExplainer,
 } from '@/components/spaces/explainer'
@@ -35,6 +41,7 @@ export default function OnboardingSpacesPage() {
   const [nodes, setNodes] = useState<SpaceNode[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [toast, setToast] = useState<string | null>(null)
 
   // Pull existing spaces for the crew so the tree reflects reality on remount.
   useEffect(() => {
@@ -299,6 +306,10 @@ export default function OnboardingSpacesPage() {
                 }}
                 onDelete={async (space_ids) => {
                   if (space_ids.length === 0) return
+                  const rootName =
+                    nodes.find((n) => n.space_id === space_ids[0])?.name ??
+                    'Space'
+                  const cascadeCount = space_ids.length - 1
                   const { error: rpcError } = await supabase.rpc(
                     'cascade_soft_delete_spaces',
                     { p_space_ids: space_ids },
@@ -311,6 +322,11 @@ export default function OnboardingSpacesPage() {
                       idSet.has(n.space_id) ? { ...n, deleted_at: stamp } : n,
                     ),
                   )
+                  const suffix =
+                    cascadeCount > 0
+                      ? ` and ${cascadeCount} descendant${cascadeCount === 1 ? '' : 's'}`
+                      : ''
+                  setToast(`Deleted ${rootName}${suffix}.`)
                 }}
               />
             </div>
@@ -325,6 +341,7 @@ export default function OnboardingSpacesPage() {
           </div>
         )}
       </main>
+      {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
     </div>
   )
 }
