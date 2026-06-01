@@ -134,12 +134,11 @@ export default function SpacesPage() {
 
   async function softDelete(space_ids: string[]): Promise<void> {
     if (space_ids.length === 0) return
-    const stamp = new Date().toISOString()
-    const { error } = await supabase
-      .from('spaces')
-      .update({ deleted_at: stamp })
-      .in('space_id', space_ids)
+    const { error } = await supabase.rpc('cascade_soft_delete_spaces', {
+      p_space_ids: space_ids,
+    })
     if (error) throw error
+    const stamp = new Date().toISOString()
     const idSet = new Set(space_ids)
     setNodes((prev) =>
       prev.map((n) =>

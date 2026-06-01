@@ -299,12 +299,12 @@ export default function OnboardingSpacesPage() {
                 }}
                 onDelete={async (space_ids) => {
                   if (space_ids.length === 0) return
+                  const { error: rpcError } = await supabase.rpc(
+                    'cascade_soft_delete_spaces',
+                    { p_space_ids: space_ids },
+                  )
+                  if (rpcError) throw rpcError
                   const stamp = new Date().toISOString()
-                  const { error: updateError } = await supabase
-                    .from('spaces')
-                    .update({ deleted_at: stamp })
-                    .in('space_id', space_ids)
-                  if (updateError) throw updateError
                   const idSet = new Set(space_ids)
                   setNodes((prev) =>
                     prev.map((n) =>
