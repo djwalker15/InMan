@@ -43,6 +43,18 @@ interface TreeEditorProps {
 
 type Action = 'add-child' | 'add-sibling' | 'rename' | 'delete' | 'reclassify'
 
+// Surface PostgrestError messages too, not just Error subclasses — supabase-js
+// rejects with plain { message, code, details, hint } objects that fail
+// instanceof Error, so without this helper they get reported as "Failed."
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message
+  if (typeof err === 'object' && err !== null && 'message' in err) {
+    const m = (err as { message: unknown }).message
+    if (typeof m === 'string' && m.length > 0) return m
+  }
+  return 'Failed.'
+}
+
 interface ChildrenIndex {
   childrenByParent: Map<string | null, SpaceNode[]>
 }
@@ -140,7 +152,7 @@ function TreeRow({
       await onAddChild({ parent_id: node.space_id, unit_type, name })
       closeAction()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed.')
+      setError(getErrorMessage(err))
     } finally {
       setBusy(false)
     }
@@ -157,7 +169,7 @@ function TreeRow({
       await onAddSibling({ parent_id: node.parent_id, unit_type, name })
       closeAction()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed.')
+      setError(getErrorMessage(err))
     } finally {
       setBusy(false)
     }
@@ -170,7 +182,7 @@ function TreeRow({
       await onRename(node.space_id, name)
       closeAction()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed.')
+      setError(getErrorMessage(err))
     } finally {
       setBusy(false)
     }
@@ -184,7 +196,7 @@ function TreeRow({
       await onDelete(ids)
       closeAction()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed.')
+      setError(getErrorMessage(err))
     } finally {
       setBusy(false)
     }
@@ -197,7 +209,7 @@ function TreeRow({
       await onReclassify(node.space_id, unit_type)
       closeAction()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed.')
+      setError(getErrorMessage(err))
     } finally {
       setBusy(false)
     }
