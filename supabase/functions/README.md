@@ -51,6 +51,8 @@ curl -X POST http://localhost:54321/functions/v1/delete-account \
 Deployed via the Supabase MCP `deploy_edge_function` tool during slice 3 of the Remove account feature (ClickUp 86e1cfx0b). To redeploy from the CLI:
 
 ```sh
-supabase functions deploy delete-account
-supabase functions deploy clerk-webhook
+supabase functions deploy delete-account --no-verify-jwt
+supabase functions deploy clerk-webhook --no-verify-jwt
 ```
+
+> **Both functions deploy with `verify_jwt: false`.** This project uses Clerk as a third-party auth provider; Clerk-signed JWTs don't validate against Supabase's native JWT secret at the edge-function gateway. PostgREST is the layer configured to trust Clerk, so we accept the request at the gateway and let the inner Supabase calls verify auth via PostgREST. Each function still enforces its own auth check (Authorization header for `delete-account`, svix signature for `clerk-webhook`). Do not flip `verify_jwt` back to `true` without changing the auth strategy — it will reject every Clerk JWT.

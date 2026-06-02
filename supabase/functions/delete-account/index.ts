@@ -22,6 +22,16 @@
 // The clerk-webhook handler covers the reverse direction (admin
 // deletes via the Clerk dashboard); in that scenario Clerk is gone
 // and restore is naturally unavailable.
+//
+// Deploy with `verify_jwt: false`. The InMan project uses Clerk as
+// a third-party JWT provider, and Clerk-signed JWTs do NOT validate
+// against Supabase's native JWT secret at the edge-function gateway —
+// the gateway rejects them before the function body runs. We accept
+// the request at the gateway and let PostgREST (which IS configured
+// to trust Clerk) verify the token when the user-context client below
+// calls request_account_deletion. The function still rejects requests
+// with no Authorization header (401 in the handler) and relies on
+// PostgREST to reject forged tokens at the RPC call.
 
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import { corsHeaders } from '../_shared/cors.ts'
