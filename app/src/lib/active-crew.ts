@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { useSupabase } from './supabase'
 
 /**
@@ -16,6 +16,13 @@ import { useSupabase } from './supabase'
  */
 
 const STORAGE_PREFIX = 'inman:active-crew:'
+/**
+ * Same-tab change signal. The native `storage` event only fires in *other*
+ * tabs, never the one that wrote — so a custom event is required for the
+ * crew switcher in one component to notify hook instances in sibling
+ * components (e.g. the dashboard) within the same tab.
+ */
+const CHANGE_EVENT = 'inman:active-crew-change'
 
 export interface CrewMembership {
   crew_id: string
@@ -47,6 +54,23 @@ export function writePreference(userId: string, crewId: string | null): void {
   } else {
     window.localStorage.setItem(STORAGE_PREFIX + userId, crewId)
   }
+  // Notify same-tab subscribers so every useActiveCrew instance re-reads.
+  window.dispatchEvent(new Event(CHANGE_EVENT))
+}
+
+/**
+ * Subscribe to active-crew preference changes. Listens for the same-tab
+ * custom event and the cross-tab native `storage` event. Used as the
+ * `subscribe` arg to useSyncExternalStore so all hook instances stay in sync.
+ */
+function subscribePreference(callback: () => void): () => void {
+  if (typeof window === 'undefined') return () => {}
+  window.addEventListener(CHANGE_EVENT, callback)
+  window.addEventListener('storage', callback)
+  return () => {
+    window.removeEventListener(CHANGE_EVENT, callback)
+    window.removeEventListener('storage', callback)
+  }
 }
 
 interface RawCrew {
@@ -73,7 +97,14 @@ export function useActiveCrew(userId: string | null): ActiveCrewState {
   // early-return branch (react-hooks/set-state-in-effect).
   const [loading, setLoading] = useState(() => Boolean(userId && supabase))
   const [error, setError] = useState<string | null>(null)
-  const [override, setOverride] = useState<string | null>(null)
+  // Shared, reactive read of the stored preference. All hook instances in
+  // the tab re-render together when writePreference dispatches its event,
+  // so switching crews in one component (the switcher) updates them all.
+  const storedPreference = useSyncExternalStore(
+    subscribePreference,
+    () => (userId ? readPreference(userId) : null),
+    () => null,
+  )
 
   useEffect(() => {
     if (!userId || !supabase) return
@@ -104,13 +135,12 @@ export function useActiveCrew(userId: string | null): ActiveCrewState {
         })
       }
       setMemberships(next)
-      // Re-validate the stored preference against current memberships.
+      // Drop a stored preference that points at a crew the user is no
+      // longer a member of. activeCrewId already falls back inline, so this
+      // is hygiene only — guarded so a clean load never re-dispatches.
       const stored = readPreference(safeUserId)
-      if (stored && next.some((m) => m.crew_id === stored)) {
-        setOverride(stored)
-      } else {
-        setOverride(null)
-        if (stored) writePreference(safeUserId, null)
+      if (stored && !next.some((m) => m.crew_id === stored)) {
+        writePreference(safeUserId, null)
       }
       setLoading(false)
     }
@@ -120,15 +150,19 @@ export function useActiveCrew(userId: string | null): ActiveCrewState {
     }
   }, [supabase, userId])
 
+  const validPreference =
+    storedPreference && memberships.some((m) => m.crew_id === storedPreference)
+      ? storedPreference
+      : null
   const activeCrewId =
-    override ??
+    validPreference ??
     (memberships.length > 0 ? memberships[0].crew_id : null)
 
   function setActive(crewId: string) {
     if (!userId) return
     if (!memberships.some((m) => m.crew_id === crewId)) return
+    // Dispatches CHANGE_EVENT → every useActiveCrew instance re-reads.
     writePreference(userId, crewId)
-    setOverride(crewId)
   }
 
   return {
