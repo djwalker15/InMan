@@ -182,6 +182,35 @@ describe('OnboardingSpacesPage', () => {
     })
   })
 
+  it('scopes the existing-spaces lookup to the active crew', async () => {
+    // Regression: the initial loadSpaces query must filter by crew_id, or
+    // RLS (is_crew_member) returns spaces from every crew the user belongs
+    // to — surfacing the previous crew's spaces after a crew switch.
+    sessionStorage.setItem(SPACES_EXPLAINER_DISMISSED_KEY, '1')
+    const sb = makeSupabaseMock({
+      crew_members: {
+        select: {
+          data: [
+            {
+              crew_id: 'crew_abc',
+              role: 'admin',
+              crews: { name: 'Test', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
+      },
+      spaces: {
+        select: { data: [], error: null },
+      },
+    })
+    renderWithRouter(<OnboardingSpacesPage />)
+
+    await waitFor(() => {
+      expect(sb.tables.spaces.eq).toHaveBeenCalledWith('crew_id', 'crew_abc')
+    })
+  })
+
   it('surfaces a Supabase error and stays on the form', async () => {
     sessionStorage.setItem(SPACES_EXPLAINER_DISMISSED_KEY, '1')
     makeSupabaseMock({
