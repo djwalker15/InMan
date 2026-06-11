@@ -1,0 +1,30 @@
+name: Release Please
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      releases_created: ${{ steps.release.outputs.releases_created }}
+    steps:
+      - id: release
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  # Phase 8: un-stub once site/ + deploy-site.yml exist. Releases created with
+  # GITHUB_TOKEN do not fire `release: published` in other workflows, so the
+  # site deploy must chain off this job's output instead.
+  # deploy-site:
+  #   needs: release-please
+  #   if: ${{ needs.release-please.outputs.releases_created == 'true' }}
+  #   uses: ./.github/workflows/deploy-site.yml
+  #   secrets: inherit
