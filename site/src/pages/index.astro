@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro'
+import { APP_URL } from '../config'
+---
+
+<Base title="InMan — know what you have">
+  <section class="hero">
+    <h1>Your inventory, <span class="accent">finally in one place</span></h1>
+    <p>
+      InMan tracks what your crew has, where it lives, and how it flows in and
+      out — from intake to shelf to use, without spreadsheets.
+    </p>
+    <a class="btn-primary" href={APP_URL}>Open the app</a>
+  </section>
+
+  <section class="features">
+    <div class="card">
+      <h3>Spaces that match reality</h3>
+      <p>
+        Model your rooms, shelves, and bins as nested spaces. Move or
+        reorganize them any time — your items follow.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Every change is a flow</h3>
+      <p>
+        Purchases, transfers, waste, and use are all recorded as flows, so
+        quantities are always explainable and auditable.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Built for crews</h3>
+      <p>
+        Invite your team, set per-member permissions, and keep everyone
+        working from the same live picture.
+      </p>
+    </div>
+    <div class="card">
+      <h3>Always improving</h3>
+      <p>
+        New features and fixes ship continuously — follow the
+        <a href="/whats-new">What's New</a> page for every release.
+      </p>
+    </div>
+  </section>
+</Base>
