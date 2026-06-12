@@ -51,6 +51,7 @@ export default function OnboardingSpacesPage() {
       const { data, error: queryError } = await supabase
         .from('spaces')
         .select('space_id, parent_id, unit_type, name, deleted_at')
+        .eq('crew_id', crewId)
         .is('deleted_at', null)
         .order('created_at', { ascending: true })
       if (cancelled) return
@@ -70,9 +71,11 @@ export default function OnboardingSpacesPage() {
   }, [supabase, crewId])
 
   async function refetchSpaces() {
+    if (!crewId) return
     const { data } = await supabase
       .from('spaces')
       .select('space_id, parent_id, unit_type, name, deleted_at')
+      .eq('crew_id', crewId)
       .is('deleted_at', null)
       .order('created_at', { ascending: true })
     const rows: SpaceNode[] = Array.isArray(data) ? (data as SpaceNode[]) : []
