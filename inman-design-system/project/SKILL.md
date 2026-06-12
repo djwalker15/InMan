@@ -11,7 +11,7 @@ When the user asks you to design **anything for InMan** (a screen, a flow, marke
   ```
   Use semantic classes (`.display-lg`, `.body-md`, `.label-eyebrow`, etc.) and CSS variables (`var(--sage-700)`, `var(--paper-150)`, `var(--shadow-ambient-lg)`) instead of inlining hex codes.
 - **`assets/`** — real brand assets (wordmark, glyph, hero image). Always reference these; do not regenerate logos from scratch.
-- **`ui_kits/inman-app/`** — a working hi-fi recreation of the InMan mobile app. The JSX components (`Brand.jsx`, `Buttons.jsx`, `Cards.jsx`, `Onboarding.jsx`, `Dashboard.jsx`, `Screens.jsx`) are the canonical reference for component construction. Open `ui_kits/inman-app/index.html` to see the click-thru.
+- **`ui_kits/inman-app/`** — a working hi-fi recreation of the InMan mobile app. The JSX components (`Brand.jsx`, `Buttons.jsx`, `Cards.jsx`, `OnboardingKit.jsx`, `Dashboard.jsx`, `Screens.jsx`) are the canonical reference for component construction. Open `ui_kits/inman-app/index.html` to see the click-thru.
 - **`preview/`** — small standalone HTML cards used by the Design System tab. Each card demonstrates one token group. Useful as copy/paste minimal examples.
 
 ## Non-negotiable rules

@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- @dsCard group="Brand" name="User Journeys" subtitle="Six core InMan journeys, screen-by-screen" -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -23,7 +24,7 @@
 <script type="text/babel" src="ui_kits/inman-app/Buttons.jsx"></script>
 <script type="text/babel" src="ui_kits/inman-app/Cards.jsx"></script>
 <script type="text/babel" src="ui_kits/inman-app/Components.jsx"></script>
-<script type="text/babel" src="ui_kits/inman-app/Onboarding.jsx"></script>
+<script type="text/babel" src="ui_kits/inman-app/OnboardingKit.jsx"></script>
 <script type="text/babel" src="ui_kits/inman-app/Dashboard.jsx"></script>
 
 <!-- Tweaks panel + protocol -->
@@ -41,6 +42,7 @@
 <script type="text/babel" src="journeys/CheckingStock.jsx"></script>
 <script type="text/babel" src="journeys/CrewManagement.jsx"></script>
 <script type="text/babel" src="journeys/SpaceReorganization.jsx"></script>
+<script type="text/babel" src="journeys/Glanceable.jsx"></script>
 
 <!-- Tweaks UI — must come AFTER React/ReactDOM and the tweaks-panel starter. -->
 <script type="text/babel" src="journeys/journey-tweaks.jsx"></script>
@@ -51,6 +53,18 @@ const W = 390, H = 844;
 function App() {
   return (
     <DesignCanvas title="InMan · User Journeys" subtitle="Six end-to-end flows, screen by screen. Pan with drag, zoom with scroll. Click any artboard for full screen.">
+      <DCSection id="glanceable" title="Glanceable redesign — 3 directions" subtitle="For dim, busy bar use. Each row is one direction; CS_List is the anchor screen, then how the same logic carries into Adding Inventory + Space Setup.">
+        <DCArtboard id="g-a-list"    label="A · Numbers First — Inventory"        width={W} height={H}><G_A_List/></DCArtboard>
+        <DCArtboard id="g-a-restock" label="A · Numbers First — Restock"          width={W} height={H}><G_A_Restock/></DCArtboard>
+        <DCArtboard id="g-a-tree"    label="A · Numbers First — Spaces"           width={W} height={H}><G_A_TreeEditor/></DCArtboard>
+        <DCArtboard id="g-b-list"    label="B · Status Tiles — Inventory"          width={W} height={H}><G_B_List/></DCArtboard>
+        <DCArtboard id="g-b-add"     label="B · Status Tiles — Add product"        width={W} height={H}><G_B_AddSearch/></DCArtboard>
+        <DCArtboard id="g-b-spaces"  label="B · Status Tiles — Spaces"             width={W} height={H}><G_B_Spaces/></DCArtboard>
+        <DCArtboard id="g-c-list"    label="C · Traffic-Light List — Inventory"    width={W} height={H}><G_C_List/></DCArtboard>
+        <DCArtboard id="g-c-details" label="C · Traffic-Light List — Details"      width={W} height={H}><G_C_Details/></DCArtboard>
+        <DCArtboard id="g-c-spaces"  label="C · Traffic-Light List — Spaces"       width={W} height={H}><G_C_Spaces/></DCArtboard>
+      </DCSection>
+
       <DCSection id="onboarding" title="Onboarding" subtitle="From landing page → dashboard. Path A (new crew) and Path B (invite).">
         <DCArtboard id="ob-landing"      label="01 · Landing"               width={W} height={H}><OB_Landing/></DCArtboard>
         <DCArtboard id="ob-signup"       label="02 · Sign up (Clerk)"       width={W} height={H}><OB_SignUp/></DCArtboard>

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { HelpCircle, Wrench } from 'lucide-react'
+import { HelpCircle, LayoutGrid, List, Wrench } from 'lucide-react'
 import { PrimaryButton, SecondaryButton, Toast } from '@/components/ds'
+import { cn } from '@/lib/utils'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
 import { SpacesExplainer } from '@/components/spaces/explainer'
 import {
@@ -10,10 +11,23 @@ import {
   type ReorganizeItem,
 } from '@/components/spaces/reorganize'
 import { TemplateBrowser } from '@/components/spaces/template-browser'
+import { SpacesDrillDown } from '@/components/spaces/drill-down'
 import { TreeEditor } from '@/components/spaces/tree-editor'
 import type { SpaceNode, UnitType } from '@/components/spaces/types'
 import { useActiveCrew } from '@/lib/active-crew'
 import { useSupabase } from '@/lib/supabase'
+
+type SpacesView = 'cards' | 'tree'
+const VIEW_PREF_KEY = 'inman:spaces-view'
+
+/** Remembered browser view; defaults to the scoped card drill-down. */
+function readViewPreference(): SpacesView {
+  try {
+    return localStorage.getItem(VIEW_PREF_KEY) === 'tree' ? 'tree' : 'cards'
+  } catch {
+    return 'cards'
+  }
+}
 
 export default function SpacesPage() {
   const { user } = useUser()
@@ -35,6 +49,16 @@ export default function SpacesPage() {
   const [showExplainer, setShowExplainer] = useState(false)
   const [refetchTick, setRefetchTick] = useState(0)
   const [toast, setToast] = useState<string | null>(null)
+  const [view, setView] = useState<SpacesView>(readViewPreference)
+
+  function chooseView(next: SpacesView) {
+    setView(next)
+    try {
+      localStorage.setItem(VIEW_PREF_KEY, next)
+    } catch {
+      // Private mode / storage disabled — non-fatal, the choice just won't persist.
+    }
+  }
 
   useEffect(() => {
     if (!activeCrewId) return
@@ -88,7 +112,7 @@ export default function SpacesPage() {
   }
 
   async function insertNode(input: {
-    parent_id: string
+    parent_id: string | null
     unit_type: UnitType
     name: string
   }): Promise<SpaceNode> {
@@ -189,35 +213,91 @@ export default function SpacesPage() {
           ) : null
         ) : (
           <>
-            <div className="flex flex-wrap justify-end gap-2">
-              <SecondaryButton
-                type="button"
-                onClick={() => setMode('reorganize')}
-                disabled={!hasNonPremisesSpaces}
-                className="!h-10 !w-auto px-3 !text-sm"
-              >
-                <Wrench size={14} aria-hidden />
-                Reorganize
-              </SecondaryButton>
-              <TemplateBrowser
-                hasExistingSpaces={hasNonPremisesSpaces}
-                onApplied={refetchSpaces}
-              />
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <ViewToggle view={view} onChange={chooseView} />
+              <div className="flex flex-wrap gap-2">
+                <SecondaryButton
+                  type="button"
+                  onClick={() => setMode('reorganize')}
+                  disabled={!hasNonPremisesSpaces}
+                  className="!h-10 !w-auto px-3 !text-sm"
+                >
+                  <Wrench size={14} aria-hidden />
+                  Reorganize
+                </SecondaryButton>
+                <TemplateBrowser
+                  hasExistingSpaces={hasNonPremisesSpaces}
+                  onApplied={refetchSpaces}
+                />
+              </div>
             </div>
-            <TreeEditor
-              nodes={nodes}
-              onAddChild={insertNode}
-              onAddSibling={insertNode}
-              onRename={rename}
-              onReclassify={reclassify}
-              onDelete={softDelete}
-              emptyState="Loading…"
-            />
+            {view === 'cards' ? (
+              <SpacesDrillDown
+                nodes={nodes}
+                onAddChild={insertNode}
+                onRename={rename}
+                onReclassify={reclassify}
+                onDelete={softDelete}
+                emptyState="Loading…"
+              />
+            ) : (
+              <TreeEditor
+                nodes={nodes}
+                onAddChild={insertNode}
+                onAddSibling={insertNode}
+                onRename={rename}
+                onReclassify={reclassify}
+                onDelete={softDelete}
+                emptyState="Loading…"
+              />
+            )}
           </>
         )}
       </div>
       {toast && <Toast message={toast} onDismiss={() => setToast(null)} />}
     </SignedInLayout>
+  )
+}
+
+function ViewToggle({
+  view,
+  onChange,
+}: {
+  view: SpacesView
+  onChange: (v: SpacesView) => void
+}) {
+  const options: { value: SpacesView; label: string; icon: typeof LayoutGrid }[] =
+    [
+      { value: 'cards', label: 'Cards', icon: LayoutGrid },
+      { value: 'tree', label: 'Tree', icon: List },
+    ]
+  return (
+    <div
+      role="group"
+      aria-label="Spaces view"
+      className="flex gap-0.5 rounded-full bg-paper-200 p-0.5"
+    >
+      {options.map(({ value, label, icon: Icon }) => {
+        const active = view === value
+        return (
+          <button
+            key={value}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onChange(value)}
+            className={cn(
+              'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 font-display text-sm font-bold transition',
+              active
+                ? 'bg-paper-50 text-ink-900 shadow-ambient-sm'
+                : 'text-ink-600 hover:text-ink-900',
+            )}
+          >
+            <Icon size={14} aria-hidden />
+            {label}
+          </button>
+        )
+      })}
+    </div>
   )
 }
 

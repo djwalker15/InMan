@@ -1,0 +1,232 @@
+/* ─────────────────────────────────────────────────────────────
+   InMan — Colors & Type
+   "The Curated Larder" — organic, lived-in, editorial.
+   ───────────────────────────────────────────────────────────── */
+
+/* Fonts (Google Fonts) — see fonts/README.md for self-host notes */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+
+:root {
+  /* ── Sage (Primary, organic green) ─────────────────────── */
+  --sage-700: #31694D;       /* primary — deep moss */
+  --sage-600: #4A8265;       /* primary-container — softer sage */
+  --sage-500: #708067;       /* muted sage / on-surface variant */
+  --sage-300: #C0C9C1;       /* outline */
+  --sage-100: #B4F0CD;       /* primary-container-light (on dark sage) */
+
+  /* ── Warm Stone (surface paper stack) ──────────────────── */
+  --paper-50:  #FDF9F2;      /* surface — base canvas */
+  --paper-100: #F7F3EC;      /* surface-container-low */
+  --paper-150: #F2EEE6;      /* surface-container — most-used canvas */
+  --paper-200: #F1EDE7;      /* surface-container-high */
+  --paper-250: #EBE8E1;      /* surface-container-highest */
+  --paper-300: #E6E2DB;      /* outline-variant subtle */
+
+  /* ── Ink (text, near-black, never #000) ─────────────────── */
+  --ink-900: #1C1C18;        /* on-surface — primary text */
+  --ink-700: #404943;        /* on-surface-variant — secondary text */
+  --ink-600: #605E58;        /* tertiary text / muted label */
+  --ink-500: #707972;        /* placeholder / hint */
+  --ink-400: #A8A29E;        /* disabled */
+  --ink-300: #6B7280;        /* utility neutral grey */
+
+  /* ── Semantic ──────────────────────────────────────────── */
+  --error:        #BA1A1A;
+  --error-bg:     rgba(186, 26, 26, 0.06);
+  --warn:         #D97706;   /* amber for tip cards / expiring */
+  --warn-bg:      rgba(217, 119, 6, 0.08);
+  --success:      var(--sage-700);
+  --info:         #2563EB;   /* facebook only — not a design pattern */
+
+  /* ── Tokens (Material-style, mapped to palette) ────────── */
+  --surface:                  var(--paper-150);
+  --surface-container-lowest: var(--paper-50);
+  --surface-container-low:    var(--paper-100);
+  --surface-container:        var(--paper-150);
+  --surface-container-high:   var(--paper-200);
+  --surface-container-highest:var(--paper-250);
+  --on-surface:               var(--ink-900);
+  --on-surface-variant:       var(--ink-700);
+  --outline:                  var(--sage-300);
+  --outline-variant:          var(--paper-300);
+  --primary:                  var(--sage-700);
+  --primary-container:        var(--sage-600);
+  --on-primary:               #FFFFFF;
+  --secondary-container:      var(--paper-250);
+
+  /* ── Signature gradient (for primary CTAs) ─────────────── */
+  --gradient-primary: linear-gradient(135deg, var(--sage-700) 0%, var(--sage-600) 100%);
+  --gradient-primary-vertical: linear-gradient(180deg, var(--sage-700) 0%, var(--sage-600) 100%);
+
+  /* ── Ambient shadows (tinted near-black, NEVER pure black) */
+  --shadow-ambient-sm: 0 1px 2px 0 rgba(28, 28, 24, 0.05);
+  --shadow-ambient-md: 0 4px 32px 0 rgba(28, 28, 24, 0.04), 0 8px 24px -4px rgba(28, 28, 24, 0.06);
+  --shadow-ambient-lg: 0 8px 48px 0 rgba(28, 28, 24, 0.06), 0 4px 32px 0 rgba(28, 28, 24, 0.04);
+  --shadow-cta:        0 8px 16px -4px rgba(49, 105, 77, 0.2);
+  --shadow-cta-strong: 0 8px 20px 0 rgba(74, 130, 101, 0.25);
+
+  /* ── Glassmorphism ─────────────────────────────────────── */
+  --glass-bg:    rgba(253, 249, 242, 0.8);
+  --glass-blur:  blur(16px);
+  --scrim-blur:  blur(20px);
+  --glass-border: rgba(192, 201, 193, 0.15); /* Ghost border at ~15% */
+
+  /* ── Radii ────────────────────────────────────────────── */
+  --r-xs:   4px;
+  --r-sm:   6px;
+  --r-md:   8px;     /* most components */
+  --r-lg:   12px;    /* cards, buttons */
+  --r-xl:   16px;
+  --r-full: 9999px;  /* pills, avatars, icon plinths */
+
+  /* ── Spacing scale (8pt grid, breathable) ───────────────── */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+  --sp-9: 48px;
+  --sp-10: 64px;
+
+  /* ── Type families ─────────────────────────────────────── */
+  --font-display: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+  --font-accent:  "Manrope", ui-sans-serif, system-ui, sans-serif; /* used for hero details + some CTAs */
+  --font-numeric: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Type — semantic classes
+   Display & Headlines: Plus Jakarta Sans
+   Body & Labels:       Be Vietnam Pro
+   ───────────────────────────────────────────────────────────── */
+
+.display-lg {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 36px;
+  line-height: 40px;
+  letter-spacing: -0.9px;
+  color: var(--on-surface);
+}
+
+.display-md {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 30px;
+  line-height: 37.5px;
+  letter-spacing: -0.4px;
+  color: var(--on-surface);
+}
+
+.headline-lg {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: -1.2px;
+  color: var(--on-surface);
+}
+
+.headline-md {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 28px;
+  color: var(--on-surface);
+}
+
+.headline-sm {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 22.5px;
+  color: var(--on-surface);
+}
+
+.title-md {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--on-surface);
+}
+
+.body-lg {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 18px;
+  line-height: 29.25px;
+  color: var(--on-surface-variant);
+}
+
+.body-md {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 26px;
+  color: var(--on-surface-variant);
+}
+
+.body-sm {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--on-surface-variant);
+}
+
+/* "Labeled jar" — small caps eyebrow labels.
+   Tracked-out, bold Plus Jakarta Sans. */
+.label-eyebrow {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 16.5px;
+  letter-spacing: 0.55px;
+  text-transform: uppercase;
+  color: var(--ink-300);
+}
+
+.label-section {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 20px;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  color: var(--on-surface);
+}
+
+.label-tag {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--ink-600);
+}
+
+.button-label {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  line-height: 28px;
+  letter-spacing: 0;
+}
+
+.numeric {
+  font-family: var(--font-numeric);
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+
+/* Body resets that match the Larder vibe */
+html, body {
+  background-color: var(--surface);
+  color: var(--on-surface);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}

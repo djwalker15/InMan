@@ -252,12 +252,31 @@ Available at **any point** during Phase 3 or Phase 4. A "Use a template" button 
 
 ## Ongoing Access
 
-After onboarding, the Spaces page (`/spaces`) uses the **same tree editor** from Phase 4 as its primary interface. The guided flow (Phase 3) is only shown during onboarding. Users can:
+After onboarding, the Spaces page (`/spaces`) offers two browsers, switchable via a **Cards / Tree toggle** (persisted per device in `localStorage`, default **Cards**). The guided flow (Phase 3) is only shown during onboarding. Users can:
 
 - Add, edit, and delete spaces at any time
 - Apply templates to add new branches (with merge/replace prompt)
 - Access the explainer via the "?" icon
 - Save their current setup as a custom [[SpaceTemplate]] for reuse
+
+### Cards — scoped drill-down (default)
+
+Drilling into a space **scopes the view to that space and hides unrelated sibling branches**, replacing the visual clutter of the always-expanded tree. The top level is the **premises list**; tapping a premises scopes into it.
+
+- A **breadcrumb** (`Spaces › … › current`) plus a **back** control climb the hierarchy; tap any crumb to jump.
+- Each level renders its immediate children as a **grid of cards** (a generated warm-gradient "photo" banner per space — a placeholder for the future real-photo vision). The space you're inside gets a **hero banner**.
+- All manage actions stay reachable via **bottom sheets**: a card's `⋯` (or the header `⋯` for the current scope) opens Add-inside / Rename / Change-type / Delete. The header `+` adds a child to the current scope, or a **new premises** at the root.
+- Validation reuses the same rules as the tree editor (allowed child types, smart defaults, reclassify suggestions, cascade delete).
+
+Implementation: `app/src/components/spaces/drill-down.tsx` (+ `drill-down-cards.tsx`, `drill-down-sheets.tsx`, `space-photo.ts`), on the `Sheet` DS primitive (`app/src/components/ds/sheet.tsx`).
+
+### Tree — always-expanded editor
+
+The Phase 4 tree editor (`tree-editor.tsx`) remains available under the **Tree** toggle for users who prefer the full-hierarchy view.
+
+### Future direction — visual / spatial navigation
+
+The aspirational endpoint (captured but out of scope) is **photo/video navigation**: a real photo or short video of the room as the map, where tapping a shelf/cabinet/fridge drills straight in. This needs a new crew-scoped media-storage pattern. A second deferred idea is **per-user card richness** (photo vs. glyph cards; item counts and stock-health pills), already prototyped behind tweaks in the design handoff.
 
 ---
 
