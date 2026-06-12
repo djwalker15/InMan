@@ -1,0 +1,48 @@
+# Config-as-code for the InMan Supabase project. CI applies this on every
+# deploy via `supabase config push`, which reconciles the remote settings to
+# match THIS FILE for every key declared here — keep it minimal and only
+# declare what we intend to manage.
+project_id = "gewrsrbjkgffukzbnenl"
+
+# Clerk JWTs cannot pass Supabase's native gateway verification; each function
+# enforces its own auth (see supabase/functions/README.md). Removing these
+# lines would break every authenticated function call.
+[functions.clerk-webhook]
+verify_jwt = false
+
+[functions.delete-account]
+verify_jwt = false
+
+# Declaring any [auth.*] key makes `config push` manage the WHOLE auth section,
+# substituting CLI defaults for anything undeclared. The values below pin the
+# remote's existing dashboard configuration so pushes are no-ops — verified
+# against the push diff on 2026-06-11. Native Supabase auth is idle (Clerk owns
+# auth), but don't let defaults drift these silently.
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = []
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[auth.email]
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 8
+
+# Third-party auth: PostgREST trusts Clerk-issued JWTs from this domain.
+# Production currently runs on the Clerk dev instance; update this domain when
+# the Clerk production instance (custom domain) goes live.
+[auth.third_party.clerk]
+enabled = true
+domain = "outgoing-wren-98.clerk.accounts.dev"
+
+# Persistent staging branch — overrides applied when CI pushes config with the
+# branch's project ref. Staging stays on the Clerk dev instance permanently.
+[remotes.staging]
+project_id = "tfmgsauafklbradhbmdg"
+
+[remotes.staging.auth.third_party.clerk]
+enabled = true
+domain = "outgoing-wren-98.clerk.accounts.dev"
