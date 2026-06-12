@@ -27,7 +27,9 @@ jobs:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned: newer CLIs refuse `config push` against a branch ref that
+          # matches a [remotes.*] block; 2.101.0 applies the override correctly.
+          version: 2.101.0
       - name: Push config to staging branch
         run: supabase config push --project-ref "${{ vars.SUPABASE_PROJECT_REF }}" --yes
       - name: Apply migrations
