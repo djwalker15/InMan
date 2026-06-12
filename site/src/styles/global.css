@@ -1,0 +1,220 @@
+/* Token source of truth — never copy values out of this file. */
+@import '../../../inman-design-system/project/colors_and_type.css';
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper-50);
+  color: var(--ink-900);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 0 var(--sp-6);
+}
+
+/* ── Nav ───────────────────────────────────────────────── */
+.nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-5) 0;
+}
+
+.brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.6px;
+  color: var(--sage-700);
+  text-decoration: none;
+}
+
+.nav-links {
+  display: flex;
+  gap: var(--sp-6);
+  align-items: center;
+}
+
+.nav-links a {
+  font-family: var(--font-accent);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--ink-700);
+  text-decoration: none;
+}
+
+.nav-links a:hover {
+  color: var(--sage-700);
+}
+
+/* ── Buttons (sage CTAs are gradients, never flat) ───────── */
+.btn-primary {
+  display: inline-block;
+  background: var(--gradient-primary);
+  color: var(--on-primary);
+  font-family: var(--font-accent);
+  font-weight: 700;
+  font-size: 16px;
+  text-decoration: none;
+  padding: var(--sp-3) var(--sp-6);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-cta);
+}
+
+.btn-primary:hover {
+  box-shadow: var(--shadow-cta-strong);
+}
+
+/* ── Hero ─────────────────────────────────────────────────── */
+.hero {
+  padding: var(--sp-10) 0 var(--sp-9);
+  text-align: center;
+}
+
+.hero h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 44px;
+  line-height: 1.15;
+  letter-spacing: -1.2px;
+  margin: 0 0 var(--sp-4);
+}
+
+.hero p {
+  font-size: 18px;
+  color: var(--ink-700);
+  max-width: 560px;
+  margin: 0 auto var(--sp-7);
+}
+
+.hero .accent {
+  color: var(--sage-700);
+}
+
+/* ── Feature cards (surfaces nest one tier at a time) ────── */
+.features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--sp-5);
+  padding: var(--sp-7) 0 var(--sp-9);
+}
+
+.card {
+  background: var(--paper-100);
+  border-radius: var(--r-xl);
+  padding: var(--sp-6);
+  box-shadow: var(--shadow-ambient-sm);
+}
+
+.card h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.3px;
+  margin: 0 0 var(--sp-2);
+}
+
+.card p {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink-700);
+}
+
+/* ── What's New ──────────────────────────────────────────── */
+.page-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 32px;
+  letter-spacing: -0.8px;
+  padding-top: var(--sp-8);
+  margin: 0 0 var(--sp-2);
+}
+
+.page-sub {
+  color: var(--ink-700);
+  margin: 0 0 var(--sp-7);
+}
+
+.release {
+  background: var(--paper-100);
+  border-radius: var(--r-xl);
+  padding: var(--sp-6);
+  margin-bottom: var(--sp-5);
+  box-shadow: var(--shadow-ambient-sm);
+}
+
+.release-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-3);
+}
+
+.release-version {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 20px;
+  letter-spacing: -0.3px;
+  margin: 0;
+}
+
+.release-date {
+  font-family: var(--font-accent);
+  font-size: 14px;
+  color: var(--ink-600);
+}
+
+.release h4 {
+  font-family: var(--font-accent);
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--sage-700);
+  margin: var(--sp-4) 0 var(--sp-2);
+}
+
+.release ul {
+  margin: 0;
+  padding-left: var(--sp-5);
+}
+
+.release li {
+  font-size: 15px;
+  color: var(--ink-700);
+  margin-bottom: var(--sp-1);
+}
+
+.release a {
+  color: var(--sage-600);
+}
+
+.empty-state {
+  background: var(--paper-100);
+  border-radius: var(--r-xl);
+  padding: var(--sp-8) var(--sp-6);
+  text-align: center;
+  color: var(--ink-600);
+  box-shadow: var(--shadow-ambient-sm);
+}
+
+/* ── Footer ──────────────────────────────────────────────── */
+.footer {
+  padding: var(--sp-8) 0 var(--sp-7);
+  text-align: center;
+  font-size: 14px;
+  color: var(--ink-600);
+}
+
+.footer a {
+  color: var(--sage-700);
+}
