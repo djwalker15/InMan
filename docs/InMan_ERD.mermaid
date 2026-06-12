@@ -15,6 +15,8 @@ erDiagram
         json settings
         timestamp deletion_requested_at "nullable"
         text deletion_requested_by FK "nullable, Clerk user ID"
+        boolean is_ownerless "default false"
+        timestamp became_ownerless_at "nullable"
         timestamp created_at
         timestamp updated_at
     }
@@ -22,6 +24,8 @@ erDiagram
     User {
         text user_id PK "Clerk string ID"
         timestamp created_at
+        timestamp deletion_requested_at "nullable, UI click timestamp"
+        timestamp deleted_at "nullable, 30-day restore window"
     }
 
     CrewMember {

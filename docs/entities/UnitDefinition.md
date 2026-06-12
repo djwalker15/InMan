@@ -10,7 +10,7 @@ System-seeded reference table that provides conversion factors within unit categ
 |-------|------|-------|
 | `unit` | text PK | e.g., "oz", "ml", "g", "count" |
 | `unit_category` | enum | weight \| volume \| count |
-| `base_unit` | text | Canonical unit for the category (g for weight, ml for volume, count for count) |
+| `base_unit` | text | Canonical unit for the category (g for weight, fl_oz for volume, count for count) |
 | `to_base_factor` | numeric | Multiplier to convert to the base unit |
 
 ## Seed Data
@@ -21,12 +21,12 @@ System-seeded reference table that provides conversion factors within unit categ
 | kg | weight | g | 1000 |
 | oz | weight | g | 28.3495 |
 | lbs | weight | g | 453.592 |
-| ml | volume | ml | 1 |
-| L | volume | ml | 1000 |
-| tsp | volume | ml | 4.929 |
-| tbsp | volume | ml | 14.787 |
-| cup | volume | ml | 236.588 |
-| fl_oz | volume | ml | 29.574 |
+| ml | volume | fl_oz | 0.033814 |
+| L | volume | fl_oz | 33.814 |
+| tsp | volume | fl_oz | 0.166667 |
+| tbsp | volume | fl_oz | 0.5 |
+| cup | volume | fl_oz | 8 |
+| fl_oz | volume | fl_oz | 1 |
 | count | count | count | 1 |
 | pkg | count | count | 1 |
 

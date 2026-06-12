@@ -4,6 +4,16 @@ import viteConfig from './vite.config'
 export default mergeConfig(
   viteConfig,
   defineConfig({
+    // React 19's CJS entry dispatches to the production build when
+    // process.env.NODE_ENV === 'production', and the production build
+    // strips React.act — which @testing-library/react@16 requires.
+    // Vitest 4 + @vitejs/plugin-react end up with NODE_ENV=production
+    // at module-load time during tests; force the development branch
+    // via Vite's compile-time string replacement so the test runtime
+    // gets the build that includes React.act.
+    define: {
+      'process.env.NODE_ENV': '"development"',
+    },
     test: {
       environment: 'happy-dom',
       globals: true,

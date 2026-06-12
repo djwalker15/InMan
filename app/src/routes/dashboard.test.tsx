@@ -16,12 +16,13 @@ vi.mock('react-router-dom', async () => {
 describe('DashboardPage', () => {
   beforeEach(() => {
     mockNavigate.mockClear()
+    localStorage.clear()
   })
 
-  it('queries crew_members count with head:true and deleted_at IS NULL', async () => {
+  it('queries crew_members via useActiveCrew (joined select, deleted_at IS NULL)', async () => {
     mockClerk({ user: { id: 'user_1', firstName: 'Davontae' } })
     const sb = makeSupabaseMock({
-      crew_members: { select: { count: 0, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
 
     renderWithRouter(<DashboardPage />)
@@ -30,16 +31,29 @@ describe('DashboardPage', () => {
       expect(sb.from).toHaveBeenCalledWith('crew_members')
     })
     expect(sb.tables.crew_members.select).toHaveBeenCalledWith(
-      'crew_member_id',
-      { count: 'exact', head: true },
+      'crew_id, role, crews(name, owner_id)',
     )
     expect(sb.tables.crew_members.is).toHaveBeenCalledWith('deleted_at', null)
   })
 
-  it('marks "Create your Crew" complete (line-through) when count > 0', async () => {
+  it('marks "Create your Crew" complete (line-through) when user has a membership', async () => {
     mockClerk({ user: { id: 'user_1', firstName: 'Davontae' } })
     makeSupabaseMock({
-      crew_members: { select: { count: 1, error: null } },
+      crew_members: {
+        select: {
+          data: [
+            {
+              crew_id: 'crew_1',
+              role: 'admin',
+              crews: { name: 'Walker Home', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
+      },
+      spaces: { select: { count: 0, error: null } },
+      inventory_items: { select: { count: 0, error: null } },
+      invites: { select: { count: 0, error: null } },
     })
 
     renderWithRouter(<DashboardPage />)
@@ -53,7 +67,7 @@ describe('DashboardPage', () => {
   it('does not mark crew row complete when there is no membership', async () => {
     mockClerk({ user: { id: 'user_1', firstName: 'Davontae' } })
     makeSupabaseMock({
-      crew_members: { select: { count: 0, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
 
     renderWithRouter(<DashboardPage />)
@@ -64,7 +78,7 @@ describe('DashboardPage', () => {
   it('renders the user firstName in the welcome heading', async () => {
     mockClerk({ user: { id: 'user_1', firstName: 'Davontae' } })
     makeSupabaseMock({
-      crew_members: { select: { count: 0, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
 
     renderWithRouter(<DashboardPage />)
@@ -78,12 +92,93 @@ describe('DashboardPage', () => {
       user: { id: 'user_1', firstName: null, username: null },
     })
     makeSupabaseMock({
-      crew_members: { select: { count: 0, error: null } },
+      crew_members: { select: { data: [], error: null } },
     })
 
     renderWithRouter(<DashboardPage />)
     expect(
       await screen.findByRole('heading', { name: /welcome, there/i }),
     ).toBeInTheDocument()
+  })
+
+  it('Path A: renders 5-item checklist with only Sign Up + Crew complete for a fresh owner account', async () => {
+    mockClerk({ user: { id: 'user_1', firstName: 'Davontae' } })
+    makeSupabaseMock({
+      crew_members: {
+        select: {
+          data: [
+            {
+              crew_id: 'crew_1',
+              role: 'admin',
+              crews: { name: 'Walker Home', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
+      },
+      spaces: { select: { count: 1, error: null } },
+      inventory_items: { select: { count: 0, error: null } },
+      invites: { select: { count: 0, error: null } },
+    })
+
+    renderWithRouter(<DashboardPage />)
+
+    // All 5 Path A labels are present
+    expect(await screen.findByText('Sign Up')).toBeInTheDocument()
+    expect(screen.getByText('Create your Crew')).toBeInTheDocument()
+    expect(screen.getByText('Set up spaces')).toBeInTheDocument()
+    expect(screen.getByText('Add first items')).toBeInTheDocument()
+    expect(screen.getByText('Invite crew members')).toBeInTheDocument()
+
+    // No Path B-only label
+    expect(screen.queryByText(/^Joined /i)).not.toBeInTheDocument()
+
+    // Sign Up + Create your Crew are complete (line-through)
+    await waitFor(() => {
+      expect(screen.getByText('Sign Up')).toHaveClass('line-through')
+      expect(screen.getByText('Create your Crew')).toHaveClass('line-through')
+    })
+
+    // Remaining three are incomplete
+    expect(screen.getByText('Set up spaces')).not.toHaveClass('line-through')
+    expect(screen.getByText('Add first items')).not.toHaveClass('line-through')
+    expect(screen.getByText('Invite crew members')).not.toHaveClass('line-through')
+  })
+
+  it('Path B: renders 4-item checklist with "Joined <crewName>" shown for an invited member', async () => {
+    mockClerk({ user: { id: 'user_2', firstName: 'Alex' } })
+    makeSupabaseMock({
+      crew_members: {
+        select: {
+          data: [
+            {
+              crew_id: 'crew_1',
+              role: 'member',
+              crews: { name: 'Walker Home', owner_id: 'user_1' },
+            },
+          ],
+          error: null,
+        },
+      },
+    })
+
+    renderWithRouter(<DashboardPage />)
+
+    // Path B-specific labels appear
+    expect(await screen.findByText('Joined Walker Home')).toBeInTheDocument()
+    expect(screen.getByText('Browse your spaces')).toBeInTheDocument()
+    expect(screen.getByText('Browse inventory')).toBeInTheDocument()
+
+    // No Path A-only labels
+    await waitFor(() => {
+      expect(screen.queryByText('Create your Crew')).not.toBeInTheDocument()
+      expect(screen.queryByText('Set up spaces')).not.toBeInTheDocument()
+    })
+
+    // Sign Up + Joined are complete
+    expect(screen.getByText('Sign Up')).toHaveClass('line-through')
+    expect(screen.getByText('Joined Walker Home')).toHaveClass('line-through')
+    expect(screen.getByText('Browse your spaces')).not.toHaveClass('line-through')
+    expect(screen.getByText('Browse inventory')).not.toHaveClass('line-through')
   })
 })

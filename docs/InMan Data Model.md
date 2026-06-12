@@ -127,6 +127,12 @@
 
 ---
 
+## Implementation
+
+- [[InMan Implementation Plan]] — MVP scope (6 journeys, 13 tables), implementation sequence (hybrid: foundation DB → vertical journeys), edge function inventory, route map, seed data strategy
+
+---
+
 ## Architecture Decisions
 
 - **Quantity is a cache.** [[Flow]] ledger is canonical. See [[InventoryItem]], [[Flow]].

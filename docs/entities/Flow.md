@@ -40,6 +40,7 @@ Zero or one child row per Flow, determined by `flow_type`:
 - **Type-specific fields live in child tables.** The base Flow is a clean, universal transaction record. Purchase details, transfer locations, prep usage batch links, and waste details all live in their respective child tables.
 - Every flow is user-stamped (`performed_by`) — including those from [[KioskSession]]
 - **Immutable record** — Flows are never modified or deleted after creation
+- **`performed_by` persists after user account deletion.** When a [[User]] deletes their account, their `users` row stays as a tombstone and `performed_by` continues to point at it indefinitely — no anonymization, no nulling, no cascading. Audit trails and per-user analytics stay intact across the user's lifecycle. See [[CLAUDE]] §"User Account Deletion" for the full rationale.
 
 ## Relationships
 

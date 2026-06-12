@@ -20,6 +20,9 @@ type Op =
 type TableConfig = Partial<Record<Op, QueryResult | Promise<QueryResult>>>
 type SupabaseConfig = Record<string, TableConfig>
 
+type RpcResult = { data?: unknown; error: Error | null }
+type RpcResultMap = Record<string, RpcResult>
+
 export interface TableMock {
   upsert: ReturnType<typeof vi.fn>
   insert: ReturnType<typeof vi.fn>
@@ -34,6 +37,12 @@ export interface TableMock {
   lt: ReturnType<typeof vi.fn>
   gte: ReturnType<typeof vi.fn>
   lte: ReturnType<typeof vi.fn>
+  ilike: ReturnType<typeof vi.fn>
+  like: ReturnType<typeof vi.fn>
+  or: ReturnType<typeof vi.fn>
+  match: ReturnType<typeof vi.fn>
+  contains: ReturnType<typeof vi.fn>
+  containedBy: ReturnType<typeof vi.fn>
   order: ReturnType<typeof vi.fn>
   limit: ReturnType<typeof vi.fn>
   range: ReturnType<typeof vi.fn>
@@ -44,6 +53,7 @@ export interface TableMock {
 export interface SupabaseMock {
   client: SupabaseClient
   from: ReturnType<typeof vi.fn>
+  rpc: ReturnType<typeof vi.fn>
   tables: Record<string, TableMock>
 }
 
@@ -86,6 +96,12 @@ function makeBuilder(config: TableConfig): TableMock & PromiseLike<QueryResult> 
     lt: vi.fn(() => builder),
     gte: vi.fn(() => builder),
     lte: vi.fn(() => builder),
+    ilike: vi.fn(() => builder),
+    like: vi.fn(() => builder),
+    or: vi.fn(() => builder),
+    match: vi.fn(() => builder),
+    contains: vi.fn(() => builder),
+    containedBy: vi.fn(() => builder),
     order: vi.fn(() => builder),
     limit: vi.fn(() => builder),
     range: vi.fn(() => builder),
@@ -110,7 +126,10 @@ function makeBuilder(config: TableConfig): TableMock & PromiseLike<QueryResult> 
   return builder as TableMock & PromiseLike<QueryResult>
 }
 
-export function makeSupabaseMock(config: SupabaseConfig = {}): SupabaseMock {
+export function makeSupabaseMock(
+  config: SupabaseConfig = {},
+  rpcs: RpcResultMap = {},
+): SupabaseMock {
   const tables: Record<string, TableMock> = {}
 
   for (const table of Object.keys(config)) {
@@ -124,9 +143,14 @@ export function makeSupabaseMock(config: SupabaseConfig = {}): SupabaseMock {
     return tables[table]
   })
 
-  const client = { from } as unknown as SupabaseClient
+  const rpc = vi.fn((name: string) => {
+    const result: RpcResult = rpcs[name] ?? { data: null, error: null }
+    return Promise.resolve(result)
+  })
+
+  const client = { from, rpc } as unknown as SupabaseClient
 
   vi.mocked(useSupabase).mockReturnValue(client)
 
-  return { client, from, tables }
+  return { client, from, rpc, tables }
 }

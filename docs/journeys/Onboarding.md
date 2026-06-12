@@ -50,11 +50,11 @@ Screen asks: "Are you starting a new space or joining one?"
 
 Name the Crew (e.g., "Walker Home", "Haywire Bar"). User becomes Admin automatically.
 
-**Set your PIN:** User is prompted to create a 4+ digit PIN. This is required — used for kiosk identification (name select → PIN confirm) across all [[KioskSession]]s in any [[Crew]] they belong to.
+**No PIN here.** `kiosk_pin` is deferred to first kiosk setup or use — collecting it during sign-up adds friction for users who may never touch a kiosk. Kiosk-dependent flows gate on `kiosk_pin IS NOT NULL` and prompt inline when needed.
 
 **Data touched:**
 - [[Crew]] (insert — name, created_by, settings)
-- [[CrewMember]] (insert — crew_id, user_id, role = Admin, kiosk_pin = hashed PIN)
+- [[CrewMember]] (insert — crew_id, user_id, role = Admin, kiosk_pin = null)
 
 ### Step 5 — Set Up Your Spaces
 
@@ -118,11 +118,11 @@ If they have an account → sign in via Clerk. If not → sign up via Clerk. `us
 
 System shows the [[Crew]] name and who invited them. User confirms.
 
-**Set your PIN:** User is prompted to create a 4+ digit PIN (same as Path A). Required for kiosk identification.
+**No PIN here** (same as Path A) — `kiosk_pin` stays null and is collected the first time the member touches kiosk setup or use.
 
 **Data touched:**
 - [[Invite]] (update — status = accepted, accepted_by, accepted_at)
-- [[CrewMember]] (insert — crew_id, user_id, role from invite, kiosk_pin = hashed PIN)
+- [[CrewMember]] (insert — crew_id, user_id, role from invite, kiosk_pin = null)
 
 ### Step 4 — Dashboard
 

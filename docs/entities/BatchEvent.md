@@ -42,6 +42,7 @@ If `batch_intent` is store or split and the [[Recipe]]'s `output_product_id` is 
 - Cost flows through: ingredient costs → batch total_cost → derived cost on stored output [[InventoryItem]]s
 - Actual yield vs. expected yield tracked — useful for recipe accuracy over time
 - **Immutable record** — BatchEvents are never modified or deleted after creation (status updates are the only allowed mutation)
+- **`performed_by` persists after user account deletion.** Same pattern as [[Flow]] — the deleted user's `users` row stays as a tombstone and `performed_by` continues to point at it. See [[CLAUDE]] §"User Account Deletion."
 - **Batch completion is atomic** — implemented as a Supabase edge function wrapping a database transaction. Either all steps succeed (deductions, flows, output creation) or all roll back.
 
 ## Relationships

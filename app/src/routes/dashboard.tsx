@@ -1,8 +1,12 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Check, Wand } from 'lucide-react'
+import { ArrowRight, Wand } from 'lucide-react'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
+import { HeroCard, ChecklistRow } from '@/components/ds'
+import { AlertsWidget } from '@/components/inventory/alerts-widget'
+import { useCrewAlerts } from '@/components/inventory/use-crew-alerts'
+import { useActiveCrew } from '@/lib/active-crew'
 import { useSupabase } from '@/lib/supabase'
 
 interface ChecklistStep {
@@ -12,52 +16,156 @@ interface ChecklistStep {
   resumeTo?: string
 }
 
+function buildPathA(
+  hasCrew: boolean,
+  spacesReady: boolean,
+  hasItems: boolean,
+  hasInvites: boolean,
+): ChecklistStep[] {
+  return [
+    { key: 'sign-up', label: 'Sign Up', complete: true },
+    {
+      key: 'crew',
+      label: 'Create your Crew',
+      complete: hasCrew,
+      resumeTo: '/onboarding',
+    },
+    {
+      key: 'spaces',
+      label: 'Set up spaces',
+      complete: spacesReady,
+      resumeTo: '/onboarding/spaces',
+    },
+    {
+      key: 'items',
+      label: 'Add first items',
+      complete: hasItems,
+      resumeTo: '/inventory/add',
+    },
+    {
+      key: 'invite',
+      label: 'Invite crew members',
+      complete: hasInvites,
+      resumeTo: '/onboarding',
+    },
+  ]
+}
+
+function buildPathB(crewName: string): ChecklistStep[] {
+  return [
+    { key: 'sign-up', label: 'Sign Up', complete: true },
+    { key: 'joined', label: `Joined ${crewName}`, complete: true },
+    { key: 'browse-spaces', label: 'Browse your spaces', complete: false },
+    { key: 'browse-inventory', label: 'Browse inventory', complete: false },
+  ]
+}
+
 export default function DashboardPage() {
   const { user } = useUser()
   const supabase = useSupabase()
-  const [hasCrew, setHasCrew] = useState<boolean | null>(null)
+  const { loading: crewsLoading, memberships, activeCrewId } = useActiveCrew(
+    user?.id ?? null,
+  )
+  const [steps, setSteps] = useState<ChecklistStep[]>(() =>
+    buildPathA(false, false, false, false),
+  )
+  const { counts: alertCounts, loading: alertsLoading } =
+    useCrewAlerts(activeCrewId)
+
+  const firstName = user?.firstName ?? user?.username ?? 'there'
 
   useEffect(() => {
+    if (crewsLoading) return
     let cancelled = false
+
     async function load() {
-      const { count, error } = await supabase
-        .from('crew_members')
-        .select('crew_member_id', { count: 'exact', head: true })
-        .is('deleted_at', null)
-      if (cancelled) return
-      setHasCrew(!error && (count ?? 0) > 0)
+      if (!activeCrewId) {
+        if (cancelled) return
+        setSteps(buildPathA(false, false, false, false))
+        return
+      }
+
+      const active = memberships.find((m) => m.crew_id === activeCrewId)
+      if (!active) return
+      const isOwnerOrAdmin = active.is_owner || active.role === 'admin'
+
+      if (!isOwnerOrAdmin) {
+        if (cancelled) return
+        setSteps(buildPathB(active.crew_name))
+        return
+      }
+
+      // Path A — fetch counts; treat missing tables (42P01) as 0
+      let spacesCount = 0
+      let itemsCount = 0
+      let memberCount = 1
+      let pendingInvites = 0
+
+      {
+        const { count: sc, error: se } = await supabase
+          .from('spaces')
+          .select('space_id', { count: 'exact', head: true })
+          .eq('crew_id', activeCrewId)
+        if (cancelled) return
+        if (!se || (se as { code?: string }).code === '42P01') {
+          spacesCount = sc ?? 0
+        }
+      }
+
+      {
+        const { count: ic, error: ie } = await supabase
+          .from('inventory_items')
+          .select('inventory_item_id', { count: 'exact', head: true })
+          .eq('crew_id', activeCrewId)
+        if (cancelled) return
+        if (!ie || (ie as { code?: string }).code === '42P01') {
+          itemsCount = ic ?? 0
+        }
+      }
+
+      {
+        const { count: mc } = await supabase
+          .from('crew_members')
+          .select('crew_member_id', { count: 'exact', head: true })
+          .eq('crew_id', activeCrewId)
+          .is('deleted_at', null)
+        if (cancelled) return
+        memberCount = mc ?? 1
+      }
+
+      {
+        const now = new Date().toISOString()
+        const { count: invCount, error: invError } = await supabase
+          .from('invites')
+          .select('invite_id', { count: 'exact', head: true })
+          .eq('crew_id', activeCrewId)
+          .eq('status', 'pending')
+          .gt('expires_at', now)
+        if (cancelled) return
+        if (!invError || (invError as { code?: string }).code === '42P01') {
+          pendingInvites = invCount ?? 0
+        }
+      }
+
+      setSteps(
+        buildPathA(
+          true,
+          spacesCount > 1,
+          itemsCount > 0,
+          memberCount > 1 || pendingInvites > 0,
+        ),
+      )
     }
+
     void load()
     return () => {
       cancelled = true
     }
-  }, [supabase])
-
-  const steps = useMemo<ChecklistStep[]>(
-    () => [
-      { key: 'sign-up', label: 'Sign Up', complete: true },
-      {
-        key: 'crew',
-        label: 'Create your Crew',
-        complete: hasCrew === true,
-        resumeTo: '/onboarding',
-      },
-      { key: 'spaces', label: 'Set up spaces', complete: false, resumeTo: '/onboarding' },
-      { key: 'items', label: 'Add first items', complete: false, resumeTo: '/onboarding' },
-      {
-        key: 'invite',
-        label: 'Invite your crew',
-        complete: false,
-        resumeTo: '/onboarding',
-      },
-    ],
-    [hasCrew],
-  )
+  }, [supabase, activeCrewId, crewsLoading, memberships])
 
   const completed = steps.filter((s) => s.complete).length
-  const pct = (completed / steps.length) * 100
+  const pct = steps.length > 0 ? (completed / steps.length) * 100 : 0
   const nextIncomplete = steps.find((s) => !s.complete)
-  const firstName = user?.firstName ?? user?.username ?? 'there'
 
   return (
     <SignedInLayout>
@@ -67,8 +175,18 @@ export default function DashboardPage() {
         </h1>
       </section>
 
+      {activeCrewId && (
+        <section className="pb-4">
+          <AlertsWidget counts={alertCounts} loading={alertsLoading} />
+        </section>
+      )}
+
       <section className="flex flex-col gap-2 rounded-lg bg-paper-100 p-5">
-        <HeroCard />
+        <HeroCard
+          title="Your pantry is live 🎉"
+          body="Complete the steps below to finish onboarding"
+          badge={<Wand className="text-white" size={20} />}
+        />
 
         <div className="flex flex-col">
           <h2 className="font-display text-base font-semibold leading-6 text-ink-900">
@@ -107,58 +225,5 @@ export default function DashboardPage() {
         </ul>
       </section>
     </SignedInLayout>
-  )
-}
-
-function HeroCard() {
-  return (
-    <div
-      className="relative flex h-[99px] w-full items-center justify-between overflow-hidden rounded-lg p-5 shadow-ambient-lg"
-      style={{
-        backgroundImage: 'linear-gradient(162.7deg, #31694d 0%, #4a8265 100%)',
-      }}
-    >
-      <div className="flex flex-col justify-center gap-[5px]">
-        <h3 className="font-display text-[18px] font-bold leading-[22.5px] text-white">
-          Your pantry is live 🎉
-        </h3>
-        <p className="font-body text-sm leading-5 text-sage-100 opacity-90">
-          Complete the steps below
-          <br />
-          to finish onboarding
-        </p>
-      </div>
-      <div className="flex size-12 items-center justify-center rounded-full bg-white/10 backdrop-blur-[2px]">
-        <Wand className="text-white" size={20} />
-      </div>
-    </div>
-  )
-}
-
-function ChecklistRow({ label, complete }: { label: string; complete: boolean }) {
-  return (
-    <div
-      className={`flex w-full items-center gap-3 rounded-lg p-2 ${
-        complete ? 'bg-paper-100' : 'bg-paper-300'
-      }`}
-    >
-      <span
-        aria-hidden
-        className={`flex size-5 shrink-0 items-center justify-center rounded ${
-          complete
-            ? 'border-2 border-sage-700 bg-sage-700 text-white'
-            : 'border-2 border-sage-300'
-        }`}
-      >
-        {complete && <Check size={12} strokeWidth={3} />}
-      </span>
-      <span
-        className={`font-body text-sm leading-5 text-ink-700 ${
-          complete ? 'line-through' : ''
-        }`}
-      >
-        {label}
-      </span>
-    </div>
   )
 }

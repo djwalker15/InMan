@@ -23,7 +23,7 @@ Join table linking [[User]]s to [[Crew]]s. Carries role and permission data.
 - Roles provide sensible defaults; per-feature overrides allow fine-grained control (e.g., a Member who can edit inventory but not recipes)
 - **`kiosk_pin` is deferred, not required at sign-up.** Collecting a PIN during sign-up/invite acceptance added unnecessary friction for users who may never touch a kiosk. PIN is prompted the first time the member interacts with kiosk setup or use. Kiosk-dependent flows gate on `kiosk_pin IS NOT NULL` and prompt to set one inline. Members who never use a kiosk never need a PIN.
 - `user_id` is a text field matching Clerk's string-based user ID, not a UUID or integer
-- **Soft delete:** A member who leaves should still appear in historical `performed_by` / `logged_by` attribution
+- **Soft delete:** A member who leaves should still appear in historical `performed_by` / `logged_by` attribution. `request_account_deletion` (account-level delete) and `leave_crew` / `remove_crew_member` (crew-level) both go through this same soft-delete path.
 
 ## Relationships
 

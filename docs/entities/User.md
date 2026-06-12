@@ -10,8 +10,21 @@ A local reference to an authenticated individual managed by **Clerk**. Clerk han
 |-------|------|-------|
 | `user_id` | text PK | Clerk's string-based user ID (e.g., `user_2abc123...`). Matches the `sub` claim in the JWT. |
 | `created_at` | timestamp | When this user first appeared in InMan |
+| `deletion_requested_at` | timestamp, nullable | When the user clicked "Delete account" in Settings (set before the soft-delete commits). |
+| `deleted_at` | timestamp, nullable | Soft-delete commit timestamp. Set by `request_account_deletion()`. Restore is allowed within 30 days of this value. |
 
 > **What lives in Clerk (not stored here):** email, display_name, avatar_url, password, MFA settings, social login providers, session tokens.
+
+## Deletion Lifecycle
+
+User-account deletion is a **soft-delete with a 30-day restore window**, mirroring the 48-hour crew-deletion pattern but extended for "undo delete" UX.
+
+1. User clicks **Delete account** in Settings → reauth via Clerk → confirms in the UI (Slice 4 of ClickUp 86e1c0hnp).
+2. Edge function `delete-account` (Slice 3) calls `request_account_deletion(transfer_to_user_id)` (Slice 2). The RPC sets `users.deleted_at = now()`, cascades soft-deletes across `crew_members`, handles the three crew-ownership branches (transfer / ownerless flag / solo soft-delete), and commits atomically.
+3. Edge function then calls Clerk's `users.deleteUser()` — Clerk-side PII (email, display name, avatar, sessions) is purged.
+4. **Restore window — 30 days.** If the same Clerk `sub` re-authenticates inside the window, `check_restore_eligibility()` (Slice 3) detects via `deleted_at`, and `restore_account()` (Slice 2) clears `deleted_at` / `deletion_requested_at`. Note: restored accounts do *not* un-cascade their crew memberships — those crews may have already been transferred, marked ownerless, or soft-deleted.
+5. After 30 days, the daily `process_due_user_deletions()` pg_cron job reports the row as past the cool-down. **The `users` row itself stays as a tombstone** — it has no PII (those live in Clerk) and 12+ immutable ledger tables (`flows.performed_by`, `batch_events.performed_by`, etc.) FK to `user_id`. Per the resolved decision in [[CLAUDE]] §"User Account Deletion," immutable-ledger `created_by` / `performed_by` attribution is preserved indefinitely — no anonymization.
+6. Re-signup with the same email post-cool-down gets a fresh tenant because Clerk does not reuse `sub` values.
 
 ## Auth Integration
 
