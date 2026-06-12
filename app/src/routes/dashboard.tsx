@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/clerk-react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Wand } from 'lucide-react'
+import { ArrowRight, Wand, X } from 'lucide-react'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
 import { HeroCard, ChecklistRow } from '@/components/ds'
 import { AlertsWidget } from '@/components/inventory/alerts-widget'
 import { useCrewAlerts } from '@/components/inventory/use-crew-alerts'
 import { useActiveCrew } from '@/lib/active-crew'
+import { useChecklistPrefs } from '@/lib/checklist-prefs'
 import { useSupabase } from '@/lib/supabase'
 
 interface ChecklistStep {
@@ -51,15 +52,6 @@ function buildPathA(
   ]
 }
 
-function buildPathB(crewName: string): ChecklistStep[] {
-  return [
-    { key: 'sign-up', label: 'Sign Up', complete: true },
-    { key: 'joined', label: `Joined ${crewName}`, complete: true },
-    { key: 'browse-spaces', label: 'Browse your spaces', complete: false },
-    { key: 'browse-inventory', label: 'Browse inventory', complete: false },
-  ]
-}
-
 export default function DashboardPage() {
   const { user } = useUser()
   const supabase = useSupabase()
@@ -69,8 +61,15 @@ export default function DashboardPage() {
   const [steps, setSteps] = useState<ChecklistStep[]>(() =>
     buildPathA(false, false, false, false),
   )
+  // Gates the checklist render until the count queries have resolved, so a
+  // fully-onboarded admin never sees a flash of the stale default checklist.
+  const [stepsReady, setStepsReady] = useState(false)
   const { counts: alertCounts, loading: alertsLoading } =
     useCrewAlerts(activeCrewId)
+  const { prefs, dismissAll, clearStep } = useChecklistPrefs(
+    user?.id ?? null,
+    activeCrewId,
+  )
 
   const firstName = user?.firstName ?? user?.username ?? 'there'
 
@@ -82,6 +81,7 @@ export default function DashboardPage() {
       if (!activeCrewId) {
         if (cancelled) return
         setSteps(buildPathA(false, false, false, false))
+        setStepsReady(true)
         return
       }
 
@@ -89,9 +89,10 @@ export default function DashboardPage() {
       if (!active) return
       const isOwnerOrAdmin = active.is_owner || active.role === 'admin'
 
+      // Members never see the onboarding checklist — skip the count queries.
       if (!isOwnerOrAdmin) {
         if (cancelled) return
-        setSteps(buildPathB(active.crew_name))
+        setStepsReady(true)
         return
       }
 
@@ -155,6 +156,7 @@ export default function DashboardPage() {
           memberCount > 1 || pendingInvites > 0,
         ),
       )
+      setStepsReady(true)
     }
 
     void load()
@@ -163,9 +165,25 @@ export default function DashboardPage() {
     }
   }, [supabase, activeCrewId, crewsLoading, memberships])
 
+  // Counter, progress, and Resume stay computed over the FULL step set so
+  // they remain truthful when individually cleared items leave the list.
   const completed = steps.filter((s) => s.complete).length
   const pct = steps.length > 0 ? (completed / steps.length) * 100 : 0
   const nextIncomplete = steps.find((s) => !s.complete)
+
+  const activeMembership = memberships.find((m) => m.crew_id === activeCrewId)
+  // No membership yet → prospective owner mid-onboarding keeps the checklist.
+  const isOwnerOrAdmin =
+    !activeMembership ||
+    activeMembership.is_owner ||
+    activeMembership.role === 'admin'
+  const allComplete = steps.every((s) => s.complete)
+  const clearedSet = new Set(prefs.cleared)
+  const visibleSteps = steps.filter(
+    (s) => !(s.complete && clearedSet.has(s.key)),
+  )
+  const showChecklist =
+    !crewsLoading && stepsReady && isOwnerOrAdmin && !allComplete
 
   return (
     <SignedInLayout>
@@ -181,49 +199,87 @@ export default function DashboardPage() {
         </section>
       )}
 
-      <section className="flex flex-col gap-2 rounded-lg bg-paper-100 p-5">
-        <HeroCard
-          title="Your pantry is live 🎉"
-          body="Complete the steps below to finish onboarding"
-          badge={<Wand className="text-white" size={20} />}
-        />
+      {showChecklist &&
+        (prefs.dismissed ? (
+          <section className="flex items-center justify-between rounded-lg bg-paper-100 px-5 py-3">
+            <p className="font-body text-sm font-semibold text-ink-700">
+              Finish setup
+            </p>
+            {nextIncomplete?.resumeTo && (
+              <Link
+                to={nextIncomplete.resumeTo}
+                className="flex items-center gap-2 font-body text-sm font-semibold uppercase tracking-[0.35px] text-sage-600 hover:underline"
+              >
+                Resume
+                <ArrowRight size={11} strokeWidth={2.5} />
+              </Link>
+            )}
+          </section>
+        ) : (
+          <section className="flex flex-col gap-2 rounded-lg bg-paper-100 p-5">
+            <HeroCard
+              title="Your pantry is live 🎉"
+              body="Complete the steps below to finish onboarding"
+              badge={<Wand className="text-white" size={20} />}
+            />
 
-        <div className="flex flex-col">
-          <h2 className="font-display text-base font-semibold leading-6 text-ink-900">
-            Setup Progress
-          </h2>
-          <div className="flex flex-col gap-3 p-2">
-            <div className="flex items-baseline justify-between">
-              <p className="font-body text-sm font-semibold uppercase tracking-[0.35px] text-ink-600">
-                {completed}/{steps.length} Complete
-              </p>
-              {nextIncomplete?.resumeTo && (
-                <Link
-                  to={nextIncomplete.resumeTo}
-                  className="flex items-center gap-2 font-body text-sm font-semibold uppercase tracking-[0.35px] text-sage-600 hover:underline"
-                >
-                  Resume
-                  <ArrowRight size={11} strokeWidth={2.5} />
-                </Link>
-              )}
+            <div className="flex flex-col">
+              <div className="flex items-center justify-between">
+                <h2 className="font-display text-base font-semibold leading-6 text-ink-900">
+                  Setup Progress
+                </h2>
+                {activeCrewId && (
+                  <button
+                    type="button"
+                    aria-label="Dismiss setup checklist"
+                    onClick={dismissAll}
+                    className="flex size-7 shrink-0 items-center justify-center rounded-full text-ink-600 hover:bg-paper-200"
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+              <div className="flex flex-col gap-3 p-2">
+                <div className="flex items-baseline justify-between">
+                  <p className="font-body text-sm font-semibold uppercase tracking-[0.35px] text-ink-600">
+                    {completed}/{steps.length} Complete
+                  </p>
+                  {nextIncomplete?.resumeTo && (
+                    <Link
+                      to={nextIncomplete.resumeTo}
+                      className="flex items-center gap-2 font-body text-sm font-semibold uppercase tracking-[0.35px] text-sage-600 hover:underline"
+                    >
+                      Resume
+                      <ArrowRight size={11} strokeWidth={2.5} />
+                    </Link>
+                  )}
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-paper-300">
+                  <div
+                    className="h-full rounded-full bg-sage-700 transition-[width] duration-300"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-paper-300">
-              <div
-                className="h-full rounded-full bg-sage-700 transition-[width] duration-300"
-                style={{ width: `${pct}%` }}
-              />
-            </div>
-          </div>
-        </div>
 
-        <ul className="flex flex-col gap-2">
-          {steps.map((step) => (
-            <li key={step.key}>
-              <ChecklistRow label={step.label} complete={step.complete} />
-            </li>
-          ))}
-        </ul>
-      </section>
+            <ul className="flex flex-col gap-2">
+              {visibleSteps.map((step) => (
+                <li key={step.key}>
+                  <ChecklistRow
+                    label={step.label}
+                    complete={step.complete}
+                    onClear={
+                      step.complete && activeCrewId
+                        ? () => clearStep(step.key)
+                        : undefined
+                    }
+                  />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
     </SignedInLayout>
   )
 }
