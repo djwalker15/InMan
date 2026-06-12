@@ -1,0 +1,111 @@
+<!doctype html>
+<!-- @dsCard group="Brand" name="Spaces Drill-Down" subtitle="Card-based drill-down redesign — interactive + key states + concept" -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InMan — Spaces Drill-Down</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<style>
+  body { margin: 0; font-family: var(--font-body); background: #1A1916; color: var(--ink-900); }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<!-- user-fillable image slot (plain web component) -->
+<script src="image-slot.js"></script>
+
+<!-- UI kit primitives + journey shell -->
+<script type="text/babel" src="ui_kits/inman-app/Icons.jsx"></script>
+<script type="text/babel" src="journeys/JourneyShell.jsx"></script>
+<script type="text/babel" src="journeys/design-canvas.jsx"></script>
+
+<!-- tweaks shell -->
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+
+<!-- spaces drill-down prototype -->
+<script type="text/babel" src="spaces/SpacesData.jsx"></script>
+<script type="text/babel" src="spaces/SpacesCards.jsx"></script>
+<script type="text/babel" src="spaces/SpacesSheets.jsx"></script>
+<script type="text/babel" src="spaces/SpacesApp.jsx"></script>
+<script type="text/babel" src="spaces/SpacesConcept.jsx"></script>
+
+<!-- tweaks UI (after React + starter panel) -->
+<script type="text/babel" src="spaces/spaces-tweaks.jsx"></script>
+
+<script type="text/babel">
+const W = 390, H = 844;
+
+function App() {
+  return (
+    <DesignCanvas
+      title="InMan · Spaces drill-down"
+      subtitle="Card-based drill-down replaces the always-expanded tree. Drill in to scope; sibling branches hide. Pan with drag, zoom with scroll, click any artboard for full screen. Toggle Tweaks to reshape the cards.">
+
+      <DCSection id="interactive" title="Card drill-down · interactive"
+        subtitle="A live prototype — tap a card to step in, ⋯ to manage, + to add. Edits really apply.">
+        <DCArtboard id="live" label="Live · tap through it" width={W} height={H}>
+          <DrillDownApp key="live" initialFocusId="auto" />
+        </DCArtboard>
+        <DCPostIt top={-6} left={W + 96} width={210} rotate={-2}>
+          Fully working. Drill into Walker Home → Kitchen and watch Garage + every other branch disappear. The breadcrumb + back climb out.
+        </DCPostIt>
+        <DCPostIt top={250} left={W + 96} width={210} rotate={2}>
+          When a Crew has just one Premises, the app skips the list and opens straight into it.
+        </DCPostIt>
+      </DCSection>
+
+      <DCSection id="states" title="Key states"
+        subtitle="The same component, pinned at the moments that matter. Each is independently live, too.">
+        <DCArtboard id="s-premises" label="01 · Premises list (entry)" width={W} height={H}>
+          <DrillDownApp key="s-premises" initialFocusId={null} />
+        </DCArtboard>
+        <DCArtboard id="s-areas" label="02 · Inside a premises" width={W} height={H}>
+          <DrillDownApp key="s-areas" initialFocusId="walker" />
+        </DCArtboard>
+        <DCArtboard id="s-kitchen" label="03 · Scoped — siblings hidden" width={W} height={H}>
+          <DrillDownApp key="s-kitchen" initialFocusId="kitchen" />
+        </DCArtboard>
+        <DCArtboard id="s-deep" label="04 · Deeper still" width={W} height={H}>
+          <DrillDownApp key="s-deep" initialFocusId="pantry" />
+        </DCArtboard>
+        <DCArtboard id="s-leaf" label="05 · Leaf — items inside" width={W} height={H}>
+          <DrillDownApp key="s-leaf" initialFocusId="jars" />
+        </DCArtboard>
+        <DCArtboard id="s-menu" label="06 · ⋯ manage menu" width={W} height={H}>
+          <DrillDownApp key="s-menu" initialFocusId="walker" initialMenu="kitchen" />
+        </DCArtboard>
+        <DCArtboard id="s-add" label="07 · Add a space" width={W} height={H}>
+          <DrillDownApp key="s-add" initialFocusId="kitchen" initialSheet={{ type: "add", targetId: "kitchen" }} />
+        </DCArtboard>
+        <DCArtboard id="s-reclass" label="08 · Change type" width={W} height={H}>
+          <DrillDownApp key="s-reclass" initialFocusId="topshelf" initialSheet={{ type: "reclassify", targetId: "spice" }} />
+        </DCArtboard>
+        <DCArtboard id="s-delete" label="09 · Delete (cascade)" width={W} height={H}>
+          <DrillDownApp key="s-delete" initialFocusId="walker" initialSheet={{ type: "delete", targetId: "garage" }} />
+        </DCArtboard>
+      </DCSection>
+
+      <DCSection id="concept" title="Aspirational · visual space"
+        subtitle="The long-term vision: navigate by tapping the real room. Drop a kitchen photo onto the hero to see it come alive.">
+        <DCArtboard id="c-photo" label="Photo navigation (concept)" width={W} height={H}>
+          <ConceptApp key="c-photo" />
+        </DCArtboard>
+        <DCPostIt top={-6} left={W + 96} width={210} rotate={2}>
+          Captured as a direction, not a near-term build — the card drill-down ships first and grows toward this.
+        </DCPostIt>
+      </DCSection>
+
+    </DesignCanvas>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
