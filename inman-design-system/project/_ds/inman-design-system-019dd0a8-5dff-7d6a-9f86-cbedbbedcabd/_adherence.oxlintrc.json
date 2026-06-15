@@ -1,0 +1,202 @@
+{
+  "plugins": [
+    "react",
+    "import"
+  ],
+  "rules": {
+    "react/forbid-elements": [
+      "warn",
+      {
+        "forbid": []
+      }
+    ],
+    "no-restricted-imports": [
+      "warn",
+      {
+        "patterns": [
+          {
+            "group": [
+              "journeys/**",
+              "tweaks-panel.jsx",
+              "ui_kits/inman-app/**"
+            ],
+            "message": "Import design-system components from 'index.js', not component internals."
+          }
+        ]
+      }
+    ],
+    "no-restricted-syntax": [
+      "warn",
+      {
+        "selector": "Literal[value=/#[0-9a-fA-F]{3,8}\\b/]",
+        "message": "Raw hex color — use a design-system color token via var()."
+      },
+      {
+        "selector": "Literal[value=/\\b\\d+px\\b/]",
+        "message": "Raw px value — use a design-system spacing token via var()."
+      },
+      {
+        "selector": "Literal[value=/font-family\\s*:\\s*(?!['\\\"]?(?:Plus Jakarta Sans|Be Vietnam Pro|Manrope))/i]",
+        "message": "Font not provided by the design system. Available: Plus Jakarta Sans, Be Vietnam Pro, Manrope."
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": [
+        "**/index.js"
+      ],
+      "rules": {
+        "no-restricted-imports": "off"
+      }
+    }
+  ],
+  "x-omelette": {
+    "components": {},
+    "tokens": [
+      "--error",
+      "--error-bg",
+      "--font-accent",
+      "--font-body",
+      "--font-display",
+      "--font-numeric",
+      "--glass-bg",
+      "--glass-blur",
+      "--glass-border",
+      "--gradient-primary",
+      "--gradient-primary-vertical",
+      "--info",
+      "--ink-300",
+      "--ink-400",
+      "--ink-500",
+      "--ink-600",
+      "--ink-700",
+      "--ink-900",
+      "--on-primary",
+      "--on-surface",
+      "--on-surface-variant",
+      "--outline",
+      "--outline-variant",
+      "--paper-100",
+      "--paper-150",
+      "--paper-200",
+      "--paper-250",
+      "--paper-300",
+      "--paper-50",
+      "--primary",
+      "--primary-container",
+      "--r-full",
+      "--r-lg",
+      "--r-md",
+      "--r-sm",
+      "--r-xl",
+      "--r-xs",
+      "--sage-100",
+      "--sage-300",
+      "--sage-500",
+      "--sage-600",
+      "--sage-700",
+      "--scrim-blur",
+      "--secondary-container",
+      "--shadow-ambient-lg",
+      "--shadow-ambient-md",
+      "--shadow-ambient-sm",
+      "--shadow-cta",
+      "--shadow-cta-strong",
+      "--sp-1",
+      "--sp-10",
+      "--sp-2",
+      "--sp-3",
+      "--sp-4",
+      "--sp-5",
+      "--sp-6",
+      "--sp-7",
+      "--sp-8",
+      "--sp-9",
+      "--success",
+      "--surface",
+      "--surface-container",
+      "--surface-container-high",
+      "--surface-container-highest",
+      "--surface-container-low",
+      "--surface-container-lowest",
+      "--warn",
+      "--warn-bg"
+    ],
+    "tokenKinds": {
+      "--sage-700": "color",
+      "--sage-600": "color",
+      "--sage-500": "color",
+      "--sage-300": "color",
+      "--sage-100": "color",
+      "--paper-50": "color",
+      "--paper-100": "color",
+      "--paper-150": "color",
+      "--paper-200": "color",
+      "--paper-250": "color",
+      "--paper-300": "color",
+      "--ink-900": "color",
+      "--ink-700": "color",
+      "--ink-600": "color",
+      "--ink-500": "color",
+      "--ink-400": "color",
+      "--ink-300": "color",
+      "--error": "color",
+      "--error-bg": "color",
+      "--warn": "color",
+      "--warn-bg": "color",
+      "--success": "color",
+      "--info": "color",
+      "--surface": "color",
+      "--surface-container-lowest": "color",
+      "--surface-container-low": "color",
+      "--surface-container": "color",
+      "--surface-container-high": "color",
+      "--surface-container-highest": "color",
+      "--on-surface": "color",
+      "--on-surface-variant": "color",
+      "--outline": "color",
+      "--outline-variant": "color",
+      "--primary": "color",
+      "--primary-container": "color",
+      "--on-primary": "color",
+      "--secondary-container": "color",
+      "--gradient-primary": "color",
+      "--gradient-primary-vertical": "color",
+      "--shadow-ambient-sm": "shadow",
+      "--shadow-ambient-md": "shadow",
+      "--shadow-ambient-lg": "shadow",
+      "--shadow-cta": "shadow",
+      "--shadow-cta-strong": "shadow",
+      "--glass-bg": "color",
+      "--glass-blur": "other",
+      "--scrim-blur": "other",
+      "--glass-border": "color",
+      "--r-xs": "spacing",
+      "--r-sm": "spacing",
+      "--r-md": "spacing",
+      "--r-lg": "spacing",
+      "--r-xl": "spacing",
+      "--r-full": "spacing",
+      "--sp-1": "spacing",
+      "--sp-2": "spacing",
+      "--sp-3": "spacing",
+      "--sp-4": "spacing",
+      "--sp-5": "spacing",
+      "--sp-6": "spacing",
+      "--sp-7": "spacing",
+      "--sp-8": "spacing",
+      "--sp-9": "spacing",
+      "--sp-10": "spacing",
+      "--font-display": "font",
+      "--font-body": "font",
+      "--font-accent": "font",
+      "--font-numeric": "font"
+    },
+    "fontFamilies": [
+      "Be Vietnam Pro",
+      "Manrope",
+      "Plus Jakarta Sans"
+    ]
+  }
+}

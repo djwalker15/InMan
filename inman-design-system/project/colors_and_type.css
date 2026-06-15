@@ -67,8 +67,8 @@
 
   /* ── Glassmorphism ─────────────────────────────────────── */
   --glass-bg:    rgba(253, 249, 242, 0.8);
-  --glass-blur:  blur(16px);
-  --scrim-blur:  blur(20px);
+  --glass-blur:  blur(16px); /* @kind other */
+  --scrim-blur:  blur(20px); /* @kind other */
   --glass-border: rgba(192, 201, 193, 0.15); /* Ghost border at ~15% */
 
   /* ── Radii ────────────────────────────────────────────── */

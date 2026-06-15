@@ -8,7 +8,7 @@ A hi-fi recreation of the InMan mobile app, modeled on the Figma `Screens/` page
 - `Buttons.jsx` — primary gradient CTA, secondary stone, tertiary text.
 - `Inputs.jsx` — labeled inputs with paper-100 fill + active focus state.
 - `Cards.jsx` — Decision card, Hero card, Tip card, Pantry item card.
-- `Onboarding.jsx` — Progress bar, hierarchy tree node, checklist step.
+- `OnboardingKit.jsx` — Progress bar, hierarchy tree node, checklist step.
 - `Dashboard.jsx` — Welcome heading, onboarding-checklist section, bottom-nav, signed-in nav.
 - `screens/*.jsx` — full-screen compositions (one per Figma frame).
 

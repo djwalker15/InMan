@@ -1,0 +1,43 @@
+---
+import { fileURLToPath } from 'node:url'
+import Base from '../layouts/Base.astro'
+import { loadReleases } from '../lib/changelog'
+
+// release-please maintains this file; the site rebuilds on every release.
+const changelogPath = fileURLToPath(new URL('../../../app/CHANGELOG.md', import.meta.url))
+const releases = loadReleases(changelogPath)
+---
+
+<Base title="What's New — InMan" description="Release announcements and fixes for InMan.">
+  <h1 class="page-title">What's New</h1>
+  <p class="page-sub">Every release, straight from the changelog.</p>
+
+  {
+    releases.length === 0 && (
+      <div class="empty-state">
+        <p>The first release is being prepared — announcements will appear here.</p>
+      </div>
+    )
+  }
+
+  {
+    releases.map((release) => (
+      <article class="release">
+        <header class="release-header">
+          <h2 class="release-version">v{release.version}</h2>
+          <span class="release-date">{release.date}</span>
+        </header>
+        {release.sections.map((section) => (
+          <section>
+            <h4>{section.heading}</h4>
+            <ul>
+              {section.items.map((item) => (
+                <li set:html={item} />
+              ))}
+            </ul>
+          </section>
+        ))}
+      </article>
+    ))
+  }
+</Base>

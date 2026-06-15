@@ -98,7 +98,7 @@ Three options during onboarding:
 
 ### Step 8 — Wizard Complete → Dashboard
 
-User lands on the dashboard. Onboarding checklist appears with progress indicator.
+User lands on the dashboard. Onboarding checklist appears with progress indicator (crew owners/admins only — see [[#Onboarding Checklist]]).
 
 ---
 
@@ -126,7 +126,7 @@ System shows the [[Crew]] name and who invited them. User confirms.
 
 ### Step 4 — Dashboard
 
-They land in the Crew's app. No wizard — the Crew is already set up. Checklist shows personal items only.
+They land in the Crew's app. No wizard — the Crew is already set up. Invited (non-admin) members see no onboarding checklist.
 
 ---
 
@@ -171,7 +171,7 @@ Admin's Clerk session is no longer relevant. On all subsequent app loads:
 
 ## Onboarding Checklist
 
-The checklist appears on the dashboard after onboarding and persists until dismissed or completed. All items are **derived from existing data** — no separate checklist table needed.
+The checklist appears on the dashboard after onboarding **for crew owners/admins only** — invited (non-admin) members never see it. All items are **derived from existing data** — no separate checklist table needed.
 
 ### For Crew creators (Path A):
 
@@ -187,15 +187,12 @@ The checklist appears on the dashboard after onboarding and persists until dismi
 | Create your first recipe | `recipes` count > 0 for this Crew |
 | Set up a kiosk | `kiosk_sessions` count > 0 for this Crew |
 
-### For invited members (Path B):
+### Dismissal & persistence
 
-| Checklist Item | Derived From |
-|---------------|-------------|
-| ✅ Account created | `users` row exists |
-| ✅ Joined [Crew name] | `crew_members` record exists |
-| ✅ PIN set | Set during invite acceptance |
-| Browse your spaces | Dismissible — no data condition |
-| Browse inventory | Dismissible — no data condition |
+- The whole block **auto-hides once every step is complete** (nothing left to do).
+- Individual **completed** items can be cleared from the list (X on the row). The progress counter stays computed over the full step set, so "3/5 Complete" remains truthful after clearing.
+- The whole block is **dismissible at any time** (X next to "Setup Progress"), even before completion. While onboarding is incomplete, a slim "Finish setup → Resume" row replaces the block, linking to the next incomplete step — the resumption path is never orphaned. It too disappears at full completion.
+- Dismissal state persists client-side in localStorage, keyed per user + crew (`inman:onboarding-checklist:<userId>:<crewId>`). Completion itself stays derived from data — still no checklist table.
 
 ---
 

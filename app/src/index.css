@@ -75,6 +75,37 @@
   --glass-border: rgba(192, 201, 193, 0.15);
 }
 
+/* Motion — bottom-sheet slide-up and scoped-body slide-in for the Spaces
+   drill-down. Disabled under prefers-reduced-motion. */
+@keyframes sheet-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes scope-in {
+  from {
+    transform: translateY(8px);
+    opacity: 0.85;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .animate-sheet-up {
+    animation: sheet-up 0.32s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+  .animate-scope-in {
+    animation: scope-in 0.26s cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+}
+
 html,
 body,
 #root {

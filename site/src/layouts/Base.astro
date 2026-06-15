@@ -1,0 +1,36 @@
+---
+import '../styles/global.css'
+import { APP_URL } from '../config'
+
+interface Props {
+  title: string
+  description?: string
+}
+
+const { title, description = 'InMan — inventory management for crews.' } = Astro.props
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <div class="wrap">
+      <nav class="nav">
+        <a class="brand" href="/">InMan</a>
+        <div class="nav-links">
+          <a href="/whats-new">What's New</a>
+          <a class="btn-primary" href={APP_URL}>Open the app</a>
+        </div>
+      </nav>
+      <slot />
+      <footer class="footer">
+        InMan · built by <a href="https://tenacioustech.net">Tenacious Tech</a>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -17,6 +17,8 @@ describe('SpacesPage', () => {
   beforeEach(() => {
     mockNavigate.mockClear()
     mockClerk({ user: { id: 'user_1', firstName: 'Test' } })
+    // Reset the persisted view choice so each test starts on the default (cards).
+    localStorage.clear()
   })
 
   it('renders the Spaces title', () => {
@@ -53,7 +55,7 @@ describe('SpacesPage', () => {
     expect(link).toHaveAttribute('href', '/onboarding/spaces')
   })
 
-  it('renders the editor when premises + child rows exist', async () => {
+  it('defaults to the scoped card drill-down, with a toggle to the tree', async () => {
     const rows = [
       {
         space_id: 'p',
@@ -87,16 +89,25 @@ describe('SpacesPage', () => {
       inventory_items: { select: { data: [], error: null } },
     })
     renderWithRouter(<SpacesPage />)
+    // Default view: the premises shows as a card; nested rows stay collapsed.
     await waitFor(() => {
       expect(screen.getByText('My House')).toBeInTheDocument()
     })
-    expect(screen.getByText('Kitchen')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Spaces' })).toBeInTheDocument()
+    expect(screen.queryByText('Kitchen')).toBeNull()
+    expect(
+      screen.queryByRole('list', { name: /editable spaces tree/i }),
+    ).toBeNull()
+
+    // Toggling to Tree view reveals the always-expanded editable tree.
+    fireEvent.click(screen.getByRole('button', { name: /^tree$/i }))
     expect(
       screen.getByRole('list', { name: /editable spaces tree/i }),
     ).toBeInTheDocument()
+    expect(screen.getByText('Kitchen')).toBeInTheDocument()
   })
 
-  it('clicking Reorganize swaps the editor for the reorganize-mode shell', async () => {
+  it('clicking Reorganize swaps the drill-down for the reorganize-mode shell', async () => {
     const rows = [
       {
         space_id: 'p',
@@ -134,18 +145,12 @@ describe('SpacesPage', () => {
       expect(screen.getByText('My House')).toBeInTheDocument()
     })
     fireEvent.click(screen.getByRole('button', { name: /^reorganize$/i }))
-    // The reorganize shell shows up, the editable tree drops out.
-    expect(
-      screen.getByLabelText(/reorganize spaces/i),
-    ).toBeInTheDocument()
-    expect(
-      screen.queryByRole('list', { name: /editable spaces tree/i }),
-    ).toBeNull()
-    // Done returns to the regular tree editor.
+    // The reorganize shell shows up, the browser drops out.
+    expect(screen.getByLabelText(/reorganize spaces/i)).toBeInTheDocument()
+    // Done returns to the default card drill-down.
     fireEvent.click(screen.getByRole('button', { name: /^done$/i }))
-    expect(
-      screen.getByRole('list', { name: /editable spaces tree/i }),
-    ).toBeInTheDocument()
+    expect(screen.queryByLabelText(/reorganize spaces/i)).toBeNull()
+    expect(screen.getByText('My House')).toBeInTheDocument()
   })
 
   it('Reorganize is disabled until a non-Premises space exists', async () => {
