@@ -13,6 +13,9 @@ jobs:
     # On workflow_run, only proceed if the staging deploy succeeded.
     if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    # Fail fast: without this a stalled Playwright browser download hangs for
+    # the full 6h default job timeout before GitHub cancels it.
+    timeout-minutes: 20
     environment: staging
     defaults:
       run:
@@ -33,7 +36,24 @@ jobs:
           cache: npm
           cache-dependency-path: app/package-lock.json
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      # Cache the browser binaries so we don't re-download ~170MB every run.
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('app/package-lock.json') }}
+      # The Playwright CDN download occasionally stalls mid-transfer; cap each
+      # attempt with `timeout` and retry so a stall fails fast instead of
+      # hanging until the job timeout.
+      - name: Install Playwright browsers
+        run: |
+          for i in 1 2 3; do
+            timeout 300 npx playwright install --with-deps chromium && exit 0
+            echo "::warning::playwright install attempt $i stalled/failed; retrying"
+            sleep 10
+          done
+          echo "::error::playwright install failed after 3 attempts"; exit 1
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v4
         if: failure()
