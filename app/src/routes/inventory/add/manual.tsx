@@ -16,7 +16,7 @@ type Phase =
   | { kind: 'selected'; selection: Selection }
   | { kind: 'restock'; selection: Extract<Selection, { kind: 'restock' }> }
 
-export default function AddInventoryPage() {
+export default function ManualAddInventoryPage() {
   const { user } = useUser()
   const navigate = useNavigate()
   const { loading: crewLoading, activeCrewId } = useActiveCrew(
@@ -62,8 +62,8 @@ export default function AddInventoryPage() {
         <header className="flex items-center gap-2">
           <button
             type="button"
-            aria-label="Back to inventory"
-            onClick={() => navigate('/inventory')}
+            aria-label="Back to add methods"
+            onClick={() => navigate('/inventory/add')}
             className="flex size-10 items-center justify-center rounded-full text-ink-700 transition hover:bg-paper-200"
           >
             <ArrowLeft size={20} strokeWidth={2.25} />

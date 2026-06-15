@@ -11,7 +11,9 @@ import CrewCreationPage from './routes/onboarding/new'
 import OnboardingSpacesPage from './routes/onboarding/spaces'
 import SpacesPage from './routes/spaces'
 import InventoryPage from './routes/inventory'
-import AddInventoryPage from './routes/inventory/add'
+import AddMethodPickerPage from './routes/inventory/add'
+import ManualAddInventoryPage from './routes/inventory/add/manual'
+import QuickAddPage from './routes/inventory/add/quick'
 import AlertsPage from './routes/alerts'
 import CrewsPage from './routes/crews'
 import CrewSettingsPage from './routes/crew/settings'
@@ -36,7 +38,12 @@ export default function App() {
           <Route path="/onboarding/spaces" element={<OnboardingSpacesPage />} />
           <Route path="/spaces" element={<SpacesPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
-          <Route path="/inventory/add" element={<AddInventoryPage />} />
+          <Route path="/inventory/add" element={<AddMethodPickerPage />} />
+          <Route
+            path="/inventory/add/manual"
+            element={<ManualAddInventoryPage />}
+          />
+          <Route path="/inventory/add/quick" element={<QuickAddPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/crews" element={<CrewsPage />} />
           <Route path="/crew/settings" element={<CrewSettingsPage />} />

@@ -15,13 +15,20 @@ The flow follows a **two-step pattern**: first resolve *what* the item is ([[Pro
 
 ## Entry Points
 
-All three entry points feed into the same two-step process. The only difference is whether `current_space_id` is pre-filled.
+All entry points land on a **method-picker** screen at `/inventory/add` (route
+`app/src/routes/inventory/add/index.tsx`), which offers the four methods as cards. Each
+method then runs the same two-step process; the only difference is whether `current_space_id`
+is pre-filled.
 
 | Entry Point | Context Pre-filled | UI Form |
 |-------------|-------------------|---------|
-| **Inventory page** — "Add Item" button | Nothing | Full page or modal |
+| **Inventory page** — "Add Item" button | Nothing | Method picker → chosen method |
 | **Space page** — "Add Item Here" on a specific [[Space]] node | `current_space_id` = that Space | Full page or modal |
-| **Global quick-add** — persistent "+" action in app header/nav | Nothing | Lightweight modal |
+| **Global quick-add** — persistent "+" action in app header/nav | Nothing | Quick add (Method 4) |
+
+**Implemented routes:** picker `/inventory/add` · Method 1 `/inventory/add/manual`
+(`ManualAddInventoryPage`) · Method 4 `/inventory/add/quick` (`QuickAddPage`). Methods 2 & 3
+appear as "Soon" tiles until their slices land.
 
 ---
 
@@ -215,7 +222,11 @@ Same as Manual flow — just a different product resolution mechanism.
 
 ## Method 4 — Quick Add (Lowest Priority)
 
-Minimal-friction entry for when you just need to log something fast. Accessible from the global quick-add or as a mode toggle within the add flow.
+> **Implemented** at `/inventory/add/quick` — `QuickAddForm`
+> (`app/src/components/inventory/quick-add-form.tsx`). Reuses the shared `record_purchase`
+> RPC; creates a name-only crew-private [[Product]] when no catalog match is chosen.
+
+Minimal-friction entry for when you just need to log something fast. Accessible from the method picker (and, in future, the global quick-add).
 
 ### One-Screen Form
 
