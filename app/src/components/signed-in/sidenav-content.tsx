@@ -8,6 +8,7 @@ import {
   Home,
   Layers,
   LogOut,
+  MessageSquarePlus,
   Settings,
   ShoppingCart,
   UserCircle,
@@ -60,9 +61,14 @@ const pendingLinks: PendingLink[] = [
 interface SidenavContentProps {
   /** Called when the user picks a destination — the parent should close the drawer. */
   onNavigate: () => void
+  /** Opens the feedback sheet (parent closes the drawer + shows the sheet). */
+  onSendFeedback: () => void
 }
 
-export function SidenavContent({ onNavigate }: SidenavContentProps) {
+export function SidenavContent({
+  onNavigate,
+  onSendFeedback,
+}: SidenavContentProps) {
   const { signOut } = useAuth()
   const navigate = useNavigate()
 
@@ -133,7 +139,15 @@ export function SidenavContent({ onNavigate }: SidenavContentProps) {
         ))}
       </ul>
 
-      <div className="mt-auto pt-4">
+      <div className="mt-auto flex flex-col gap-1 pt-4">
+        <button
+          type="button"
+          onClick={onSendFeedback}
+          className="flex w-full items-center gap-3 rounded-md px-3 py-2 font-body text-sm text-ink-700 transition hover:bg-paper-100"
+        >
+          <MessageSquarePlus size={18} aria-hidden />
+          <span>Send feedback</span>
+        </button>
         <button
           type="button"
           onClick={() => void handleSignOut()}
