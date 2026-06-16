@@ -36,7 +36,6 @@ const METHODS: Method[] = [
     glyph: <FileSpreadsheet aria-hidden size={22} className="text-sage-700" />,
     title: 'Bulk import',
     body: 'Upload a spreadsheet to add many items at once with column mapping.',
-    comingSoon: true,
   },
 ]
 

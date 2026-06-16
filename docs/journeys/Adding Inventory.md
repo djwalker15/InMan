@@ -136,6 +136,15 @@ Simplified Step 2 — only shows:
 
 ## Method 2 — Bulk Import (Secondary)
 
+> **Implemented** at `/inventory/add/import` — `BulkImportPage`
+> (`app/src/routes/inventory/add/import.tsx`) with step components and the pure
+> `parse.ts` (CSV via papaparse, XLSX via SheetJS) + `resolve.ts` under
+> `app/src/components/inventory/import/`. The atomic write is the
+> `bulk_import_inventory(p_crew_id, p_rows jsonb)` RPC
+> (`supabase/migrations/20260615120000_phase3_bulk_import_rpc.sql`), which
+> imports each row in its own subtransaction — good rows commit, bad rows are
+> skipped and reported.
+
 For initial inventory setup or migrating from a spreadsheet (like the InMan Kitchen v4 Excel file).
 
 ### Step 1 — Upload
@@ -264,7 +273,7 @@ Same data operations as Manual Step 2 — creates [[InventoryItem]] + purchase [
 | [[Category]] | Read (dropdown) | Step 2 — category selection/override |
 | [[UnitDefinition]] | Read (unit dropdown) | Step 2 — unit selection |
 
-> **Atomic operations:** Individual manual adds can be simple inserts. Bulk import must be wrapped in a Supabase edge function for atomicity. Restock is a lightweight operation (one Flow + InventoryItem update).
+> **Atomic operations:** Individual manual adds and quick adds go through the `record_purchase` RPC. Bulk import is wrapped in the atomic `bulk_import_inventory` Postgres RPC (per-row subtransactions — consistent with the existing `record_purchase`/`restock_inventory` pattern, rather than a separate edge function). Restock is a lightweight operation (one Flow + InventoryItem update) via `restock_inventory`.
 
 ---
 
