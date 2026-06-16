@@ -30,7 +30,6 @@ const METHODS: Method[] = [
     glyph: <ScanLine aria-hidden size={22} className="text-sage-700" />,
     title: 'Scan a barcode',
     body: 'Point your camera at a UPC to pull the product straight from the catalog.',
-    comingSoon: true,
   },
   {
     to: '/inventory/add/import',

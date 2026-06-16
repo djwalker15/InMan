@@ -3,18 +3,15 @@ import { useUser } from '@clerk/clerk-react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Check } from 'lucide-react'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
-import { CustomProductForm } from '@/components/inventory/custom-product-form'
-import { InventoryForm } from '@/components/inventory/inventory-form'
+import {
+  AddItemForms,
+  type AddPhase,
+} from '@/components/inventory/add-item-forms'
 import { ProductSearch } from '@/components/inventory/product-search'
-import { RestockForm } from '@/components/inventory/restock-form'
 import type { ProductRow, Selection } from '@/components/inventory/types'
 import { useActiveCrew } from '@/lib/active-crew'
 
-type Phase =
-  | { kind: 'search' }
-  | { kind: 'custom' }
-  | { kind: 'selected'; selection: Selection }
-  | { kind: 'restock'; selection: Extract<Selection, { kind: 'restock' }> }
+type Phase = { kind: 'search' } | AddPhase
 
 export default function ManualAddInventoryPage() {
   const { user } = useUser()
@@ -112,23 +109,12 @@ export default function ManualAddInventoryPage() {
             onSelect={handleSelect}
             onCreateCustom={() => setPhase({ kind: 'custom' })}
           />
-        ) : phase.kind === 'custom' ? (
-          <CustomProductForm
+        ) : (
+          <AddItemForms
             crewId={activeCrewId}
             userId={user.id}
-            onCreated={handleCustomCreated}
-            onCancel={() => setPhase({ kind: 'search' })}
-          />
-        ) : phase.kind === 'selected' ? (
-          <InventoryForm
-            crewId={activeCrewId}
-            selection={phase.selection}
-            onSaved={handleSaved}
-            onCancel={() => setPhase({ kind: 'search' })}
-          />
-        ) : (
-          <RestockForm
-            row={phase.selection.item}
+            phase={phase}
+            onCustomCreated={handleCustomCreated}
             onSaved={handleSaved}
             onCancel={() => setPhase({ kind: 'search' })}
           />

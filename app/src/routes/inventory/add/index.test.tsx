@@ -45,7 +45,7 @@ describe('AddMethodPickerPage', () => {
     expect(screen.getByText(/bulk import/i)).toBeInTheDocument()
   })
 
-  it('navigates to quick add and manual; coming-soon tiles stay disabled', async () => {
+  it('navigates to the built methods; coming-soon tiles stay disabled', async () => {
     makeSupabaseMock(crewMembers)
     renderWithRouter(<AddMethodPickerPage />)
 
@@ -56,11 +56,14 @@ describe('AddMethodPickerPage', () => {
     fireEvent.click(screen.getByRole('radio', { name: /search & add/i }))
     expect(mockNavigate).toHaveBeenCalledWith('/inventory/add/manual')
 
-    // Scan + bulk import are not built yet on this branch.
-    const scan = screen.getByRole('radio', { name: /scan a barcode/i })
-    expect(scan).toBeDisabled()
+    fireEvent.click(screen.getByRole('radio', { name: /scan a barcode/i }))
+    expect(mockNavigate).toHaveBeenCalledWith('/inventory/add/scan')
+
+    // Bulk import is not built yet on this branch.
+    const bulk = screen.getByRole('radio', { name: /bulk import/i })
+    expect(bulk).toBeDisabled()
     mockNavigate.mockClear()
-    fireEvent.click(scan)
+    fireEvent.click(bulk)
     expect(mockNavigate).not.toHaveBeenCalled()
   })
 

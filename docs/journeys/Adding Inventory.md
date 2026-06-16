@@ -199,6 +199,12 @@ Summary on completion: "Imported 220 items. 7 skipped due to errors." With a dow
 
 ## Method 3 — Barcode Scan (Tertiary)
 
+> **Implemented** at `/inventory/add/scan` — `BarcodeScanPage`
+> (`app/src/routes/inventory/add/scan.tsx`) with `BarcodeScanner`
+> (`app/src/components/inventory/barcode-scanner.tsx`, ZXing via `@zxing/browser`).
+> Resolves the code to the shared `AddItemForms` phases; falls back to manual
+> barcode entry when no camera is available or permission is denied.
+
 ### Step 1 — Scan
 
 Camera activates (mobile or tablet). User points at a UPC/EAN barcode. System decodes and searches the master catalog by `barcode` field on [[Product]].

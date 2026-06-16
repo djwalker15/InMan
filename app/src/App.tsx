@@ -14,6 +14,7 @@ import InventoryPage from './routes/inventory'
 import AddMethodPickerPage from './routes/inventory/add'
 import ManualAddInventoryPage from './routes/inventory/add/manual'
 import QuickAddPage from './routes/inventory/add/quick'
+import BarcodeScanPage from './routes/inventory/add/scan'
 import AlertsPage from './routes/alerts'
 import CrewsPage from './routes/crews'
 import CrewSettingsPage from './routes/crew/settings'
@@ -44,6 +45,7 @@ export default function App() {
             element={<ManualAddInventoryPage />}
           />
           <Route path="/inventory/add/quick" element={<QuickAddPage />} />
+          <Route path="/inventory/add/scan" element={<BarcodeScanPage />} />
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/crews" element={<CrewsPage />} />
           <Route path="/crew/settings" element={<CrewSettingsPage />} />
