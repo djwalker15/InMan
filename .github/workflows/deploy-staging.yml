@@ -20,6 +20,9 @@ jobs:
   supabase:
     needs: ci
     runs-on: ubuntu-latest
+    # Fail fast: a hung config-push/db-push/functions-deploy would otherwise
+    # stall to GitHub's 6h job ceiling. Normal runs finish in ~3 min.
+    timeout-minutes: 15
     environment: staging
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -40,6 +43,7 @@ jobs:
   app:
     needs: supabase
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: staging
     defaults:
       run:
