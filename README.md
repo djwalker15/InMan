@@ -26,6 +26,12 @@ This repository holds the product end to end: the live frontend, the database sc
 - `VITE_*` values are baked at build time from GitHub environment variables — Cloudflare dashboard env vars are not used.
 - Migrations flow staging → prod **via git**: the same `supabase/migrations/*.sql` files soak on staging, then apply to prod when `dev` merges to `main`. Never use the Supabase dashboard "merge branch" button.
 
+### Demo seed data
+
+Non-prod environments are populated by `supabase/seed.sql` — an idempotent "Demo Kitchen" crew (spaces + inventory + flows) so features render without hand-onboarding. It runs automatically on `supabase db reset` and on new Supabase branch creation; **it never runs on prod** (prod deploys use `db push`, which doesn't run seeds). To (re-)apply it to an existing branch, execute the file against that branch's database — e.g. `psql "$DB_URL" -f supabase/seed.sql`.
+
+The demo crew is owned by a dedicated Clerk dev-instance login — **`demo+clerk_test@tenacioustech.app`** (password `InManDemo!2026`) — and also lists the repo owner's primary account as an admin member, so it's visible on a normal staging sign-in too.
+
 ## Local setup
 
 ```sh
