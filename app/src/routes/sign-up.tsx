@@ -61,7 +61,12 @@ export default function SignUpPage() {
           : await signUp.attemptPhoneNumberVerification({ code })
       if (attempt.status === 'complete' && attempt.createdSessionId) {
         await setActive({ session: attempt.createdSessionId })
-        navigate('/onboarding', { replace: true })
+        // Land on the dashboard like the OAuth branch does. PublicOnlyRoute
+        // redirects a freshly-signed-in user here regardless, so targeting
+        // /onboarding only created a race the guard always won. A crew-less
+        // user gets the onboarding checklist on the dashboard, which routes
+        // into /onboarding when they choose to create their first crew.
+        navigate('/dashboard', { replace: true })
       } else {
         setError('Verification did not complete. Please try again.')
       }

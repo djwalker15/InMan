@@ -35,6 +35,37 @@ jobs:
           version: 2.101.0
       - name: Push config to staging branch
         run: supabase config push --project-ref "${{ vars.SUPABASE_PROJECT_REF }}" --yes
+      # `config push` does NOT register third-party auth providers on a branch,
+      # so the staging branch rejected every Clerk-signed JWT with 401 (the whole
+      # app is unusable for signed-in users without this). Branch projects are
+      # isolated and don't inherit the parent's Clerk integration, and a branch
+      # reset would drop it again — so register it idempotently via the
+      # Management API on every deploy. Issuer must match config.toml's
+      # [auth.third_party.clerk].domain.
+      - name: Ensure Clerk third-party auth on staging branch
+        env:
+          STAGING_REF: ${{ vars.SUPABASE_PROJECT_REF }}
+          CLERK_ISSUER: https://outgoing-wren-98.clerk.accounts.dev
+        run: |
+          set -euo pipefail
+          api="https://api.supabase.com/v1/projects/${STAGING_REF}/config/auth/third-party-auth"
+          existing=$(curl -sf -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" "$api")
+          echo "Existing third-party auth integrations: ${existing}"
+          if echo "${existing}" | grep -q "${CLERK_ISSUER}"; then
+            echo "Clerk third-party auth already registered on staging — nothing to do."
+            exit 0
+          fi
+          echo "Registering Clerk third-party auth on staging branch ${STAGING_REF}..."
+          code=$(curl -s -o /tmp/tpa_resp.json -w '%{http_code}' -X POST "${api}" \
+            -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"oidc_issuer_url\":\"${CLERK_ISSUER}\"}")
+          echo "HTTP ${code}"; cat /tmp/tpa_resp.json; echo
+          case "${code}" in
+            2*)  echo "Clerk third-party auth registered." ;;
+            409) echo "Already registered (409) — ok." ;;
+            *)   echo "::error::Failed to register Clerk third-party auth (HTTP ${code})"; exit 1 ;;
+          esac
       - name: Apply migrations
         run: supabase db push --db-url "${{ secrets.SUPABASE_DB_URL }}"
       - name: Deploy edge functions

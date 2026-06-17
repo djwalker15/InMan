@@ -70,7 +70,7 @@ describe('SignUpPage', () => {
     expect(await screen.findByText(/we sent a code to your phone/i)).toBeInTheDocument()
   })
 
-  it('verify stage: complete attempt → setActive → navigate /onboarding', async () => {
+  it('verify stage: complete attempt → setActive → navigate /dashboard', async () => {
     const { signUp, setActive } = mockClerk({ isLoaded: true, isSignedIn: false })
     signUp.create.mockResolvedValue({})
     signUp.prepareEmailAddressVerification.mockResolvedValue({})
@@ -92,7 +92,7 @@ describe('SignUpPage', () => {
       })
     })
     expect(setActive).toHaveBeenCalledWith({ session: 'sess_xyz' })
-    expect(mockNavigate).toHaveBeenCalledWith('/onboarding', { replace: true })
+    expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })
   })
 
   it('"Change email or phone" returns to form stage and clears code', async () => {

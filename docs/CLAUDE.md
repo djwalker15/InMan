@@ -447,6 +447,7 @@ Adding Inventory (product resolution, atomic `record_purchase` RPC, restock sub-
 ### Edge Functions (MVP)
 - `send_invite` — insert Invite + send email (external API)
 - `sync_clerk_user` — Clerk webhook handler → insert/update User row
+- `submit-feedback` — insert Feedback row + auto-file a task into the ClickUp InMan Inbox (token server-side only; row kept even if ClickUp sync fails). See [[Feature 13 - In-App Feedback]].
 
 ### Post-MVP Edge Functions (identified)
 - `log_waste` (v1.1), `complete_batch` (v1.2), `checkout_shopping_trip` (v1.3), `complete_intake_session` (v1.3), `kiosk_action_router` (v1.4), `run_reconciliation` (v1.5)

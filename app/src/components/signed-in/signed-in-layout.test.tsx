@@ -123,4 +123,23 @@ describe('SignedInLayout', () => {
       within(dialog).getByRole('button', { name: /sign out/i }),
     ).toBeInTheDocument()
   })
+
+  it('Send feedback closes the drawer and opens the feedback sheet', () => {
+    mockClerk({ user: { id: 'user_1' } })
+    renderWithRouter(
+      <SignedInLayout>
+        <p>x</p>
+      </SignedInLayout>,
+    )
+    const dialog = openSidenav()
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: /send feedback/i }),
+    )
+    expect(
+      screen.queryByRole('dialog', { name: /inman navigation/i }),
+    ).toBeNull()
+    expect(
+      screen.getByRole('dialog', { name: /send feedback/i }),
+    ).toBeInTheDocument()
+  })
 })

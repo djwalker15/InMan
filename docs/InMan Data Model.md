@@ -70,6 +70,9 @@
 ### Kiosk
 - [[KioskSession]] — Device-level session with token-based auth (Path B). Two-step identification: name select → PIN confirm.
 
+### Product Feedback
+- [[Feedback]] — In-app feedback submission (bug / idea / question). App-meta table; auto-filed to ClickUp by the `submit-feedback` edge function.
+
 ---
 
 ## Features
@@ -85,6 +88,7 @@
 9. [[Feature 9 - Batching and Prepping]]
 10. [[Feature 10 - Shopping List]]
 11. [[Feature 11 - Kiosk Mode]]
+13. [[Feature 13 - In-App Feedback]] — in-app feedback widget that auto-files to ClickUp
 
 ---
 

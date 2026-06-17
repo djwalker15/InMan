@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { UserButton, useUser } from '@clerk/clerk-react'
-import { Brand, Sidenav } from '@/components/ds'
+import { Brand, Sidenav, Toast } from '@/components/ds'
+import { FeedbackSheet } from '@/components/feedback/feedback-sheet'
 import { TopNav } from '@/components/top-nav'
 import { useActiveCrew } from '@/lib/active-crew'
 import { BottomNav } from './bottom-nav'
@@ -9,6 +10,8 @@ import { SidenavContent } from './sidenav-content'
 
 export function SignedInLayout({ children }: { children: ReactNode }) {
   const [sidenavOpen, setSidenavOpen] = useState(false)
+  const [feedbackOpen, setFeedbackOpen] = useState(false)
+  const [feedbackSent, setFeedbackSent] = useState(false)
   const { user } = useUser()
   const { memberships, activeCrewId, setActive } = useActiveCrew(
     user?.id ?? null,
@@ -40,8 +43,30 @@ export function SignedInLayout({ children }: { children: ReactNode }) {
           onNavigate={() => setSidenavOpen(false)}
         />
         <hr className="my-3 border-paper-300" />
-        <SidenavContent onNavigate={() => setSidenavOpen(false)} />
+        <SidenavContent
+          onNavigate={() => setSidenavOpen(false)}
+          onSendFeedback={() => {
+            setSidenavOpen(false)
+            setFeedbackOpen(true)
+          }}
+        />
       </Sidenav>
+      <FeedbackSheet
+        open={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+        onSubmitted={() => {
+          setFeedbackOpen(false)
+          setFeedbackSent(true)
+        }}
+        crewId={activeCrewId}
+        userId={user?.id ?? null}
+      />
+      {feedbackSent && (
+        <Toast
+          message="Thanks — your feedback was sent!"
+          onDismiss={() => setFeedbackSent(false)}
+        />
+      )}
     </div>
   )
 }

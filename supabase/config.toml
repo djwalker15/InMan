@@ -13,6 +13,9 @@ verify_jwt = false
 [functions.delete-account]
 verify_jwt = false
 
+[functions.submit-feedback]
+verify_jwt = false
+
 # Declaring any [auth.*] key makes `config push` manage the WHOLE auth section,
 # substituting CLI defaults for anything undeclared. The values below pin the
 # remote's existing dashboard configuration so pushes are no-ops — verified
