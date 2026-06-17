@@ -30,20 +30,27 @@ export function Sheet({
 }: SheetProps) {
   const closeButtonRef = useRef<HTMLButtonElement>(null)
   const previousFocusRef = useRef<HTMLElement | null>(null)
+  // Keep the latest onClose without making it an effect dependency — otherwise
+  // a consumer passing a fresh callback each render (common) would re-run the
+  // focus effect on every render and steal focus from inputs inside the sheet.
+  const onCloseRef = useRef(onClose)
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   useEffect(() => {
     if (!open) return
     previousFocusRef.current = document.activeElement as HTMLElement | null
     closeButtonRef.current?.focus()
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') onCloseRef.current()
     }
     document.addEventListener('keydown', onKey)
     return () => {
       document.removeEventListener('keydown', onKey)
       previousFocusRef.current?.focus()
     }
-  }, [open, onClose])
+  }, [open])
 
   if (!open) return null
 
