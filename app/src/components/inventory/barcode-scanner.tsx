@@ -1,7 +1,39 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { BrowserMultiFormatReader, type IScannerControls } from '@zxing/browser'
+import { BarcodeFormat, DecodeHintType } from '@zxing/library'
 import { Camera, Keyboard } from 'lucide-react'
 import { PrimaryButton } from '@/components/ds'
+
+// Hint the decoder toward retail product barcodes (1D) instead of letting it
+// juggle every format (QR, Data Matrix, …). Far faster and more reliable.
+const SCAN_HINTS = new Map<DecodeHintType, unknown>([
+  [
+    DecodeHintType.POSSIBLE_FORMATS,
+    [
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+      BarcodeFormat.UPC_A,
+      BarcodeFormat.UPC_E,
+      BarcodeFormat.CODE_128,
+      BarcodeFormat.CODE_39,
+    ],
+  ],
+  [DecodeHintType.TRY_HARDER, true],
+])
+
+// Try to decode ~6×/sec (default is every 500ms) for snappier reads.
+const READER_OPTIONS = { delayBetweenScanAttempts: 150 }
+
+// Prefer the rear camera at a high resolution — 1D barcodes need horizontal
+// pixels and the selfie cam usually can't focus on a close label. `ideal`
+// (not `exact`) so single-camera devices still work.
+const VIDEO_CONSTRAINTS: MediaStreamConstraints = {
+  video: {
+    facingMode: { ideal: 'environment' },
+    width: { ideal: 1920 },
+    height: { ideal: 1080 },
+  },
+}
 
 interface BarcodeScannerProps {
   /** While true the camera runs; set false to pause (e.g. on a form step). */
@@ -45,26 +77,35 @@ export function BarcodeScanner({ active, onDetected }: BarcodeScannerProps) {
     if (!active || !cameraSupported()) return
     let cancelled = false
     let controls: IScannerControls | undefined
-    const reader = new BrowserMultiFormatReader()
-    reader
-      .decodeFromVideoDevice(undefined, videoRef.current ?? undefined, (result) => {
-        if (result) onDetectedRef.current(result.getText())
-      })
-      .then((c) => {
-        if (cancelled) {
-          c.stop()
-          return
-        }
-        controls = c
-        setStatus('scanning')
-      })
-      .catch((err: unknown) => {
-        if (cancelled) return
-        const name = err instanceof Error ? err.name : ''
-        setStatus(name === 'NotAllowedError' ? 'denied' : 'error')
-      })
+    const reader = new BrowserMultiFormatReader(SCAN_HINTS, READER_OPTIONS)
+    // Defer the start past React StrictMode's synchronous mount → cleanup →
+    // mount in dev. Starting synchronously opens two camera sessions on one
+    // <video>; the first session's later teardown then clears the stream the
+    // second one is using — a black screen plus "play() interrupted by a new
+    // load request". Deferring lets the cleanup cancel the throwaway start
+    // before it ever opens the camera, so only the surviving mount runs.
+    const startTimer = setTimeout(() => {
+      reader
+        .decodeFromConstraints(VIDEO_CONSTRAINTS, videoRef.current ?? undefined, (result) => {
+          if (result) onDetectedRef.current(result.getText())
+        })
+        .then((c) => {
+          if (cancelled) {
+            c.stop()
+            return
+          }
+          controls = c
+          setStatus('scanning')
+        })
+        .catch((err: unknown) => {
+          if (cancelled) return
+          const name = err instanceof Error ? err.name : ''
+          setStatus(name === 'NotAllowedError' ? 'denied' : 'error')
+        })
+    }, 0)
     return () => {
       cancelled = true
+      clearTimeout(startTimer)
       controls?.stop()
     }
   }, [active])
