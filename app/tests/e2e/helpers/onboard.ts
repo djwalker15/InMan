@@ -72,11 +72,20 @@ export async function signUpAndCreateCrewWithPremises(
     await gotIt.click()
   }
   await page.getByPlaceholder('My House').fill(premisesName)
-  await page.getByRole('button', { name: /continue/i }).click()
 
-  // The Premises insert resolves into the guided phase, where the new node
-  // shows in the live tree — proof the row landed before we add inventory.
-  await expect(page.getByText(premisesName).first()).toBeVisible()
+  // The active-crew context loads asynchronously on this page; clicking
+  // "Continue" before it resolves shows a "Crew context not loaded yet" error
+  // and no-ops the insert. Retry the submit until the Premises lands in the
+  // live tree (the guided phase), which proves the row was written.
+  const continueButton = page.getByRole('button', { name: /continue/i })
+  await expect(async () => {
+    if (await continueButton.isVisible().catch(() => false)) {
+      await continueButton.click()
+    }
+    await expect(page.getByText(premisesName).first()).toBeVisible({
+      timeout: 3000,
+    })
+  }).toPass({ timeout: 30_000 })
 
   return { email, crewName, premisesName }
 }
