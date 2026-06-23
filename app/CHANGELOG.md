@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.0](https://github.com/djwalker15/InMan/compare/inman-v0.2.0...inman-v0.3.0) (2026-06-17)
+
+
+### Features
+
+* **feedback:** in-app feedback widget that auto-files to ClickUp ([1b0fd99](https://github.com/djwalker15/InMan/commit/1b0fd993cbfde9d4a58ac07ff232973ce0d2d90d))
+* **feedback:** in-app feedback widget that auto-files to ClickUp ([1e655f2](https://github.com/djwalker15/InMan/commit/1e655f20a57cee5bd46badb9a8a55aea151779b9))
+
+
+### Bug Fixes
+
+* **auth:** land email/password sign-ups on /dashboard, fix e2e flow ([f3072d6](https://github.com/djwalker15/InMan/commit/f3072d6c554dbc09d0d9eeacb257f11073741f15))
+* **ds:** Sheet steals focus from inputs on each keystroke ([f0fa117](https://github.com/djwalker15/InMan/commit/f0fa117df48e611c8bea6b725475909e61ec8053))
+* **ds:** stop Sheet stealing focus on every onClose identity change ([55bf4ab](https://github.com/djwalker15/InMan/commit/55bf4abe80b3ab81cf1c8d2ee8e8b0052da8da36))
+
 ## [0.2.0](https://github.com/djwalker15/InMan/compare/inman-v0.1.0...inman-v0.2.0) (2026-06-15)
 
 
