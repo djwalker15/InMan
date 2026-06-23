@@ -26,6 +26,9 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'github' : 'list',
   globalSetup: './tests/e2e/global-setup.ts',
+  // Sweeps the crews/users each run creates so staging + the Clerk dev instance
+  // stay slim. Self-skips when SUPABASE_SERVICE_ROLE_KEY isn't configured.
+  globalTeardown: './tests/e2e/global-teardown.ts',
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
