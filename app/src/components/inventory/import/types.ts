@@ -77,6 +77,8 @@ export interface ImportPayloadRow {
   unit: string
   current_space_id: string
   category_id: string | null
+  /** Per-unit purchase cost. Used by receipt scan; null for spreadsheet import. */
+  unit_cost: number | null
   notes: string | null
 }
 

@@ -443,11 +443,14 @@ Adding Inventory (product resolution, atomic `record_purchase` RPC, restock sub-
 - `put_back_items` — batch: update current_space_id + insert Flows for each checked item
 - `create_crew_with_owner` — insert Crew + CrewMember
 - `accept_invite` — update Invite + insert CrewMember
+- `bulk_import_inventory` — atomic-per-row import (spreadsheet **and** receipt scan); `p_source` tags Flow provenance (`bulk_import` / `receipt_scan`); creates Product + InventoryItem + Flow + FlowPurchaseDetail (with `unit_cost`) per row
+- `search_products_fuzzy` — trigram-ranked catalog candidates over the `products.name` GIN index; used by `parse-receipt` for line resolution and reusable by the product picker
 
 ### Edge Functions (MVP)
 - `send_invite` — insert Invite + send email (external API)
 - `sync_clerk_user` — Clerk webhook handler → insert/update User row
 - `submit-feedback` — insert Feedback row + auto-file a task into the ClickUp InMan Inbox (token server-side only; row kept even if ClickUp sync fails). See [[Feature 13 - In-App Feedback]].
+- `parse-receipt` — receipt/invoice scan ([[Journey - Adding Inventory]] Method 5). Claude vision extracts line items, then resolves each to a [[Product]] via [[ProductAlias]] lookup → `search_products_fuzzy` → Claude disambiguation. Returns resolved rows; the client gates ambiguous/new lines behind an explicit pick/create, then commits via `bulk_import_inventory`. `ANTHROPIC_API_KEY` lives only here.
 
 ### Post-MVP Edge Functions (identified)
 - `log_waste` (v1.1), `complete_batch` (v1.2), `checkout_shopping_trip` (v1.3), `complete_intake_session` (v1.3), `kiosk_action_router` (v1.4), `run_reconciliation` (v1.5)

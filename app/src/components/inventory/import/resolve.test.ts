@@ -122,6 +122,7 @@ describe('resolveRows', () => {
       unit: 'oz',
       current_space_id: 'pantry',
       category_id: null,
+      unit_cost: null,
       notes: null,
     })
   })

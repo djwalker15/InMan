@@ -1,5 +1,12 @@
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, FileSpreadsheet, ScanLine, Search, Zap } from 'lucide-react'
+import {
+  ArrowLeft,
+  FileSpreadsheet,
+  Receipt,
+  ScanLine,
+  Search,
+  Zap,
+} from 'lucide-react'
 import { Chip, DecisionCard } from '@/components/ds'
 import { SignedInLayout } from '@/components/signed-in/signed-in-layout'
 
@@ -36,6 +43,12 @@ const METHODS: Method[] = [
     glyph: <FileSpreadsheet aria-hidden size={22} className="text-sage-700" />,
     title: 'Bulk import',
     body: 'Upload a spreadsheet to add many items at once with column mapping.',
+  },
+  {
+    to: '/inventory/add/receipt',
+    glyph: <Receipt aria-hidden size={22} className="text-sage-700" />,
+    title: 'Scan a receipt',
+    body: 'Photograph a receipt or invoice to add everything you bought, with prices.',
   },
 ]
 

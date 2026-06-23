@@ -113,6 +113,17 @@ erDiagram
         timestamp deleted_at "soft delete"
     }
 
+    ProductAlias {
+        int alias_id PK
+        int crew_id FK
+        string raw_text "normalized receipt line text"
+        string merchant "nullable"
+        int product_id FK
+        text created_by FK "Clerk user ID"
+        timestamp created_at
+        timestamp updated_at
+    }
+
     ProductGroup {
         int product_group_id PK
         string name "e.g. Sugar, Olive Oil"
@@ -157,6 +168,8 @@ erDiagram
     Category ||--o{ ProductGroup : "default_category"
     ProductGroup ||--o{ Product : "belongs to group"
     Crew ||--o{ Category : "crew-custom"
+    Crew ||--o{ ProductAlias : "learned receipt mappings"
+    Product ||--o{ ProductAlias : "aliased by"
     Crew ||--o{ Product : "crew-private"
     Crew ||--o{ ProductGroup : "crew-created"
     User ||--o{ Product : "created_by"
