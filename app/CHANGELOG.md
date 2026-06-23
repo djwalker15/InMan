@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1](https://github.com/djwalker15/InMan/compare/inman-v0.3.0...inman-v0.3.1) (2026-06-23)
+
+
+### Bug Fixes
+
+* **ci:** align e2e Playwright image with pinned dep version ([2eec986](https://github.com/djwalker15/InMan/commit/2eec98621f11af588e87a132ed8cb1b402863f6f))
+* **ci:** align e2e Playwright image with the pinned dep version ([f0f1265](https://github.com/djwalker15/InMan/commit/f0f1265e758a086987f4daa0c03f230337670531))
+
 ## [0.3.0](https://github.com/djwalker15/InMan/compare/inman-v0.2.0...inman-v0.3.0) (2026-06-17)
 
 
