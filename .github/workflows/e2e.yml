@@ -18,7 +18,7 @@ jobs:
     # @playwright/test version in app/package-lock.json). Avoids the flaky
     # runtime Chromium CDN download that previously stalled the job for hours.
     container:
-      image: mcr.microsoft.com/playwright:v1.59.1-noble
+      image: mcr.microsoft.com/playwright:v1.61.1-noble
     environment: staging
     defaults:
       run:
