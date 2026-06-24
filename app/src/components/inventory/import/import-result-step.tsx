@@ -13,6 +13,8 @@ interface ImportResultStepProps {
   skippedLocal: number
   onDone: () => void
   onAnother: () => void
+  /** Label for the secondary "start over" action. */
+  anotherLabel?: string
 }
 
 export function ImportResultStep({
@@ -21,6 +23,7 @@ export function ImportResultStep({
   skippedLocal,
   onDone,
   onAnother,
+  anotherLabel = 'Import another file',
 }: ImportResultStepProps) {
   const skipped = skippedLocal + errors.length
 
@@ -68,7 +71,7 @@ export function ImportResultStep({
           Go to inventory
         </PrimaryButton>
         <TextButton type="button" onClick={onAnother}>
-          Import another file
+          {anotherLabel}
         </TextButton>
       </CtaTray>
     </div>

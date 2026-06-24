@@ -210,6 +210,8 @@ export function toPayloadRow(row: ResolvedRow): ImportPayloadRow {
     unit: row.unit,
     current_space_id: row.currentSpaceId as string,
     category_id: row.categoryId,
+    // Spreadsheet import doesn't capture cost; receipt scan sets this itself.
+    unit_cost: null,
     notes: row.notes,
   }
 }

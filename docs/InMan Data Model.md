@@ -24,6 +24,7 @@
 - [[ProductGroup]] — Generic product concept (e.g., "Sugar") that groups specific Products. Used by recipes for generic ingredients.
 - [[Category]] — Product/item categorization
 - [[InventoryItem]] — Crew-specific product instance at a location (quantity is a **cache** derived from [[Flow]] ledger)
+- [[ProductAlias]] — Learned mapping from abbreviated receipt line text → a catalog [[Product]] (powers receipt-scan auto-resolution)
 - [[ProductSubmission]] — Review queue for promoting crew-private Products to master catalog
 
 ### Reference Data
