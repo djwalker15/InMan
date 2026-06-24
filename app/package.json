@@ -1,7 +1,7 @@
 {
   "name": "app",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.3.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -42,12 +42,13 @@
   "devDependencies": {
     "@clerk/testing": "^2.0.21",
     "@eslint/js": "^9.39.4",
-    "@playwright/test": "^1.59.1",
+    "@playwright/test": "1.61.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
     "@types/node": "^24.12.2",
     "@types/papaparse": "^5.5.2",
+    "@types/pg": "^8.20.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
@@ -59,6 +60,7 @@
     "happy-dom": "^20.9.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
+    "pg": "^8.22.0",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.9",

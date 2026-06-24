@@ -1,6 +1,14 @@
+# Editor / vault
 .obsidian
+
+# Dependencies (app/ has its own; this covers any stray root install)
+node_modules/
+
+# Env & secrets
 .env
-.env.local
-.env*.local
+*.local
+
+# Supabase local state
 supabase/.temp/
 supabase/.branches/
+supabase/.env.local
