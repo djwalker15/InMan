@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/djwalker15/InMan/compare/inman-v0.3.1...inman-v0.3.2) (2026-06-24)
+
+
+### Bug Fixes
+
+* **deps:** use dev's complete lockfile for the merge, bump root version to 0.3.1 ([d8413f2](https://github.com/djwalker15/InMan/commit/d8413f28383972ea45c61d4825cb5268c263a01d))
+
 ## [0.3.1](https://github.com/djwalker15/InMan/compare/inman-v0.3.0...inman-v0.3.1) (2026-06-23)
 
 
