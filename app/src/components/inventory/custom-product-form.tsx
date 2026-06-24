@@ -8,6 +8,8 @@ interface CustomProductFormProps {
   userId: string
   /** Pre-fill the name when invoked from a no-match search. */
   initialName?: string
+  /** Pre-fill the barcode when invoked from a no-match barcode scan. */
+  initialBarcode?: string
   onCreated: (product: ProductRow) => void
   onCancel: () => void
 }
@@ -27,13 +29,14 @@ export function CustomProductForm({
   crewId,
   userId,
   initialName = '',
+  initialBarcode = '',
   onCreated,
   onCancel,
 }: CustomProductFormProps) {
   const supabase = useSupabase()
   const [name, setName] = useState(initialName)
   const [brand, setBrand] = useState('')
-  const [barcode, setBarcode] = useState('')
+  const [barcode, setBarcode] = useState(initialBarcode)
   const [sizeValue, setSizeValue] = useState('')
   const [sizeUnit, setSizeUnit] = useState<string>('')
   const [categoryId, setCategoryId] = useState<string>('')

@@ -15,13 +15,20 @@ The flow follows a **two-step pattern**: first resolve *what* the item is ([[Pro
 
 ## Entry Points
 
-All three entry points feed into the same two-step process. The only difference is whether `current_space_id` is pre-filled.
+All entry points land on a **method-picker** screen at `/inventory/add` (route
+`app/src/routes/inventory/add/index.tsx`), which offers the four methods as cards. Each
+method then runs the same two-step process; the only difference is whether `current_space_id`
+is pre-filled.
 
 | Entry Point | Context Pre-filled | UI Form |
 |-------------|-------------------|---------|
-| **Inventory page** — "Add Item" button | Nothing | Full page or modal |
+| **Inventory page** — "Add Item" button | Nothing | Method picker → chosen method |
 | **Space page** — "Add Item Here" on a specific [[Space]] node | `current_space_id` = that Space | Full page or modal |
-| **Global quick-add** — persistent "+" action in app header/nav | Nothing | Lightweight modal |
+| **Global quick-add** — persistent "+" action in app header/nav | Nothing | Quick add (Method 4) |
+
+**Implemented routes:** picker `/inventory/add` · Method 1 `/inventory/add/manual`
+(`ManualAddInventoryPage`) · Method 4 `/inventory/add/quick` (`QuickAddPage`). Methods 2 & 3
+appear as "Soon" tiles until their slices land.
 
 ---
 
@@ -129,6 +136,15 @@ Simplified Step 2 — only shows:
 
 ## Method 2 — Bulk Import (Secondary)
 
+> **Implemented** at `/inventory/add/import` — `BulkImportPage`
+> (`app/src/routes/inventory/add/import.tsx`) with step components and the pure
+> `parse.ts` (CSV via papaparse, XLSX via SheetJS) + `resolve.ts` under
+> `app/src/components/inventory/import/`. The atomic write is the
+> `bulk_import_inventory(p_crew_id, p_rows jsonb)` RPC
+> (`supabase/migrations/20260615120000_phase3_bulk_import_rpc.sql`), which
+> imports each row in its own subtransaction — good rows commit, bad rows are
+> skipped and reported.
+
 For initial inventory setup or migrating from a spreadsheet (like the InMan Kitchen v4 Excel file).
 
 ### Step 1 — Upload
@@ -192,6 +208,12 @@ Summary on completion: "Imported 220 items. 7 skipped due to errors." With a dow
 
 ## Method 3 — Barcode Scan (Tertiary)
 
+> **Implemented** at `/inventory/add/scan` — `BarcodeScanPage`
+> (`app/src/routes/inventory/add/scan.tsx`) with `BarcodeScanner`
+> (`app/src/components/inventory/barcode-scanner.tsx`, ZXing via `@zxing/browser`).
+> Resolves the code to the shared `AddItemForms` phases; falls back to manual
+> barcode entry when no camera is available or permission is denied.
+
 ### Step 1 — Scan
 
 Camera activates (mobile or tablet). User points at a UPC/EAN barcode. System decodes and searches the master catalog by `barcode` field on [[Product]].
@@ -215,7 +237,11 @@ Same as Manual flow — just a different product resolution mechanism.
 
 ## Method 4 — Quick Add (Lowest Priority)
 
-Minimal-friction entry for when you just need to log something fast. Accessible from the global quick-add or as a mode toggle within the add flow.
+> **Implemented** at `/inventory/add/quick` — `QuickAddForm`
+> (`app/src/components/inventory/quick-add-form.tsx`). Reuses the shared `record_purchase`
+> RPC; creates a name-only crew-private [[Product]] when no catalog match is chosen.
+
+Minimal-friction entry for when you just need to log something fast. Accessible from the method picker (and, in future, the global quick-add).
 
 ### One-Screen Form
 
@@ -247,7 +273,7 @@ Same data operations as Manual Step 2 — creates [[InventoryItem]] + purchase [
 | [[Category]] | Read (dropdown) | Step 2 — category selection/override |
 | [[UnitDefinition]] | Read (unit dropdown) | Step 2 — unit selection |
 
-> **Atomic operations:** Individual manual adds can be simple inserts. Bulk import must be wrapped in a Supabase edge function for atomicity. Restock is a lightweight operation (one Flow + InventoryItem update).
+> **Atomic operations:** Individual manual adds and quick adds go through the `record_purchase` RPC. Bulk import is wrapped in the atomic `bulk_import_inventory` Postgres RPC (per-row subtransactions — consistent with the existing `record_purchase`/`restock_inventory` pattern, rather than a separate edge function). Restock is a lightweight operation (one Flow + InventoryItem update) via `restock_inventory`.
 
 ---
 
