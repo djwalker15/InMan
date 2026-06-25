@@ -39,9 +39,12 @@ jobs:
           ref: dev
       - run: npm ci
       - run: npm run test:e2e
+      # The CI reporter is 'github' (annotations only), so no playwright-report/
+      # dir is produced. Traces (trace: 'on-first-retry') and the failure page
+      # snapshot land under test-results/ — that's what's worth keeping.
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report
-          path: app/playwright-report
+          name: playwright-traces
+          path: app/test-results
           retention-days: 7
