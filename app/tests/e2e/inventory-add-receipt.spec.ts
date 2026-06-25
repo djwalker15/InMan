@@ -4,9 +4,13 @@ import {
   signUpAndCreateCrewWithPremises,
 } from './helpers/onboard'
 
-// A 1x1 PNG — just enough for the capture step's canvas downscale to decode.
+// A minimal but *valid* 1x1 PNG. The capture step decodes the upload with
+// createImageBitmap before posting it; Chromium rejects a malformed PNG with
+// "The source image could not be decoded", which would strand the flow on the
+// capture step. (The previous literal had a truncated IDAT + bad CRC that PIL
+// tolerated but the browser did not.)
 const PNG_1X1 = Buffer.from(
-  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGM4UaEBAAN0AWnL+tDXAAAAAElFTkSuQmCC',
   'base64',
 )
 
@@ -28,10 +32,24 @@ test.describe('Adding Inventory — Receipt scan', () => {
     // Mock the vision/resolution edge function: a fresh crew has an empty
     // catalog, so both lines come back unresolved (no candidates) and must be
     // explicitly created before import — exercising the gate.
-    await page.route('**/functions/v1/parse-receipt', (route) =>
-      route.fulfill({
+    // Mirror the edge function's CORS contract (supabase/functions/_shared/
+    // cors.ts). supabase.functions.invoke POSTs cross-origin with a JSON
+    // content-type + auth headers, so the browser fires a preflight first;
+    // a fulfilled response without these headers fails the CORS check and
+    // the invoke rejects — leaving the page stuck on the capture step.
+    const cors = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers':
+        'authorization, x-client-info, apikey, content-type',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    }
+    await page.route('**/functions/v1/parse-receipt', (route) => {
+      if (route.request().method() === 'OPTIONS') {
+        return route.fulfill({ status: 204, headers: cors })
+      }
+      return route.fulfill({
         status: 200,
-        contentType: 'application/json',
+        headers: { ...cors, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           merchant: 'E2E Mart',
           rows: [
@@ -65,8 +83,8 @@ test.describe('Adding Inventory — Receipt scan', () => {
             },
           ],
         }),
-      }),
-    )
+      })
+    })
 
     await page.goto('/inventory/add/receipt')
 
