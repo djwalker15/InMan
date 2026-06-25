@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/djwalker15/InMan/compare/inman-v0.3.2...inman-v0.4.0) (2026-06-25)
+
+
+### Features
+
+* **inventory:** receipt/invoice scan add method ([b9d2399](https://github.com/djwalker15/InMan/commit/b9d239992338b1ef039ea611ee0020e06306296d))
+
+
+### Bug Fixes
+
+* **e2e:** repair receipt-scan smoke test (valid PNG + CORS preflight) ([d2e280d](https://github.com/djwalker15/InMan/commit/d2e280d6ee91bac1f820142cfc5846d3fa83bf4d))
+* **e2e:** repair receipt-scan smoke test (valid PNG + CORS preflight) ([8b79874](https://github.com/djwalker15/InMan/commit/8b79874b1959ddf48812130d1e692d2df05398c4))
+
 ## [0.3.2](https://github.com/djwalker15/InMan/compare/inman-v0.3.1...inman-v0.3.2) (2026-06-24)
 
 
