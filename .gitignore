@@ -1,3 +1,6 @@
 .obsidian
 .env
+.env.local
 supabase/.temp/
+supabase/.branches/
+supabase/.env.local

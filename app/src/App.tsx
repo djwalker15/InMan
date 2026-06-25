@@ -12,6 +12,7 @@ import OnboardingSpacesPage from './routes/onboarding/spaces'
 import SpacesPage from './routes/spaces'
 import InventoryPage from './routes/inventory'
 import AddInventoryPage from './routes/inventory/add'
+import OpenPackagePage from './routes/inventory/open'
 import AlertsPage from './routes/alerts'
 import CrewsPage from './routes/crews'
 import CrewSettingsPage from './routes/crew/settings'
@@ -37,6 +38,10 @@ export default function App() {
           <Route path="/spaces" element={<SpacesPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/inventory/add" element={<AddInventoryPage />} />
+          <Route
+            path="/inventory/open/:itemId"
+            element={<OpenPackagePage />}
+          />
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/crews" element={<CrewsPage />} />
           <Route path="/crew/settings" element={<CrewSettingsPage />} />
