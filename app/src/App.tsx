@@ -11,7 +11,12 @@ import CrewCreationPage from './routes/onboarding/new'
 import OnboardingSpacesPage from './routes/onboarding/spaces'
 import SpacesPage from './routes/spaces'
 import InventoryPage from './routes/inventory'
-import AddInventoryPage from './routes/inventory/add'
+import AddMethodPickerPage from './routes/inventory/add'
+import ManualAddInventoryPage from './routes/inventory/add/manual'
+import QuickAddPage from './routes/inventory/add/quick'
+import BarcodeScanPage from './routes/inventory/add/scan'
+import BulkImportPage from './routes/inventory/add/import'
+import ReceiptScanPage from './routes/inventory/add/receipt'
 import OpenPackagePage from './routes/inventory/open'
 import AlertsPage from './routes/alerts'
 import CrewsPage from './routes/crews'
@@ -37,7 +42,15 @@ export default function App() {
           <Route path="/onboarding/spaces" element={<OnboardingSpacesPage />} />
           <Route path="/spaces" element={<SpacesPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
-          <Route path="/inventory/add" element={<AddInventoryPage />} />
+          <Route path="/inventory/add" element={<AddMethodPickerPage />} />
+          <Route
+            path="/inventory/add/manual"
+            element={<ManualAddInventoryPage />}
+          />
+          <Route path="/inventory/add/quick" element={<QuickAddPage />} />
+          <Route path="/inventory/add/scan" element={<BarcodeScanPage />} />
+          <Route path="/inventory/add/import" element={<BulkImportPage />} />
+          <Route path="/inventory/add/receipt" element={<ReceiptScanPage />} />
           <Route
             path="/inventory/open/:itemId"
             element={<OpenPackagePage />}

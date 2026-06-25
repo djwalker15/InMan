@@ -25,6 +25,7 @@
 - [[Category]] — Product/item categorization
 - [[InventoryItem]] — Crew-specific product instance at a location (quantity is a **cache** derived from [[Flow]] ledger)
 - [[ProductComponent]] — A line in a package Product's bill of materials (composition template; enables [[Journey - Opening a Package]])
+- [[ProductAlias]] — Learned mapping from abbreviated receipt line text → a catalog [[Product]] (powers receipt-scan auto-resolution)
 - [[ProductSubmission]] — Review queue for promoting crew-private Products to master catalog
 
 ### Reference Data

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { renderWithRouter } from '@/test/utils'
+import { renderWithRouter, userEvent } from '@/test/utils'
 import { mockClerk } from '@/test/clerk-mock'
 import { makeSupabaseMock } from '@/test/supabase-mock'
 import { FeedbackSheet } from './feedback-sheet'
@@ -50,6 +50,18 @@ describe('FeedbackSheet', () => {
       clickup_synced: true,
     })
     uploadFeedbackScreenshot.mockResolvedValue('user_1/shot.png')
+  })
+
+  it('keeps focus on the message field while typing', async () => {
+    const user = userEvent.setup()
+    renderSheet()
+    const textarea = screen.getByLabelText(/message/i)
+    await user.click(textarea)
+    await user.type(textarea, 'losing focus would truncate this')
+    // If the sheet re-grabbed focus on each keystroke, the value would be
+    // truncated and the close button (not the textarea) would be active.
+    expect(textarea).toHaveValue('losing focus would truncate this')
+    expect(document.activeElement).toBe(textarea)
   })
 
   it('disables submit until a message is entered', () => {

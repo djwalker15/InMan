@@ -14,6 +14,8 @@ interface ProductSearchProps {
   crewId: string
   onSelect: (selection: Selection) => void
   onCreateCustom: () => void
+  /** Seed the search box (e.g. a receipt line's canonical name). */
+  initialQuery?: string
 }
 
 interface SpaceLite {
@@ -45,10 +47,11 @@ export function ProductSearch({
   crewId,
   onSelect,
   onCreateCustom,
+  initialQuery = '',
 }: ProductSearchProps) {
   const supabase = useSupabase()
-  const [query, setQuery] = useState('')
-  const [debounced, setDebounced] = useState('')
+  const [query, setQuery] = useState(initialQuery)
+  const [debounced, setDebounced] = useState(initialQuery.trim())
   const [products, setProducts] = useState<ProductRow[]>([])
   const [existing, setExisting] = useState<ExistingItemRow[]>([])
   const [loading, setLoading] = useState(false)

@@ -18,7 +18,7 @@ jobs:
     # @playwright/test version in app/package-lock.json). Avoids the flaky
     # runtime Chromium CDN download that previously stalled the job for hours.
     container:
-      image: mcr.microsoft.com/playwright:v1.59.1-noble
+      image: mcr.microsoft.com/playwright:v1.61.1-noble
     environment: staging
     defaults:
       run:
@@ -29,15 +29,22 @@ jobs:
       VITE_CLERK_PUBLISHABLE_KEY: ${{ vars.VITE_CLERK_PUBLISHABLE_KEY }}
       VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
       VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      # Session-pooler Postgres URI for the post-run teardown sweep (deletes
+      # test crews under session_replication_role=replica). Not VITE_-prefixed,
+      # so it never reaches the client bundle.
+      SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: dev
       - run: npm ci
       - run: npm run test:e2e
+      # The CI reporter is 'github' (annotations only), so no playwright-report/
+      # dir is produced. Traces (trace: 'on-first-retry') and the failure page
+      # snapshot land under test-results/ — that's what's worth keeping.
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
-          name: playwright-report
-          path: app/playwright-report
+          name: playwright-traces
+          path: app/test-results
           retention-days: 7

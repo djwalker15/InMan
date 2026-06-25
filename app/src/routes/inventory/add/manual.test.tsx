@@ -3,7 +3,7 @@ import { fireEvent, screen, waitFor } from '@testing-library/react'
 import { renderWithRouter } from '@/test/utils'
 import { mockClerk } from '@/test/clerk-mock'
 import { makeSupabaseMock } from '@/test/supabase-mock'
-import AddInventoryPage from './add'
+import AddInventoryPage from './manual'
 
 const { mockNavigate } = vi.hoisted(() => ({ mockNavigate: vi.fn() }))
 
@@ -311,7 +311,7 @@ describe('AddInventoryPage — Step 1 product resolution', () => {
     expect(screen.getByText(/search for a product/i)).toBeInTheDocument()
   })
 
-  it('back-arrow routes to /inventory', async () => {
+  it('back-arrow routes to the add-method picker', async () => {
     makeSupabaseMock({
       crew_members: {
         select: {
@@ -328,9 +328,9 @@ describe('AddInventoryPage — Step 1 product resolution', () => {
     })
     renderWithRouter(<AddInventoryPage />)
     await waitFor(() => {
-      expect(screen.getByLabelText(/back to inventory/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/back to add methods/i)).toBeInTheDocument()
     })
-    fireEvent.click(screen.getByLabelText(/back to inventory/i))
-    expect(mockNavigate).toHaveBeenCalledWith('/inventory')
+    fireEvent.click(screen.getByLabelText(/back to add methods/i))
+    expect(mockNavigate).toHaveBeenCalledWith('/inventory/add')
   })
 })

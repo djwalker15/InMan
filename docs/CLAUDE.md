@@ -1,6 +1,6 @@
 # CLAUDE.md — InMan Project Context
 
-> **Last updated:** April 9, 2026
+> **Last updated:** June 19, 2026 — content covers through Phase 8 (CI/CD + product site) and the inventory add-methods. See **Superseded Guidance** below for reversed decisions.
 > **Repositories:** djwalker15/InMan (app), djwalker15/InManVault (Obsidian vault)
 > **Owner:** Davontae Walker (djwalker@tenacioustech.net)
 
@@ -452,11 +452,14 @@ Adding Inventory (product resolution, atomic `record_purchase` RPC, restock sub-
 - `put_back_items` — batch: update current_space_id + insert Flows for each checked item
 - `create_crew_with_owner` — insert Crew + CrewMember
 - `accept_invite` — update Invite + insert CrewMember
+- `bulk_import_inventory` — atomic-per-row import (spreadsheet **and** receipt scan); `p_source` tags Flow provenance (`bulk_import` / `receipt_scan`); creates Product + InventoryItem + Flow + FlowPurchaseDetail (with `unit_cost`) per row
+- `search_products_fuzzy` — trigram-ranked catalog candidates over the `products.name` GIN index; used by `parse-receipt` for line resolution and reusable by the product picker
 
 ### Edge Functions (MVP)
 - `send_invite` — insert Invite + send email (external API)
 - `sync_clerk_user` — Clerk webhook handler → insert/update User row
 - `submit-feedback` — insert Feedback row + auto-file a task into the ClickUp InMan Inbox (token server-side only; row kept even if ClickUp sync fails). See [[Feature 13 - In-App Feedback]].
+- `parse-receipt` — receipt/invoice scan ([[Journey - Adding Inventory]] Method 5). Claude vision extracts line items, then resolves each to a [[Product]] via [[ProductAlias]] lookup → `search_products_fuzzy` → Claude disambiguation. Returns resolved rows; the client gates ambiguous/new lines behind an explicit pick/create, then commits via `bulk_import_inventory`. `ANTHROPIC_API_KEY` lives only here.
 
 ### Post-MVP Edge Functions (identified)
 - `log_waste` (v1.1), `complete_batch` (v1.2), `checkout_shopping_trip` (v1.3), `complete_intake_session` (v1.3), `kiosk_action_router` (v1.4), `run_reconciliation` (v1.5)
@@ -529,6 +532,56 @@ Full index with statuses, dependencies, and entity frequency: `inman-vault/InMan
 - **Inventory Audit** — Two modes: system reconciliation (cached qty vs Flow sum, scheduled + manual, flag-and-review) and physical count (scoped by Space/Category/full, blind counting, discrepancy review). Both produce adjustment Flows with FlowAdjustmentDetail. Audit history.
 - **Space Reorganization** — Six hierarchy operations: rename, move subtree, merge (combine items + soft-delete source), delete (orphan handling), split (divide into two), reclassify (change unit_type). Simple ops inline, complex ops in dedicated mode with preview panel.
 - **Data Export** — Centralized page: eight data sets (inventory, transactions, waste, recipes, shopping lists, batches, cost report, spaces), three formats (CSV, Excel, PDF with charts), configurable filters per data set, preview before export.
+
+---
+
+## Superseded Guidance
+
+Decisions that have been reversed since the original draft. Where any older note (entity,
+feature, or journey) still describes the pre-reversal behavior, **this section wins.** Each
+entry gives the original decision, what replaced it, and the evidence.
+
+1. **Volume base unit: `ml` → `fl_oz`.** Volume conversions originally normalized to
+   milliliters. Switched to fluid ounces so the base matches the US-centric catalog. The
+   `unit_definitions` table above already reflects `fl_oz` as the volume base.
+   *(`4b3abae refactor(db): switch volume base unit from ml to fl_oz`.)*
+
+2. **`kiosk_pin` collected at sign-up → deferred to first kiosk use.** The onboarding flow
+   originally collected a kiosk PIN up front. Not every crew member uses a kiosk, so this was
+   pure drop-off. `crew_members.kiosk_pin` is now **nullable**, the field was removed from the
+   onboarding form, and the PIN is prompted inline the first time a member touches kiosk
+   setup/use. General rule: don't collect feature-specific data at sign-up/invite — defer to
+   first use of that feature. *(`docs: defer kiosk_pin to first kiosk setup instead of sign-up`;
+   `refactor(onboarding): … drop PIN`.)*
+
+3. **Spaces soft-delete via direct client `UPDATE` → `SECURITY DEFINER` RPC.** Soft-deleting a
+   Space with a client-side `UPDATE spaces SET deleted_at = now()` tripped the RLS
+   SELECT-on-new-row trap (the `deleted_at IS NULL` SELECT policy rejected the just-deleted
+   row, surfacing a misleading "new row violates RLS" error). Structural Space mutations now
+   route through `cascade_soft_delete_spaces` and the other Phase 6 RPCs. Default to the RPC
+   pattern for `crew_members`/`spaces` mutations. *(`c0ba1b7 fix(spaces): inline tree delete
+   via cascade_soft_delete_spaces RPC`; `d6eb37e`.)*
+
+4. **User-account deletion: hard-`DELETE` considered → soft-delete tombstone with 30-day
+   restore.** Hard deletion was rejected because 12+ immutable ledger tables FK to
+   `users(user_id)` and would force either dropping constraints or anonymizing rows. Resolved:
+   soft-delete with a 30-day restore window (`request_account_deletion` / `restore_account`),
+   the `users` row stays as a PII-free tombstone, and ledger attribution
+   (`flows.performed_by`, etc.) is retained unchanged. See "User Account Deletion" above for
+   the full contract. *(`27a0c9d`/`ec3470c`/`256d11f` account slices.)*
+
+5. **"Restocking" + "Post-Shopping Intake" journeys → absorbed into Intake Session.** The two
+   separate restocking journeys were merged into a single session-based Intake Session
+   (a shopping-list-seeded intake session *is* the post-shopping intake).
+
+6. **"Handling Expired Items" journey → absorbed into Expiry Management.** Folded into the
+   Triage tab (Tab 1) of the Expiry Management journey.
+
+> **Not yet reversed but flagged:** development currently runs against the **prod** Supabase
+> project rather than a local stack, which has already caused migration-history drift (the
+> prod `schema_migrations` table was rewritten on 2026-06-12 to match git). Standing up a
+> local stack is tracked in ClickUp (`86e1yr2r3`). See
+> `docs/Retrospective - MVP Build-out 2026-06.md` for the full account.
 
 ---
 

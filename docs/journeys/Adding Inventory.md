@@ -15,13 +15,21 @@ The flow follows a **two-step pattern**: first resolve *what* the item is ([[Pro
 
 ## Entry Points
 
-All three entry points feed into the same two-step process. The only difference is whether `current_space_id` is pre-filled.
+All entry points land on a **method-picker** screen at `/inventory/add` (route
+`app/src/routes/inventory/add/index.tsx`), which offers the four methods as cards. Each
+method then runs the same two-step process; the only difference is whether `current_space_id`
+is pre-filled.
 
 | Entry Point | Context Pre-filled | UI Form |
 |-------------|-------------------|---------|
-| **Inventory page** — "Add Item" button | Nothing | Full page or modal |
+| **Inventory page** — "Add Item" button | Nothing | Method picker → chosen method |
 | **Space page** — "Add Item Here" on a specific [[Space]] node | `current_space_id` = that Space | Full page or modal |
-| **Global quick-add** — persistent "+" action in app header/nav | Nothing | Lightweight modal |
+| **Global quick-add** — persistent "+" action in app header/nav | Nothing | Quick add (Method 4) |
+
+**Implemented routes:** picker `/inventory/add` · Method 1 `/inventory/add/manual`
+(`ManualAddInventoryPage`) · Method 2 `/inventory/add/import` (`BulkImportPage`) · Method 3
+`/inventory/add/scan` (`BarcodeScanPage`) · Method 4 `/inventory/add/quick` (`QuickAddPage`) ·
+Method 5 `/inventory/add/receipt` (`ReceiptScanPage`).
 
 ---
 
@@ -129,6 +137,15 @@ Simplified Step 2 — only shows:
 
 ## Method 2 — Bulk Import (Secondary)
 
+> **Implemented** at `/inventory/add/import` — `BulkImportPage`
+> (`app/src/routes/inventory/add/import.tsx`) with step components and the pure
+> `parse.ts` (CSV via papaparse, XLSX via SheetJS) + `resolve.ts` under
+> `app/src/components/inventory/import/`. The atomic write is the
+> `bulk_import_inventory(p_crew_id, p_rows jsonb)` RPC
+> (`supabase/migrations/20260615120000_phase3_bulk_import_rpc.sql`), which
+> imports each row in its own subtransaction — good rows commit, bad rows are
+> skipped and reported.
+
 For initial inventory setup or migrating from a spreadsheet (like the InMan Kitchen v4 Excel file).
 
 ### Step 1 — Upload
@@ -192,6 +209,12 @@ Summary on completion: "Imported 220 items. 7 skipped due to errors." With a dow
 
 ## Method 3 — Barcode Scan (Tertiary)
 
+> **Implemented** at `/inventory/add/scan` — `BarcodeScanPage`
+> (`app/src/routes/inventory/add/scan.tsx`) with `BarcodeScanner`
+> (`app/src/components/inventory/barcode-scanner.tsx`, ZXing via `@zxing/browser`).
+> Resolves the code to the shared `AddItemForms` phases; falls back to manual
+> barcode entry when no camera is available or permission is denied.
+
 ### Step 1 — Scan
 
 Camera activates (mobile or tablet). User points at a UPC/EAN barcode. System decodes and searches the master catalog by `barcode` field on [[Product]].
@@ -215,7 +238,11 @@ Same as Manual flow — just a different product resolution mechanism.
 
 ## Method 4 — Quick Add (Lowest Priority)
 
-Minimal-friction entry for when you just need to log something fast. Accessible from the global quick-add or as a mode toggle within the add flow.
+> **Implemented** at `/inventory/add/quick` — `QuickAddForm`
+> (`app/src/components/inventory/quick-add-form.tsx`). Reuses the shared `record_purchase`
+> RPC; creates a name-only crew-private [[Product]] when no catalog match is chosen.
+
+Minimal-friction entry for when you just need to log something fast. Accessible from the method picker (and, in future, the global quick-add).
 
 ### One-Screen Form
 
@@ -233,6 +260,50 @@ Same data operations as Manual Step 2 — creates [[InventoryItem]] + purchase [
 
 ---
 
+## Method 5 — Receipt / Invoice Scan
+
+> **Implemented** at `/inventory/add/receipt` — `ReceiptScanPage`
+> (`app/src/routes/inventory/add/receipt.tsx`). Reuses the atomic `bulk_import_inventory` RPC
+> (with `p_source = 'receipt_scan'`); the only new backend is the `parse-receipt` edge function.
+
+Photograph a receipt or invoice to add everything bought at once — the only add method that
+also captures **purchase price** per item. The hard part is resolving abbreviated, merchant-specific
+line text ("GV WHL MLK GAL") to the right catalog [[Product]] without polluting the catalog with
+garbled duplicates.
+
+### Step 1 — Capture
+`<input type="file" accept="image/*" capture="environment">` opens the rear camera on mobile, the
+file picker on desktop. The image is downscaled client-side (~1500px longest edge, JPEG) before
+upload to keep the request and vision-token cost small.
+
+### Step 2 — Parse & Resolve (`parse-receipt` edge function)
+The Anthropic API key lives only server-side, so extraction runs in an edge function:
+
+1. **Claude vision** extracts purchasable line items, expanding each into a clean `canonical_name`
+   (skips subtotal/tax/total lines).
+2. Per line, a confidence funnel resolves it to a catalog product:
+   a. **[[ProductAlias]] lookup** — exact match on a previously-confirmed `(crew, raw_text)`.
+   b. **Trigram candidates** — `search_products_fuzzy` over the `products.name` trigram index.
+   c. **LLM disambiguation** — Claude picks the best candidate (or none) from the shortlist.
+
+### Step 3 — Preview (gated)
+Each line shows its resolution (`matched` / `ambiguous` / `new`) with editable quantity, unit, and
+unit price. **Every unmatched line is blocked from import until the user explicitly picks an existing
+[[Product]] or creates a new one** — no silent product creation. A single destination [[Space]]
+("shelve everything to") defaults to Premises.
+
+### Step 4 — Import & Learn
+Importable rows go through `bulk_import_inventory` (existing product → `product_id`; create-new →
+`product_name`), each creating an [[InventoryItem]] + purchase [[Flow]] with `unit_cost`. On success,
+every line resolved to an existing product is written back as a [[ProductAlias]], so the next receipt
+that prints the same text auto-resolves.
+
+### Entities Involved
+[[Product]] (read/create), [[ProductAlias]] (read/upsert), [[InventoryItem]] (insert), [[Flow]] +
+FlowPurchaseDetail (insert, `source = receipt_scan`), [[Space]] (destination), [[UnitDefinition]] (units).
+
+---
+
 ## Data Model Touchpoints
 
 | Entity | Operation | When |
@@ -246,8 +317,9 @@ Same data operations as Manual Step 2 — creates [[InventoryItem]] + purchase [
 | [[Space]] | Read (tree dropdown) | Step 2 — location selection |
 | [[Category]] | Read (dropdown) | Step 2 — category selection/override |
 | [[UnitDefinition]] | Read (unit dropdown) | Step 2 — unit selection |
+| [[ProductAlias]] | Read (resolve) / Upsert (learn) | Method 5 — receipt line resolution |
 
-> **Atomic operations:** Individual manual adds can be simple inserts. Bulk import must be wrapped in a Supabase edge function for atomicity. Restock is a lightweight operation (one Flow + InventoryItem update).
+> **Atomic operations:** Individual manual adds and quick adds go through the `record_purchase` RPC. Bulk import and receipt scan are wrapped in the atomic `bulk_import_inventory` Postgres RPC (per-row subtransactions — consistent with the existing `record_purchase`/`restock_inventory` pattern, rather than a separate edge function); receipt scan passes `p_source = 'receipt_scan'`. Restock is a lightweight operation (one Flow + InventoryItem update) via `restock_inventory`. Receipt parsing/resolution runs in the `parse-receipt` edge function (Claude vision + `search_products_fuzzy` + [[ProductAlias]] lookup); the commit itself reuses the RPC.
 
 ---
 
@@ -259,4 +331,5 @@ Same data operations as Manual Step 2 — creates [[InventoryItem]] + purchase [
 - [[Journey - Post-Shopping Intake]] — Handling new items from a shopping trip
 - [[InventoryItem]] — entity definition with full field list
 - [[Product]] — entity definition (master catalog vs. crew-private)
+- [[ProductAlias]] — learned receipt-text → product mappings (Method 5)
 - [[Flow]] — the canonical source of truth for quantity
