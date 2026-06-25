@@ -6,6 +6,7 @@ Deno-runtime functions deployed to the InMan Supabase project. See each function
 
 - **`delete-account`** — Outbound flow. Called by the Settings → Account Danger Zone after type-DELETE confirmation. Runs `request_account_deletion()` (soft-delete on the Supabase side). Does NOT call Clerk: the 30-day restore-within-cool-down decision requires the Clerk identity to stay valid during the window so the user can sign back in to trigger `restore_account()`. Clerk hard-delete is deferred to a future ticket.
 - **`clerk-webhook`** — Inbound reconciliation. Receives `user.deleted` events from Clerk and mirrors the deletion into our DB via the service-role variant of `request_account_deletion()`. Idempotent.
+- **`parse-receipt`** — Receipt/invoice scan add method (Adding Inventory journey, Method 5). Claude vision extracts line items, then resolves each to a catalog product via `product_aliases` lookup → `search_products_fuzzy` → a Claude disambiguation pass. Returns resolved rows; the client gates ambiguous/new lines behind an explicit pick/create, then commits via the `bulk_import_inventory` RPC.
 - **`_shared/`** — CORS and service-role Supabase client helpers used by the functions.
 
 ## Required secrets
@@ -15,6 +16,8 @@ Set via `supabase secrets set` or the Supabase dashboard (Project Settings → E
 | Secret | Purpose | Used by |
 |---|---|---|
 | `CLERK_WEBHOOK_SECRET` | Svix signing-secret verification | `clerk-webhook` |
+| `ANTHROPIC_API_KEY` | Claude vision receipt parsing | `parse-receipt` |
+| `RECEIPT_MODEL` (optional) | Override the Claude model (default `claude-sonnet-4-6`) | `parse-receipt` |
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` are auto-injected by the Supabase runtime; no manual setup needed.
 
@@ -45,6 +48,54 @@ curl -X POST http://localhost:54321/functions/v1/delete-account \
   -H "Content-Type: application/json" \
   -d '{"transfer_to_user_id": null}'
 ```
+
+### Testing receipt scan locally
+
+`parse-receipt` spans migrations + RPCs + the function + the UI, so exercise the whole
+thing against a throwaway local stack. The only real credential needed is an Anthropic key;
+`SUPABASE_URL` and the anon/service keys are auto-injected by the local runtime.
+
+```sh
+# 1. Boot the local stack and apply ALL migrations (incl. product_aliases,
+#    search_products_fuzzy, bulk_import_inventory's p_source) + seeds.
+supabase start
+supabase db reset
+
+# 2. Put the key where the served function can read it:
+#    supabase/.env.local →  ANTHROPIC_API_KEY=sk-ant-…
+#    (optional)            RECEIPT_MODEL=claude-haiku-4-5   # cheaper while iterating
+
+# 3. Serve the function. --no-verify-jwt for the same reason as the others:
+#    Clerk JWTs don't pass Supabase's gateway check.
+supabase functions serve parse-receipt --env-file ./supabase/.env.local --no-verify-jwt
+```
+
+Point the app at the local stack in `app/.env.local` (keep your Clerk dev key — the local
+stack trusts that Clerk domain via `config.toml [auth.third_party.clerk]`):
+
+```sh
+VITE_SUPABASE_URL=http://localhost:54321
+VITE_SUPABASE_PUBLISHABLE_KEY=<local anon key printed by `supabase start`>
+```
+
+Then `cd app && npm run dev`, sign up (fresh DB → onboard to get a Crew + Premises), and go
+to **Add inventory → Scan a receipt**. On desktop the `capture="environment"` input just
+opens a file picker, so any receipt photo works. Verify in Studio (`http://localhost:54323`)
+that `flow_purchase_details.unit_cost` / `source = 'receipt_scan'` and `product_aliases` rows
+landed; re-scanning the same receipt should auto-resolve via the alias you just wrote.
+
+To iterate on the extraction prompt without the UI, invoke the function directly with a real
+Clerk JWT (`await window.Clerk.session.getToken()` in the running app's console) and your
+crew_id:
+
+```sh
+IMG=$(base64 -w0 receipt.jpg)
+curl -s -X POST http://localhost:54321/functions/v1/parse-receipt \
+  -H "Authorization: Bearer <clerk-jwt>" -H "Content-Type: application/json" \
+  -d "{\"image\":\"$IMG\",\"mime\":\"image/jpeg\",\"crew_id\":\"<crew-id>\"}" | jq
+```
+
+Run `supabase stop` when done.
 
 ## Deployment
 
