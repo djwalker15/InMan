@@ -11,4 +11,3 @@ node_modules/
 # Supabase local state
 supabase/.temp/
 supabase/.branches/
-supabase/.env.local
