@@ -152,9 +152,13 @@ The screens the design session needs to cover:
 
 - [x] `app/src/routes/inventory/open.tsx` — 4-step break wizard (count → preview → cost → confirm) reached from the "Open" action on a package item in [[Journey - Checking Stock]] (`row-actions.tsx`), route `/inventory/open/:itemId`. `app/src/lib/units.ts` provides the within-category preview conversion. Demo 12-pack seeded in `supabase/seed.sql`.
 
+**Frontend — done (package authoring, fast path):**
+
+- [x] `app/src/routes/inventory/add/package.tsx` (route `/inventory/add/package`, an add-method card) — create a crew-private package Product + its composition (`CompositionEditor` + `ProductPicker` under `app/src/components/inventory/package/`) + initial sealed stock in one go, then jump straight into the break wizard. Lets a package be authored and opened without seeding.
+
 **Still pending (follow-up):**
 
-- [ ] Catalog-side composition **editor** UI — Product `is_package` toggle + `product_components` add/edit rows (authoring). Until built, packages are created via SQL/seed.
+- [ ] Composition editing on an **existing** Product — a "This is a package" toggle + `product_components` add/edit/soft-delete on a Product detail screen (there is no Product-detail screen yet). The create flow above only authors *new* package products.
 
 ## Dependencies
 
